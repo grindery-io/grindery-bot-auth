@@ -1,6 +1,14 @@
 import express from "express";
-import {Database} from "../db/conn.js";
-import {authenticateApiKey} from "../utils/auth.js";
+import { Database } from "../db/conn.js";
+import { authenticateApiKey } from "../utils/auth.js";
+import {
+  getPatchWalletAccessToken,
+  getPatchWalletAddressFromTgId,
+  sendTokens,
+} from "../utils/patchwallet.js";
+import ERC20 from "./abi/ERC20.json" assert { type: "json" };
+import Web3 from "web3";
+import axios from "axios";
 
 const router = express.Router();
 
@@ -65,7 +73,7 @@ router.post("/import", authenticateApiKey, async (req, res) => {
   // Fetch all users from DB that match the input IDs
   const existingUsers = await collection
     .find({
-      userTelegramID: {$in: inputTelegramIDs},
+      userTelegramID: { $in: inputTelegramIDs },
     })
     .toArray();
 
@@ -94,8 +102,99 @@ router.post("/import", authenticateApiKey, async (req, res) => {
     const insertedData = await collection.insertMany(toInsert);
     res.status(201).send(insertedData);
   } else {
-    res.status(400).send({message: "No valid data to insert"});
+    res.status(400).send({ message: "No valid data to insert" });
   }
 });
+
+router.get(
+  "/reward-referral-transactions",
+  authenticateApiKey,
+  async (req, res) => {
+    try {
+      // Obtain the access token for the Patch Wallet API
+      let patchWalletAccessToken = await getPatchWalletAccessToken();
+
+      // Track the time of the last token renewal
+      let lastTokenRenewalTime = Date.now();
+
+      // Connect to the database and retrieve necessary collections
+      const db = await Database.getInstance(req);
+      const usersCollection = db.collection("users");
+      const rewardCollection = db.collection("rewards");
+
+      // Iterate through transactions
+      for (const transaction of await db
+        .collection("transfers")
+        .find({ senderTgId: "1723578990" })
+        .toArray()) {
+        // Find the recipient user based on their Telegram ID
+        const user = await usersCollection.findOne({
+          userTelegramID: transaction.recipientTgId,
+        });
+
+        // Check if it's time to renew the Patch Wallet access token
+        if (Date.now() - lastTokenRenewalTime >= 50 * 60 * 1000) {
+          patchWalletAccessToken = await getPatchWalletAccessToken();
+          lastTokenRenewalTime = Date.now();
+        }
+
+        // Check conditions for issuing a reward to the user
+        if (
+          user &&
+          new Date(user.dateAdded) > new Date(transaction.dateAdded) &&
+          !(await rewardCollection.findOne({
+            parentTransactionHash: transaction.transactionHash.substring(1, 8),
+          }))
+        ) {
+          // Find information about the sender of the transaction
+          const sender = await usersCollection.findOne({
+            userTelegramID: transaction.senderTgId,
+          });
+
+          // Get the recipient's wallet address based on their Telegram ID
+          const recipientWallet = await getPatchWalletAddressFromTgId(
+            transaction.senderTgId
+          );
+
+          // Send a reward of 50 tokens using the Patch Wallet API
+          const txReward = await sendTokens(
+            process.env.SOURCE_TG_ID,
+            recipientWallet,
+            50,
+            patchWalletAccessToken
+          );
+
+          // Log the issuance of the reward and insert the record into the collection
+          await collection.insertOne({
+            userTelegramID: transaction.senderTgId,
+            responsePath: sender.responsePath,
+            walletAddress: recipientWallet,
+            reason: "2x_reward",
+            userHandle: sender.userHandle,
+            userName: sender.userName,
+            amount: "50",
+            message:
+              "Thank you for sending tokens. Here is your 50 token reward in Grindery One Tokens.",
+            transactionHash: txReward.data.txHash,
+            parentTransactionHash: transaction.transactionHash.substring(1, 8),
+          });
+
+          console.log(`User ${sender.userTelegramID} has been rewarded.`);
+        }
+      }
+
+      // Respond with a success message when all referral rewards have been issued
+      return res
+        .status(200)
+        .send({ msg: "All referral rewards have been issued." });
+    } catch (error) {
+      // Handle errors and return a 500 Internal Server Error response
+      return res.status(500).send({
+        msg: "An error occurred while analyzing transactions",
+        error,
+      });
+    }
+  }
+);
 
 export default router;

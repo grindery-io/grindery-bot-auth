@@ -8,7 +8,6 @@ import axios from "axios";
 import { authenticateApiKey } from "../utils/auth.js";
 
 const router = express.Router();
-const g1PolygonAddress = "0xe36BD65609c08Cd17b53520293523CF4560533d0";
 
 /**
  * POST /v1/data/
@@ -146,7 +145,10 @@ router.post("/sendTokens", authenticateApiKey, async (req, res) => {
     ).data.access_token;
 
     const web3 = new Web3();
-    const contract = new web3.eth.Contract(ERC20, g1PolygonAddress);
+    const contract = new web3.eth.Contract(
+      ERC20,
+      process.env.G1_POLYGON_ADDRESS
+    );
 
     const to = (
       await axios.post(
@@ -165,7 +167,7 @@ router.post("/sendTokens", authenticateApiKey, async (req, res) => {
       {
         userId: `grindery:${req.body.tgId}`,
         chain: "matic",
-        to: [g1PolygonAddress],
+        to: [process.env.G1_POLYGON_ADDRESS],
         value: ["0x00"],
         data: [
           contract.methods["transfer"](
