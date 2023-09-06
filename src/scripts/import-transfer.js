@@ -30,7 +30,7 @@ const saveTranser = async (transfers) => {
   // Step 3: Format missing transfers
   const formattedMissingTransfers = missingTransfers.map((transfer) => {
     return {
-      txId: transfer.hash,
+      txId: "",
       chainID: "eip155:137",
       tokenSymbol: "g1",
       tokenAddress: "0xe36BD65609c08Cd17b53520293523CF4560533d0",
@@ -48,8 +48,8 @@ const saveTranser = async (transfers) => {
   });
 
   // Step 4: Batch insert the missing transfers into the collection
-  const collectionTest = db.collection("transfers-test");
   if (formattedMissingTransfers.length > 0) {
+    const collectionTest = db.collection("transfers-test");
     const batchSize = 1;
     for (let i = 0; i < formattedMissingTransfers.length; i += batchSize) {
       const batch = formattedMissingTransfers.slice(i, i + batchSize);
