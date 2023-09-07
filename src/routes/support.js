@@ -166,7 +166,7 @@ router.get(
           );
 
           // Log the issuance of the reward and insert the record into the collection
-          await collection.insertOne({
+          await rewardCollection.insertOne({
             userTelegramID: transaction.senderTgId,
             responsePath: sender.responsePath,
             walletAddress: recipientWallet,
