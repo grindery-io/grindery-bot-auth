@@ -145,7 +145,7 @@ router.get(
           !(await rewardCollection.findOne({
             parentTransactionHash: transaction.transactionHash.substring(1, 8),
           })) &&
-          transaction.senderWalletAddress != process.env.SOURCE_WALLET_ADDRESS
+          transaction.senderWallet != process.env.SOURCE_WALLET_ADDRESS
         ) {
           // Find information about the sender of the transaction
           const sender = await usersCollection.findOne({
