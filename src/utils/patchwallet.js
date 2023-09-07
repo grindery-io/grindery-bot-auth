@@ -34,7 +34,7 @@ export async function getPatchWalletAddressFromTgId(tgId) {
 
 export async function sendTokens(
   senderTgId,
-  recipientTgId,
+  recipientwallet,
   amountEther,
   patchWalletAccessToken
 ) {
@@ -51,7 +51,7 @@ export async function sendTokens(
       value: ["0x00"],
       data: [
         g1Contract.methods["transfer"](
-          await getPatchWalletAddressFromTgId(recipientTgId),
+          recipientwallet,
           Web3.utils.toWei(amountEther)
         ).encodeABI(),
       ],
