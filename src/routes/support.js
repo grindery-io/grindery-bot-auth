@@ -152,10 +152,10 @@ router.get(
             userTelegramID: transaction.senderTgId,
           });
 
-          // Get the recipient's wallet address based on their Telegram ID
-          const recipientWallet = await getPatchWalletAddressFromTgId(
-            transaction.senderTgId
-          );
+          // Get the recipient's wallet address based on their Telegram ID if not already existing
+          const recipientWallet =
+            transaction.recipientWallet ??
+            (await getPatchWalletAddressFromTgId(transaction.senderTgId));
 
           // Send a reward of 50 tokens using the Patch Wallet API
           const txReward = await sendTokens(
