@@ -3,7 +3,7 @@ import fs from "fs";
 import {Database} from "../db/conn.js";
 
 const fileName = "dune.csv";
-const collectionName = "transfers";
+const collectionName = "transfers-test";
 const transfers = [];
 const db = await Database.getInstance();
 const collection = db.collection(collectionName);
@@ -14,7 +14,7 @@ const saveTranser = async (transfers) => {
 
   // Step 2: Filter the transfers to find the missing ones
   const missingTransfers = transfers.filter(
-    (transfer) => !existingHashes.includes(transfer.tx_hash)
+    (transfer) => !existingHashes.includes(transfer.evt_tx_hash)
   );
 
   console.log("Number of transfers in csv file: ", transfers.length);
@@ -27,34 +27,28 @@ const saveTranser = async (transfers) => {
     missingTransfers.length
   );
 
-  console.log();
-
   // Step 3: Format missing transfers
   const formattedMissingTransfers = missingTransfers.map((transfer) => {
     return {
-      TxId: transfer.tx_hash.substring(1, 8),
+      TxId: transfer.evt_tx_hash.substring(1, 8),
       chainId: "eip155:137",
       tokenSymbol: "g1",
       tokenAddress: "0xe36BD65609c08Cd17b53520293523CF4560533d0",
       senderTgId: undefined,
-      senderWallet: "0x" + transfer.topic1.substring(26),
+      senderWallet: transfer.from,
       senderName: undefined,
       recipientTgId: undefined,
-      recipientWallet: "0x" + transfer.topic2.substring(26),
-      tokenAmount: undefined,
-      transactionHash: transfer.tx_hash,
-      dateAdded: new Date(transfer.block_time),
+      recipientWallet: transfer.to,
+      tokenAmount: String(Number(transfer.value) / 1e18),
+      transactionHash: transfer.evt_tx_hash,
+      dateAdded: new Date(transfer.evt_block_time),
     };
   });
 
   // Step 4: Batch insert the missing transfers into the collection
   if (formattedMissingTransfers.length > 0) {
     const collectionTest = db.collection("transfers-test");
-    const batchSize = 1;
-    console.log(
-      "loops to complete import: ",
-      missingTransfers.length / batchSize
-    );
+    const batchSize = 10000;
     for (let i = 0; i < formattedMissingTransfers.length; i += batchSize) {
       console.log("loop number: ", i);
       const batch = formattedMissingTransfers.slice(i, i + batchSize);
