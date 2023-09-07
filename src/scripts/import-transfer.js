@@ -30,20 +30,18 @@ const saveTranser = async (transfers) => {
   // Step 3: Format missing transfers
   const formattedMissingTransfers = missingTransfers.map((transfer) => {
     return {
-      txId: "",
-      chainID: "eip155:137",
+      TxId: transfer.hash.substring(1, 8),
+      chainId: "eip155:137",
       tokenSymbol: "g1",
       tokenAddress: "0xe36BD65609c08Cd17b53520293523CF4560533d0",
-      senderTelegramID: "",
-      senderWalletAddress: transfer.from,
+      senderTgId: "",
+      senderWallet: transfer.from,
       senderName: "",
-      recipientTelegramID: "",
-      recipientWalletAddress: transfer.to,
-      senderMessage: "",
+      recipientTgId: "",
+      recipientWallet: transfer.to,
       tokenAmount: transfer.value,
-      timestamp: new Date(transfer.block_time),
       transactionHash: transfer.hash,
-      isActive: true,
+      dateAdded: new Date(transfer.block_time),
     };
   });
 
