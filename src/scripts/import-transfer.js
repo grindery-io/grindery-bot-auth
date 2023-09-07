@@ -14,7 +14,7 @@ const saveTranser = async (transfers) => {
 
   // Step 2: Filter the transfers to find the missing ones
   const missingTransfers = transfers.filter(
-    (transfer) => !existingHashes.includes(transfer.hash)
+    (transfer) => !existingHashes.includes(transfer.tx_hash)
   );
 
   console.log("Number of transfers in csv file: ", transfers.length);
@@ -27,20 +27,22 @@ const saveTranser = async (transfers) => {
     missingTransfers.length
   );
 
+  console.log();
+
   // Step 3: Format missing transfers
   const formattedMissingTransfers = missingTransfers.map((transfer) => {
     return {
-      TxId: transfer.hash.substring(1, 8),
+      TxId: transfer.tx_hash.substring(1, 8),
       chainId: "eip155:137",
       tokenSymbol: "g1",
       tokenAddress: "0xe36BD65609c08Cd17b53520293523CF4560533d0",
-      senderTgId: "",
-      senderWallet: transfer.from,
-      senderName: "",
-      recipientTgId: "",
-      recipientWallet: transfer.to,
-      tokenAmount: transfer.value,
-      transactionHash: transfer.hash,
+      senderTgId: undefined,
+      senderWallet: "0x" + transfer.topic1.substring(26),
+      senderName: undefined,
+      recipientTgId: undefined,
+      recipientWallet: "0x" + transfer.topic2.substring(26),
+      tokenAmount: undefined,
+      transactionHash: transfer.tx_hash,
       dateAdded: new Date(transfer.block_time),
     };
   });
