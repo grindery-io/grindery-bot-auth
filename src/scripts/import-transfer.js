@@ -51,7 +51,12 @@ const saveTranser = async (transfers) => {
   if (formattedMissingTransfers.length > 0) {
     const collectionTest = db.collection("transfers-test");
     const batchSize = 1;
+    console.log(
+      "loops to complete import: ",
+      missingTransfers.length / batchSize
+    );
     for (let i = 0; i < formattedMissingTransfers.length; i += batchSize) {
+      console.log("loop number: ", i);
       const batch = formattedMissingTransfers.slice(i, i + batchSize);
       await collectionTest.insertMany(batch);
     }
