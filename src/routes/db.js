@@ -14,12 +14,20 @@ router.post("/:collectionName", authenticateApiKey, async (req, res) => {
   const db = await Database.getInstance(req);
   const collection = db.collection(collectionName);
 
-  res.status(201).send(
-    await collection.insertOne({
-      ...req.body,
-      dateAdded: new Date(),
-    })
-  );
+  try {
+    res.status(201).send(
+      await collection.insertOne({
+        ...req.body,
+        dateAdded: new Date(),
+      })
+    );
+  } catch (error) {
+    if (error.code === 11000) {
+      res.status(409).send({error: "Duplicate record"});
+    } else {
+      res.status(500).send({error: "An error occurred"});
+    }
+  }
 });
 
 router.get("/backlog-signup-rewards", authenticateApiKey, async (req, res) => {
