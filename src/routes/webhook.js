@@ -1,6 +1,7 @@
-import express from "express";
-import { PubSub } from "@google-cloud/pubsub";
-import { authenticateApiKey } from "../utils/auth.js";
+import express from 'express';
+import PQueue from 'p-queue';
+import { PubSub } from '@google-cloud/pubsub';
+import { authenticateApiKey } from '../utils/auth.js';
 import {
   handleNewReward,
   handleNewTransaction,
@@ -23,6 +24,7 @@ const topicName = process.env.PUBSUB_TOPIC_NAME;
 const subscriptionName = process.env.PUBSUB_SUBSCRIPTION_NAME;
 
 const router = express.Router();
+const queue = new PQueue({ concurrency: 1, interval: 1000, intervalCap: 10 });
 
 /**
  * POST /v1/webhook
@@ -55,9 +57,11 @@ router.post('/', authenticateApiKey, async (req, res) => {
     const data = JSON.stringify(req.body);
     console.log(`Publishing message: ${data}`);
     const dataBuffer = Buffer.from(data);
-    const messageId = await pubSubClient
-      .topic(topicName)
-      .publishMessage({ data: dataBuffer });
+
+    const messageId = queue.add(() =>
+      pubSubClient.topic(topicName).publishMessage({ data: dataBuffer })
+    );
+
     if (messageId) {
       res.json({ success: true, messageId });
     } else {

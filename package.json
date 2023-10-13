@@ -35,6 +35,7 @@
     "jwt-decode": "^3.1.2",
     "mongodb": "^5.7.0",
     "mongodb-memory-server": "^8.15.1",
+    "p-queue": "7.4.1",
     "sinon": "^16.0.0",
     "telegram": "^2.18.26",
     "uuidv4": "^6.2.13",
