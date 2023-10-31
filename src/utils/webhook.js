@@ -42,8 +42,7 @@ export async function handleSignUpReward(db, params) {
       userTelegramID: rewardDTO.userTelegramID,
       eventId: rewardDTO.eventId,
       reason: 'user_sign_up',
-    }
-  );
+    });
 
     if (
       reward?.status === TRANSACTION_STATUS.SUCCESS ||
@@ -169,7 +168,9 @@ export async function handleSignUpReward(db, params) {
       });
 
       // Find the reward record by transaction hash
-      const reward_db = await rewardRepository.findOneReward({ transactionHash: txReward.data.txHash });
+      const reward_db = await rewardRepository.findOneReward({
+        transactionHash: txReward.data.txHash,
+      });
 
       console.log(
         `[${
@@ -207,7 +208,9 @@ export async function handleSignUpReward(db, params) {
       });
 
       // Find the reward record by transaction hash
-      const reward_db = await rewardRepository.findOneReward({ userOpHash: txReward.data.userOpHash });
+      const reward_db = await rewardRepository.findOneReward({
+        userOpHash: txReward.data.userOpHash,
+      });
 
       console.log(
         `[${
