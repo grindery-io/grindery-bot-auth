@@ -17,6 +17,8 @@ import 'dotenv/config';
 import { sendTelegramMessage } from './telegram.js';
 import { reward_helpers } from './rewardHelpers.js';
 import { UserTelegram, createUserTelegram } from './user.js';
+import { RewardDTO } from '../dtos/rewardsDTO.js';
+import { RewardsRepository } from '../db/rewardsRepository.js';
 
 /**
  * Handles the signup reward for a user.
@@ -32,38 +34,42 @@ import { UserTelegram, createUserTelegram } from './user.js';
  */
 export async function handleSignUpReward(db, params) {
   try {
+    const rewardDTO = new RewardDTO(params);
+    const rewardRepository = new RewardsRepository(db);
+
     // Check if this event already exists
-    const reward = await db.collection(REWARDS_COLLECTION).findOne({
-      userTelegramID: params.userTelegramID,
-      eventId: params.eventId,
+    const reward = await rewardRepository.findOneReward({
+      userTelegramID: rewardDTO.userTelegramID,
+      eventId: rewardDTO.eventId,
       reason: 'user_sign_up',
-    });
+    }
+  );
 
     if (
       reward?.status === TRANSACTION_STATUS.SUCCESS ||
-      (await db.collection(REWARDS_COLLECTION).findOne({
-        userTelegramID: params.userTelegramID,
-        eventId: { $ne: params.eventId },
+      (await rewardRepository.findOneReward({
+        userTelegramID: rewardDTO.userTelegramID,
+        eventId: { $ne: rewardDTO.eventId },
         reason: 'user_sign_up',
       }))
     ) {
       // The user has already received a signup reward, stop processing
       console.log(
-        `[${params.eventId}] ${params.userTelegramID} user already received signup reward.`
+        `[${rewardDTO.eventId}] ${rewardDTO.userTelegramID} user already received signup reward.`
       );
       return true;
     }
 
     if (!reward) {
       // Create a new reward record
-      await reward_helpers.insertRewardDB(db, {
-        eventId: params.eventId,
-        userTelegramID: params.userTelegramID,
-        responsePath: params.responsePath,
-        walletAddress: params.patchwallet,
+      await rewardRepository.insertReward({
+        eventId: rewardDTO.eventId,
+        userTelegramID: rewardDTO.userTelegramID,
+        responsePath: rewardDTO.responsePath,
+        walletAddress: rewardDTO.patchwallet,
         reason: 'user_sign_up',
-        userHandle: params.userHandle,
-        userName: params.userName,
+        userHandle: rewardDTO.userHandle,
+        userName: rewardDTO.userName,
         amount: '100',
         message: 'Sign up reward',
         dateAdded: new Date(),
@@ -71,7 +77,7 @@ export async function handleSignUpReward(db, params) {
       });
 
       console.log(
-        `[${params.eventId}] pending sign up reward added to the database.`
+        `[${rewardDTO.eventId}] pending sign up reward added to the database.`
       );
     }
 
@@ -80,17 +86,17 @@ export async function handleSignUpReward(db, params) {
     if (reward?.status === TRANSACTION_STATUS.PENDING_HASH) {
       if (reward.dateAdded < new Date(new Date() - 10 * 60 * 1000)) {
         console.log(
-          `[${params.eventId}] was stopped due to too long treatment duration (> 10 min).`
+          `[${rewardDTO.eventId}] was stopped due to too long treatment duration (> 10 min).`
         );
 
-        await reward_helpers.updateRewardDB(db, {
-          userTelegramID: params.userTelegramID,
-          eventId: params.eventId,
+        await rewardRepository.updateReward({
+          userTelegramID: rewardDTO.userTelegramID,
+          eventId: rewardDTO.eventId,
           reason: 'user_sign_up',
-          responsePath: params.responsePath,
-          walletAddress: params.patchwallet,
-          userHandle: params.userHandle,
-          userName: params.userName,
+          responsePath: rewardDTO.responsePath,
+          walletAddress: rewardDTO.patchwallet,
+          userHandle: rewardDTO.userHandle,
+          userName: rewardDTO.userName,
           amount: '100',
           message: 'Sign up reward',
           status: TRANSACTION_STATUS.FAILURE,
@@ -103,20 +109,20 @@ export async function handleSignUpReward(db, params) {
           txReward = await getTxStatus(reward.userOpHash);
         } catch (error) {
           console.error(
-            `[${params.eventId}] Error processing PatchWallet user sign up reward status for ${params.userTelegramID}: ${error}`
+            `[${rewardDTO.eventId}] Error processing PatchWallet user sign up reward status for ${rewardDTO.userTelegramID}: ${error}`
           );
           return false;
         }
       } else {
         // Update the reward record to mark it as successful
-        await reward_helpers.updateRewardDB(db, {
-          userTelegramID: params.userTelegramID,
-          eventId: params.eventId,
+        await rewardRepository.updateReward({
+          userTelegramID: rewardDTO.userTelegramID,
+          eventId: rewardDTO.eventId,
           reason: 'user_sign_up',
-          responsePath: params.responsePath,
-          walletAddress: params.patchwallet,
-          userHandle: params.userHandle,
-          userName: params.userName,
+          responsePath: rewardDTO.responsePath,
+          walletAddress: rewardDTO.patchwallet,
+          userHandle: rewardDTO.userHandle,
+          userName: rewardDTO.userName,
           amount: '100',
           message: 'Sign up reward',
           status: TRANSACTION_STATUS.SUCCESS,
@@ -131,13 +137,13 @@ export async function handleSignUpReward(db, params) {
         // Send tokens to the user
         txReward = await sendTokens(
           process.env.SOURCE_TG_ID,
-          params.patchwallet,
+          rewardDTO.patchwallet,
           '100',
           await getPatchWalletAccessToken()
         );
       } catch (error) {
         console.error(
-          `[${params.eventId}] Error processing PatchWallet user sign up reward for ${params.userTelegramID}: ${error}`
+          `[${rewardDTO.eventId}] Error processing PatchWallet user sign up reward for ${rewardDTO.userTelegramID}: ${error}`
         );
         return false;
       }
@@ -147,14 +153,14 @@ export async function handleSignUpReward(db, params) {
       const dateAdded = new Date();
 
       // Update the reward record to mark it as successful
-      await reward_helpers.updateRewardDB(db, {
-        userTelegramID: params.userTelegramID,
-        eventId: params.eventId,
+      await rewardRepository.updateReward({
+        userTelegramID: rewardDTO.userTelegramID,
+        eventId: rewardDTO.eventId,
         reason: 'user_sign_up',
-        responsePath: params.responsePath,
-        walletAddress: params.patchwallet,
-        userHandle: params.userHandle,
-        userName: params.userName,
+        responsePath: rewardDTO.responsePath,
+        walletAddress: rewardDTO.patchwallet,
+        userHandle: rewardDTO.userHandle,
+        userName: rewardDTO.userName,
         amount: '100',
         message: 'Sign up reward',
         status: TRANSACTION_STATUS.SUCCESS,
@@ -163,55 +169,51 @@ export async function handleSignUpReward(db, params) {
       });
 
       // Find the reward record by transaction hash
-      const reward_db = await db
-        .collection(REWARDS_COLLECTION)
-        .findOne({ transactionHash: txReward.data.txHash });
+      const reward_db = await rewardRepository.findOneReward({ transactionHash: txReward.data.txHash });
 
       console.log(
         `[${
           txReward.data.txHash
         }] signup reward added to Mongo DB with event ID ${
-          params.eventId
+          rewardDTO.eventId
         } and Object ID ${reward_db._id.toString()}.`
       );
 
       // Notify external system about the reward
       await axios.post(process.env.FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK, {
-        userTelegramID: params.userTelegramID,
-        responsePath: params.responsePath,
-        walletAddress: params.patchwallet,
+        userTelegramID: rewardDTO.userTelegramID,
+        responsePath: rewardDTO.responsePath,
+        walletAddress: rewardDTO.patchwallet,
         reason: 'user_sign_up',
-        userHandle: params.userHandle,
-        userName: params.userName,
+        userHandle: rewardDTO.userHandle,
+        userName: rewardDTO.userName,
         amount: '100',
         message: 'Sign up reward',
         transactionHash: txReward.data.txHash,
         dateAdded: dateAdded,
       });
 
-      console.log(`[${params.userTelegramID}] user added to the database.`);
+      console.log(`[${rewardDTO.userTelegramID}] user added to the database.`);
       return true;
     }
 
     if (txReward.data.userOpHash) {
-      await reward_helpers.updateRewardDB(db, {
-        userTelegramID: params.userTelegramID,
-        eventId: params.eventId,
+      await rewardRepository.updateReward({
+        userTelegramID: rewardDTO.userTelegramID,
+        eventId: rewardDTO.eventId,
         reason: 'user_sign_up',
         status: TRANSACTION_STATUS.PENDING_HASH,
         userOpHash: txReward.data.userOpHash,
       });
 
       // Find the reward record by transaction hash
-      const reward_db = await db
-        .collection(REWARDS_COLLECTION)
-        .findOne({ userOpHash: txReward.data.userOpHash });
+      const reward_db = await rewardRepository.findOneReward({ userOpHash: txReward.data.userOpHash });
 
       console.log(
         `[${
           txReward.data.userOpHash
         }] signup reward userOpHash added to Mongo DB with event ID ${
-          params.eventId
+          rewardDTO.eventId
         } and Object ID ${reward_db._id.toString()}.`
       );
     }

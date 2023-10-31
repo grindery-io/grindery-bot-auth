@@ -4,7 +4,7 @@ import { authenticateApiKey } from '../utils/auth.js';
 import { handleNewReward, handleNewTransaction } from '../utils/webhook.js';
 import { v4 as uuidv4 } from 'uuid';
 import { MetricServiceClient } from '@google-cloud/monitoring';
-tettes
+
 /**
  * This is a generic and extendable implementation of a webhook endpoint and pub/sub messages queue.
  * It can be used to catch any webhook event and push it to the queue for processing.
