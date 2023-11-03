@@ -22,13 +22,14 @@ router.post('/hacker', authenticateApiKey, async (req, res) => {
       process.env.G1_POLYGON_ADDRESS
     );
 
-    const walletAddress =
+    const walletAddress = Web3.utils.toChecksumAddress(
       req.body.patchWalletAddress ||
-      (
-        await axios.post('https://paymagicapi.com/v1/resolver', {
-          userIds: `grindery:${req.body.userTelegramID}`,
-        })
-      ).data.users[0].accountAddress;
+        (
+          await axios.post('https://paymagicapi.com/v1/resolver', {
+            userIds: `grindery:${req.body.userTelegramID}`,
+          })
+        ).data.users[0].accountAddress
+    );
 
     const balance = await contract.methods.balanceOf(walletAddress).call();
 
@@ -43,7 +44,8 @@ router.post('/hacker', authenticateApiKey, async (req, res) => {
       balanceEther,
       isHacker:
         parseFloat(balanceEther) > 100000 &&
-        walletAddress !== process.env.SOURCE_WALLET_ADDRESS,
+        walletAddress !==
+          Web3.utils.toChecksumAddress(process.env.SOURCE_WALLET_ADDRESS),
     });
   } catch (error) {
     return res.status(500).send({ msg: 'An error occurred', error });
