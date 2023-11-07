@@ -4,6 +4,7 @@ import { authenticateApiKey } from '../utils/auth.js';
 import {
   REWARDS_COLLECTION,
   TRANSFERS_COLLECTION,
+  USERS_COLLECTION,
 } from '../utils/constants.js';
 import Web3 from 'web3';
 import { CHAIN_MAPPING } from '../utils/chains.js';
@@ -80,7 +81,40 @@ router.post('/slave', authenticateApiKey, async (req, res) => {
       isSlave: transfersCount > 2,
     });
   } catch (error) {
-    console.error('An error occurred:', error);
+    res.status(500).send({ msg: 'An error occurred', error });
+  }
+});
+
+router.post('/attribute', authenticateApiKey, async (req, res) => {
+  try {
+    const db = await Database.getInstance();
+
+    if (!Array.isArray(req.body)) {
+      return res.status(400).send({
+        msg: 'Request body should contain an array of attribute objects.',
+      });
+    }
+
+    const bulkOps = req.body.map((update) => {
+      return {
+        updateOne: {
+          filter: { userTelegramID: update.userTelegramID }, // Updated to match the field name in your request
+          update: {
+            $set: {
+              attribute: update.attributeName,
+            },
+          },
+          upsert: true, // Insert if the document doesn't exist
+        },
+      };
+    });
+
+    // Perform a BatchWrite to update documents in the users collection
+    const result = await db.collection(USERS_COLLECTION).bulkWrite(bulkOps);
+
+    return res.status(200).send({ msg: 'Updates successful', result });
+  } catch (error) {
+    console.log(error);
     res.status(500).send({ msg: 'An error occurred', error });
   }
 });
