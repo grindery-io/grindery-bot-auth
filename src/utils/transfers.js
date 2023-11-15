@@ -348,30 +348,21 @@ export class TransferTelegram {
   async saveToFlowXO() {
     try {
       // Send transaction information to FlowXO
-      const flowXO = await axios.post(
-        process.env.FLOWXO_NEW_TRANSACTION_WEBHOOK,
-        {
-          senderResponsePath: this.senderInformation.responsePath,
-          chainId: 'eip155:137',
-          tokenSymbol: 'g1',
-          tokenAddress: process.env.G1_POLYGON_ADDRESS,
-          senderTgId: this.senderInformation.userTelegramID,
-          senderWallet: this.senderInformation.patchwallet,
-          senderName: this.senderInformation.userName,
-          senderHandle: this.senderInformation.userHandle,
-          recipientTgId: this.recipientTgId,
-          recipientWallet: this.recipientWallet,
-          tokenAmount: this.amount,
-          transactionHash: this.txHash,
-          dateAdded: new Date(),
-        }
-      );
-
-      console.log(
-        `[${this.txHash}] transaction with event ID ${this.eventId} from ${this.senderInformation.userTelegramID} to ${this.recipientTgId} for ${this.amount} sent to FlowXO.`
-      );
-
-      return flowXO;
+      return await axios.post(process.env.FLOWXO_NEW_TRANSACTION_WEBHOOK, {
+        senderResponsePath: this.senderInformation.responsePath,
+        chainId: 'eip155:137',
+        tokenSymbol: 'g1',
+        tokenAddress: process.env.G1_POLYGON_ADDRESS,
+        senderTgId: this.senderInformation.userTelegramID,
+        senderWallet: this.senderInformation.patchwallet,
+        senderName: this.senderInformation.userName,
+        senderHandle: this.senderInformation.userHandle,
+        recipientTgId: this.recipientTgId,
+        recipientWallet: this.recipientWallet,
+        tokenAmount: this.amount,
+        transactionHash: this.txHash,
+        dateAdded: new Date(),
+      });
     } catch (error) {
       // Log error if sending transaction to FlowXO fails
       console.error(
