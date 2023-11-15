@@ -312,7 +312,7 @@ export class TransferTelegram {
   async saveToSegment() {
     try {
       // Add transaction information to the Segment
-      const trackSegment = await addTrackSegment({
+      return await addTrackSegment({
         userTelegramID: this.senderInformation.userTelegramID,
         senderTgId: this.senderInformation.userTelegramID,
         senderWallet: this.senderInformation.patchwallet,
@@ -325,12 +325,6 @@ export class TransferTelegram {
         dateAdded: new Date(),
         eventId: this.eventId,
       });
-
-      console.log(
-        `[${this.txHash}] transaction with event ID ${this.eventId} from ${this.senderInformation.senderTgId} to ${this.senderInformation.recipientTgId} for ${this.amount} added to Segment.`
-      );
-
-      return trackSegment;
     } catch (error) {
       // Log error if adding transaction to Segment fails
       console.error(
