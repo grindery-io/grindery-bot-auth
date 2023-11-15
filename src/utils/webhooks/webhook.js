@@ -11,13 +11,12 @@ import {
   getTxStatus,
   sendTokens,
 } from '../patchwallet.js';
-import { addTrackSegment } from '../segment.js';
 import axios from 'axios';
 import 'dotenv/config';
 import { sendTelegramMessage } from '../telegram.js';
 import { reward_helpers } from '../rewardHelpers.js';
 import { createUserTelegram } from '../user.js';
-import { TransferTelegram, createTransferTelegram } from '../transfers.js';
+import { createTransferTelegram } from '../transfers.js';
 
 /**
  * Handles the signup reward for a user.
@@ -755,522 +754,102 @@ export async function handleNewReward(params) {
   return true;
 }
 
-// /**
-//  * Handles a new transaction event.
-//  * @param {object} params - Transaction parameters.
-//  * @returns {Promise<boolean>} Returns a Promise that resolves to true if the transaction is successfully processed, false otherwise.
-//  */
-// export async function handleNewTransaction(params) {
-//   const db = await Database.getInstance();
-
-//   // Retrieve sender information from the "users" collection
-//   const senderInformation = await db
-//     .collection(USERS_COLLECTION)
-//     .findOne({ userTelegramID: params.senderTgId });
-
-//   if (!senderInformation) {
-//     console.error(
-//       `[${params.eventId}] Sender ${params.senderTgId} is not a user`
-//     );
-//     return true;
-//   }
-
-//   const tx_db = await db
-//     .collection(TRANSFERS_COLLECTION)
-//     .findOne({ eventId: params.eventId });
-
-//   if (!tx_db) {
-//     await db.collection(TRANSFERS_COLLECTION).insertOne({
-//       eventId: params.eventId,
-//       chainId: 'eip155:137',
-//       tokenSymbol: 'g1',
-//       tokenAddress: process.env.G1_POLYGON_ADDRESS,
-//       senderTgId: params.senderTgId,
-//       recipientTgId: params.recipientTgId,
-//       tokenAmount: params.amount.toString(),
-//       status: TRANSACTION_STATUS.PENDING,
-//       dateAdded: new Date(),
-//     });
-//     console.log(
-//       `[${params.eventId}] transaction from ${params.senderTgId} to ${
-//         params.recipientTgId
-//       } for ${params.amount.toString()} added to MongoDB as pending.`
-//     );
-//   }
-
-//   if (tx_db?.status === TRANSACTION_STATUS.SUCCESS) {
-//     console.log(
-//       `[${tx_db?.transactionHash}] with event ID ${tx_db?.eventId} is already a success.`
-//     );
-//     return true;
-//   }
-
-//   if (tx_db?.status === TRANSACTION_STATUS.FAILURE) {
-//     console.log(
-//       `[${tx_db?.transactionHash}] with event ID ${tx_db?.eventId} is already a failure.`
-//     );
-//     return true;
-//   }
-
-//   let recipientWallet = undefined;
-
-//   try {
-//     recipientWallet = await getPatchWalletAddressFromTgId(params.recipientTgId);
-//   } catch (error) {
-//     return false;
-//   }
-
-//   let tx = undefined;
-
-//   if (tx_db?.status === TRANSACTION_STATUS.PENDING_HASH) {
-//     if (tx_db.dateAdded < new Date(new Date() - 10 * 60 * 1000)) {
-//       console.log(
-//         `[${params.eventId}] was stopped due to too long treatment duration (> 10 min).`
-//       );
-
-//       await db.collection(TRANSFERS_COLLECTION).updateOne(
-//         { eventId: params.eventId },
-//         {
-//           $set: {
-//             chainId: 'eip155:137',
-//             tokenSymbol: 'g1',
-//             tokenAddress: process.env.G1_POLYGON_ADDRESS,
-//             senderTgId: params.senderTgId,
-//             senderWallet: senderInformation.patchwallet,
-//             senderName: senderInformation.userName,
-//             senderHandle: senderInformation.userHandle,
-//             recipientTgId: params.recipientTgId,
-//             recipientWallet: recipientWallet,
-//             tokenAmount: params.amount.toString(),
-//             dateAdded: new Date(),
-//             status: TRANSACTION_STATUS.FAILURE,
-//           },
-//         },
-//         { upsert: true }
-//       );
-
-//       return true;
-//     }
-
-//     if (tx_db?.userOpHash) {
-//       try {
-//         tx = await getTxStatus(tx_db.userOpHash);
-//       } catch (error) {
-//         console.error(
-//           `[${params.eventId}] Error processing PatchWallet transaction status: ${error}`
-//         );
-//         if (error?.response?.status === 470) {
-//           await db.collection(TRANSFERS_COLLECTION).updateOne(
-//             { eventId: params.eventId },
-//             {
-//               $set: {
-//                 chainId: 'eip155:137',
-//                 tokenSymbol: 'g1',
-//                 tokenAddress: process.env.G1_POLYGON_ADDRESS,
-//                 senderTgId: params.senderTgId,
-//                 senderWallet: senderInformation.patchwallet,
-//                 senderName: senderInformation.userName,
-//                 senderHandle: senderInformation.userHandle,
-//                 recipientTgId: params.recipientTgId,
-//                 recipientWallet: recipientWallet,
-//                 tokenAmount: params.amount.toString(),
-//                 dateAdded: new Date(),
-//                 status: TRANSACTION_STATUS.FAILURE,
-//               },
-//             },
-//             { upsert: true }
-//           );
-//           return true;
-//         }
-//         return false;
-//       }
-//     } else {
-//       // Update the reward record to mark it as successful
-//       await db.collection(TRANSFERS_COLLECTION).updateOne(
-//         { eventId: params.eventId },
-//         {
-//           $set: {
-//             chainId: 'eip155:137',
-//             tokenSymbol: 'g1',
-//             tokenAddress: process.env.G1_POLYGON_ADDRESS,
-//             senderTgId: params.senderTgId,
-//             senderWallet: senderInformation.patchwallet,
-//             senderName: senderInformation.userName,
-//             senderHandle: senderInformation.userHandle,
-//             recipientTgId: params.recipientTgId,
-//             recipientWallet: recipientWallet,
-//             tokenAmount: params.amount.toString(),
-//             dateAdded: new Date(),
-//             status: TRANSACTION_STATUS.SUCCESS,
-//           },
-//         },
-//         { upsert: true }
-//       );
-//       return true;
-//     }
-//   }
-
-//   if (!tx) {
-//     try {
-//       tx = await sendTokens(
-//         params.senderTgId,
-//         recipientWallet,
-//         params.amount.toString(),
-//         await getPatchWalletAccessToken()
-//       );
-//     } catch (error) {
-//       console.error(
-//         `[${params.eventId}] transaction from ${params.senderTgId} to ${
-//           params.recipientTgId
-//         } for ${params.amount.toString()} - Error processing PatchWallet token sending: ${error}`
-//       );
-
-//       let drop = false;
-//       if (!/^\d+$/.test(params.amount.toString())) {
-//         console.warn(`Potentially invalid amount: ${params.amount}, dropping`);
-//         drop = true;
-//       }
-//       if (error?.response?.status === 470) {
-//         drop = true;
-//       }
-//       if (drop) {
-//         await db.collection(TRANSFERS_COLLECTION).updateOne(
-//           { eventId: params.eventId },
-//           {
-//             $set: {
-//               chainId: 'eip155:137',
-//               tokenSymbol: 'g1',
-//               tokenAddress: process.env.G1_POLYGON_ADDRESS,
-//               senderTgId: params.senderTgId,
-//               senderWallet: senderInformation.patchwallet,
-//               senderName: senderInformation.userName,
-//               senderHandle: senderInformation.userHandle,
-//               recipientTgId: params.recipientTgId,
-//               recipientWallet: recipientWallet,
-//               tokenAmount: params.amount.toString(),
-//               dateAdded: new Date(),
-//               status: TRANSACTION_STATUS.FAILURE,
-//             },
-//           },
-//           { upsert: true }
-//         );
-//         return true;
-//       }
-//       return false;
-//     }
-//   }
-
-//   if (tx.data.txHash) {
-//     const dateAdded = new Date();
-
-//     // Add the transfer to the "transfers" collection
-//     await db.collection(TRANSFERS_COLLECTION).updateOne(
-//       { eventId: params.eventId },
-//       {
-//         $set: {
-//           eventId: params.eventId,
-//           TxId: tx.data.txHash.substring(1, 8),
-//           chainId: 'eip155:137',
-//           tokenSymbol: 'g1',
-//           tokenAddress: process.env.G1_POLYGON_ADDRESS,
-//           senderTgId: params.senderTgId,
-//           senderWallet: senderInformation.patchwallet,
-//           senderName: senderInformation.userName,
-//           senderHandle: senderInformation.userHandle,
-//           recipientTgId: params.recipientTgId,
-//           recipientWallet: recipientWallet,
-//           tokenAmount: params.amount.toString(),
-//           transactionHash: tx.data.txHash,
-//           dateAdded: dateAdded,
-//           status: TRANSACTION_STATUS.SUCCESS,
-//         },
-//       },
-//       { upsert: true }
-//     );
-
-//     const tx_db = await db
-//       .collection(TRANSFERS_COLLECTION)
-//       .findOne({ transactionHash: tx.data.txHash });
-
-//     console.log(
-//       `[${tx.data.txHash}] transaction with event ID ${params.eventId} from ${
-//         params.senderTgId
-//       } to ${
-//         params.recipientTgId
-//       } for ${params.amount.toString()} added to MongoDB with Object ID ${tx_db._id.toString()}.`
-//     );
-
-//     try {
-//       await addTrackSegment({
-//         userTelegramID: params.senderTgId,
-//         TxId: tx.data.txHash.substring(1, 8),
-//         senderTgId: params.senderTgId,
-//         senderWallet: senderInformation.patchwallet,
-//         senderName: senderInformation.userName,
-//         senderHandle: senderInformation.userHandle,
-//         recipientTgId: params.recipientTgId,
-//         recipientWallet: recipientWallet,
-//         tokenAmount: params.amount.toString(),
-//         transactionHash: tx.data.txHash,
-//         dateAdded: dateAdded,
-//         eventId: params.eventId,
-//       });
-
-//       console.log(
-//         `[${tx.data.txHash}] transaction with event ID ${params.eventId} from ${
-//           params.senderTgId
-//         } to ${
-//           params.recipientTgId
-//         } for ${params.amount.toString()} added to Segment.`
-//       );
-
-//       await axios.post(process.env.FLOWXO_NEW_TRANSACTION_WEBHOOK, {
-//         senderResponsePath: senderInformation.responsePath,
-//         TxId: tx.data.txHash.substring(1, 8),
-//         chainId: 'eip155:137',
-//         tokenSymbol: 'g1',
-//         tokenAddress: process.env.G1_POLYGON_ADDRESS,
-//         senderTgId: params.senderTgId,
-//         senderWallet: senderInformation.patchwallet,
-//         senderName: senderInformation.userName,
-//         senderHandle: senderInformation.userHandle,
-//         recipientTgId: params.recipientTgId,
-//         recipientWallet: recipientWallet,
-//         tokenAmount: params.amount.toString(),
-//         transactionHash: tx.data.txHash,
-//         dateAdded: dateAdded,
-//       });
-
-//       console.log(
-//         `[${tx.data.txHash}] transaction with event ID ${params.eventId} from ${
-//           params.senderTgId
-//         } to ${
-//           params.recipientTgId
-//         } for ${params.amount.toString()} sent to FlowXO.`
-//       );
-
-//       // send telegram message if params.message exists and sender has a telegram session
-//       if (params.message && senderInformation.telegramSession) {
-//         const messageSendingResult = await sendTelegramMessage(
-//           params.message,
-//           params.recipientTgId,
-//           senderInformation
-//         );
-//         // log error if message sending failed
-//         if (!messageSendingResult.success) {
-//           console.error(
-//             'Error sending telegram message:',
-//             messageSendingResult.message
-//           );
-//         }
-//       }
-//     } catch (error) {
-//       console.error(
-//         `[${params.eventId}] Error processing Segment or FlowXO webhook, or sending telegram message: ${error}`
-//       );
-//     }
-
-//     console.log(
-//       `[${tx.data.txHash}] transaction from ${params.senderTgId} to ${
-//         params.recipientTgId
-//       } for ${params.amount.toString()} with event ID ${
-//         params.eventId
-//       } finished.`
-//     );
-//     return true;
-//   }
-
-//   if (tx.data.userOpHash) {
-//     await db.collection(TRANSFERS_COLLECTION).updateOne(
-//       { eventId: params.eventId },
-//       {
-//         $set: {
-//           chainId: 'eip155:137',
-//           tokenSymbol: 'g1',
-//           tokenAddress: process.env.G1_POLYGON_ADDRESS,
-//           senderTgId: params.senderTgId,
-//           senderWallet: senderInformation.patchwallet,
-//           senderName: senderInformation.userName,
-//           senderHandle: senderInformation.userHandle,
-//           recipientTgId: params.recipientTgId,
-//           recipientWallet: recipientWallet,
-//           tokenAmount: params.amount.toString(),
-//           status: TRANSACTION_STATUS.PENDING_HASH,
-//           userOpHash: tx.data.userOpHash,
-//         },
-//       },
-//       { upsert: true }
-//     );
-
-//     console.log(
-//       `[${tx.data.userOpHash}] transaction userOpHash added to Mongo DB with event ID ${params.eventId}.`
-//     );
-//   }
-
-//   return false;
-// }
-
-// ################################################
-// ################################################
-// ################################################
-// ################################################
-// ################################################
-// ################################################
-// ################################################
-
+/**
+ * Handles a new transaction based on the provided parameters.
+ *
+ * @param {object} params - The transaction parameters.
+ * @param {string} params.eventId - The event ID.
+ * @param {object} params.senderTgId - The sender's Telegram ID.
+ * @param {object} params.recipientTgId - The recipient's Telegram ID.
+ * @param {number} params.amount - The transaction amount.
+ * @param {string} params.message - The optional message to send via Telegram.
+ * @returns {Promise<boolean>} - True if the transaction is successfully handled, false otherwise.
+ */
 export async function handleNewTransaction(params) {
+  // Establish a connection to the database
   const db = await Database.getInstance();
 
   // Retrieve sender information from the "users" collection
   const senderInformation = await db
     .collection(USERS_COLLECTION)
     .findOne({ userTelegramID: params.senderTgId });
-
-  if (!senderInformation) {
-    console.error(
-      `[${params.eventId}] Sender ${params.senderTgId} is not a user`
+  if (!senderInformation)
+    return (
+      console.error(
+        `[${params.eventId}] Sender ${params.senderTgId} is not a user`
+      ),
+      true
     );
-    return true;
-  }
 
+  // Create a transfer object
   const transfer = await createTransferTelegram(
     params.eventId,
     senderInformation,
     params.recipientTgId,
     params.amount
   );
+  if (!transfer) return false;
+  if (transfer.isSuccess() || transfer.isFailure()) return true;
 
-  if (!transfer) {
-    return false;
-  }
+  let tx;
 
-  if (transfer.status === TRANSACTION_STATUS.SUCCESS) {
-    console.log(
-      `[${transfer.tx?.transactionHash}] with event ID ${transfer.eventId} is already a success.`
-    );
-    return true;
-  }
-
-  if (transfer.status === TRANSACTION_STATUS.FAILURE) {
-    console.log(
-      `[${transfer.tx?.transactionHash}] with event ID ${transfer.eventId} is already a failure.`
-    );
-    return true;
-  }
-
-  let tx = undefined;
-
+  // Handle pending hash status
   if (transfer.status === TRANSACTION_STATUS.PENDING_HASH) {
-    if (await transfer.checkOOT()) {
-      return true;
-    }
+    if (await transfer.isTreatmentDurationExceeded()) return true;
 
-    if (transfer.userOpHash) {
-      try {
-        tx = await getTxStatus(transfer.userOpHash);
-      } catch (error) {
-        console.error(
-          `[${params.eventId}] Error processing PatchWallet transaction status: ${error}`
-        );
-        if (error?.response?.status === 470) {
-          await transfer.updateInDatabase(
-            TRANSACTION_STATUS.FAILURE,
-            new Date()
-          );
-          return true;
-        }
-        return false;
-      }
-    } else {
-      // Update the reward record to mark it as successful
-      await transfer.updateInDatabase(TRANSACTION_STATUS.SUCCESS, new Date());
-      return true;
-    }
-  }
-
-  if (!tx) {
-    try {
-      tx = await sendTokens(
-        params.senderTgId,
-        transfer.recipientWallet,
-        params.amount.toString(),
-        await getPatchWalletAccessToken()
-      );
-    } catch (error) {
-      console.error(
-        `[${params.eventId}] transaction from ${params.senderTgId} to ${
-          params.recipientTgId
-        } for ${params.amount.toString()} - Error processing PatchWallet token sending: ${error}`
+    // Check userOpHash and updateInDatabase for success
+    if (!transfer.userOpHash)
+      return (
+        await transfer.updateInDatabase(TRANSACTION_STATUS.SUCCESS, new Date()),
+        true
       );
 
-      let drop = false;
-      if (!/^\d+$/.test(params.amount.toString())) {
-        console.warn(`Potentially invalid amount: ${params.amount}, dropping`);
-        drop = true;
-      }
-      if (error?.response?.status === 470) {
-        drop = true;
-      }
-      if (drop) {
-        await transfer.updateInDatabase(TRANSACTION_STATUS.FAILURE, new Date());
-        return true;
-      }
-      return false;
-    }
+    // Check status for userOpHash
+    if ((tx = await transfer.getStatus()) === true || tx == false) return tx;
   }
 
-  if (tx.data.txHash) {
+  // Handle sending transaction if not already handled
+  if (!tx && ((tx = await transfer.sendTx()) === true || tx == false))
+    return tx;
+
+  // Finalize transaction handling
+  if (tx && tx.data.txHash) {
     transfer.updateTxHash(tx.data.txHash);
-    await transfer.updateInDatabase(TRANSACTION_STATUS.SUCCESS, new Date());
-
-    const dateAdded = new Date();
-
-    try {
-      await transfer.saveToSegment();
-      await transfer.saveToFlowXO();
-
-      // send telegram message if params.message exists and sender has a telegram session
-      if (params.message && senderInformation.telegramSession) {
-        const messageSendingResult = await sendTelegramMessage(
+    await Promise.all([
+      transfer.updateInDatabase(TRANSACTION_STATUS.SUCCESS, new Date()),
+      transfer.saveToSegment(),
+      transfer.saveToFlowXO(),
+      params.message &&
+        senderInformation.telegramSession &&
+        sendTelegramMessage(
           params.message,
           params.recipientTgId,
           senderInformation
-        );
-        // log error if message sending failed
-        if (!messageSendingResult.success) {
-          console.error(
-            'Error sending telegram message:',
-            messageSendingResult.message
-          );
-        }
-      }
-    } catch (error) {
+        ).then(
+          (result) =>
+            result.success ||
+            console.error('Error sending telegram message:', result.message)
+        ),
+    ]).catch((error) =>
       console.error(
         `[${params.eventId}] Error processing Segment or FlowXO webhook, or sending telegram message: ${error}`
-      );
-    }
+      )
+    );
 
     console.log(
-      `[${transfer.txHash}] transaction from ${transfer.senderInformation.senderTgId} to ${transfer.recipientTgId} for ${transfer.amount} with event ID ${params.eventId} finished.`
+      `[${transfer.txHash}] transaction from ${transfer.senderInformation.senderTgId} to ${transfer.recipientTgId} for ${transfer.amount} with event ID ${transfer.eventId} finished.`
     );
     return true;
   }
 
-  if (tx.data.userOpHash) {
-    transfer.updateUserOpHash(tx.data.userOpHash);
-    await transfer.updateInDatabase(TRANSACTION_STATUS.PENDING_HASH, null);
-  }
+  // Handle pending hash for userOpHash
+  tx &&
+    tx.data.userOpHash &&
+    transfer.updateUserOpHash(tx.data.userOpHash) &&
+    (await transfer.updateInDatabase(TRANSACTION_STATUS.PENDING_HASH, null));
 
   return false;
 }
-
-// ################################################
-// ################################################
-// ################################################
-// ################################################
-// ################################################
-// ################################################
-// ################################################
 
 export const webhook_utils = {
   handleSignUpReward,
