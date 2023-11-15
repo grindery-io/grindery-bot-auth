@@ -166,7 +166,7 @@ function formatDate(date) {
  * @param {object} senderInformation - Information about the sender.
  * @param {string} recipientTgId - The recipient's Telegram ID.
  * @param {number} amount - The transaction amount.
- * @returns {TransferTelegram|boolean} - The initialized transfer object if successful, false otherwise.
+ * @returns {Promise<TransferTelegram|boolean>} - The initialized transfer object if successful, false otherwise.
  */
 export async function createTransferTelegram(
   eventId,
@@ -396,6 +396,14 @@ export class TransferTelegram {
    */
   isFailure() {
     return this.status === TRANSACTION_STATUS.FAILURE;
+  }
+
+  /**
+   * Checks if the transaction is in the pending hash state.
+   * @returns {boolean} - True if the transaction is in the pending hash state, false otherwise.
+   */
+  isPendingHash() {
+    return this.status === TRANSACTION_STATUS.PENDING_HASH;
   }
 
   /**

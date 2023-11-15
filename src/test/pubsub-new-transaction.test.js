@@ -17,13 +17,13 @@ import {
   patchwalletTxStatusUrl,
   mockUserOpHash,
 } from './utils.js';
-import { handleNewTransaction } from '../utils/webhooks/webhook.js';
 import Sinon from 'sinon';
 import axios from 'axios';
 import 'dotenv/config';
 import chaiExclude from 'chai-exclude';
 import { TRANSACTION_STATUS } from '../utils/constants.js';
 import { v4 as uuidv4 } from 'uuid';
+import { handleNewTransaction } from '../utils/webhooks/transaction.js';
 
 chai.use(chaiExclude);
 

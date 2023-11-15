@@ -1,14 +1,12 @@
 import express from 'express';
 import { PubSub, Duration } from '@google-cloud/pubsub';
 import { authenticateApiKey } from '../utils/auth.js';
-import {
-  handleNewReward,
-  handleNewTransaction,
-} from '../utils/webhooks/webhook.js';
+import { handleNewReward } from '../utils/webhooks/webhook.js';
 import { v4 as uuidv4 } from 'uuid';
 import { MetricServiceClient } from '@google-cloud/monitoring';
 import { handleIsolatedReward } from '../utils/webhooks/isolated-reward.js';
 import { handleSwap } from '../utils/webhooks/swap.js';
+import { handleNewTransaction } from '../utils/webhooks/transaction.js';
 
 /**
  * This is a generic and extendable implementation of a webhook endpoint and pub/sub messages queue.
