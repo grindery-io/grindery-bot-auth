@@ -40,7 +40,6 @@ export async function addTrackSegment(params) {
       userId: params.userTelegramID,
       event: 'Transfer',
       properties: {
-        TxId: params.TxId,
         chainId: 'eip155:137',
         tokenSymbol: 'g1',
         tokenAddress: process.env.G1_POLYGON_ADDRESS,

@@ -128,7 +128,6 @@ describe('handleNewTransaction function', async function () {
         .to.deep.equal([
           {
             eventId: txId,
-            TxId: mockTransactionHash.substring(1, 8),
             chainId: 'eip155:137',
             tokenSymbol: 'g1',
             tokenAddress: process.env.G1_POLYGON_ADDRESS,
@@ -141,6 +140,7 @@ describe('handleNewTransaction function', async function () {
             tokenAmount: '100',
             transactionHash: mockTransactionHash,
             status: TRANSACTION_STATUS.SUCCESS,
+            userOpHash: null,
           },
         ]);
       chai.expect(transfers[0].dateAdded).to.be.a('date');
@@ -165,7 +165,6 @@ describe('handleNewTransaction function', async function () {
           userId: mockUserTelegramID,
           event: 'Transfer',
           properties: {
-            TxId: mockTransactionHash.substring(1, 8),
             chainId: 'eip155:137',
             tokenSymbol: 'g1',
             tokenAddress: process.env.G1_POLYGON_ADDRESS,
@@ -195,24 +194,20 @@ describe('handleNewTransaction function', async function () {
         .find((e) => e.firstArg === process.env.FLOWXO_NEW_TRANSACTION_WEBHOOK)
         .args[1];
 
-      chai
-        .expect(FlowXOCallArgs)
-        .excluding(['dateAdded'])
-        .to.deep.equal({
-          senderResponsePath: mockResponsePath,
-          TxId: mockTransactionHash.substring(1, 8),
-          chainId: 'eip155:137',
-          tokenSymbol: 'g1',
-          tokenAddress: process.env.G1_POLYGON_ADDRESS,
-          senderTgId: mockUserTelegramID,
-          senderWallet: mockWallet,
-          senderName: mockUserName,
-          senderHandle: mockUserHandle,
-          recipientTgId: mockUserTelegramID1,
-          recipientWallet: mockWallet,
-          tokenAmount: '100',
-          transactionHash: mockTransactionHash,
-        });
+      chai.expect(FlowXOCallArgs).excluding(['dateAdded']).to.deep.equal({
+        senderResponsePath: mockResponsePath,
+        chainId: 'eip155:137',
+        tokenSymbol: 'g1',
+        tokenAddress: process.env.G1_POLYGON_ADDRESS,
+        senderTgId: mockUserTelegramID,
+        senderWallet: mockWallet,
+        senderName: mockUserName,
+        senderHandle: mockUserHandle,
+        recipientTgId: mockUserTelegramID1,
+        recipientWallet: mockWallet,
+        tokenAmount: '100',
+        transactionHash: mockTransactionHash,
+      });
     });
   });
 
@@ -443,9 +438,15 @@ describe('handleNewTransaction function', async function () {
             tokenSymbol: 'g1',
             tokenAddress: process.env.G1_POLYGON_ADDRESS,
             senderTgId: mockUserTelegramID,
+            senderWallet: mockWallet,
+            senderName: mockUserName,
+            senderHandle: mockUserHandle,
             recipientTgId: mockUserTelegramID1,
+            recipientWallet: mockWallet,
             tokenAmount: '100',
             status: TRANSACTION_STATUS.PENDING,
+            transactionHash: null,
+            userOpHash: null,
           },
         ]);
     });
@@ -610,7 +611,7 @@ describe('handleNewTransaction function', async function () {
       chai.expect(result).to.be.false;
     });
 
-    it('Should not modify the database if error in PatchWallet get address', async function () {
+    it('Should not add anything in the database if error in PatchWallet get address', async function () {
       const result = await handleNewTransaction({
         senderTgId: mockUserTelegramID,
         amount: '100',
@@ -618,21 +619,7 @@ describe('handleNewTransaction function', async function () {
         eventId: txId,
       });
 
-      chai
-        .expect(await collectionTransfersMock.find({}).toArray())
-        .excluding(['_id', 'dateAdded'])
-        .to.deep.equal([
-          {
-            eventId: txId,
-            chainId: 'eip155:137',
-            tokenSymbol: 'g1',
-            tokenAddress: process.env.G1_POLYGON_ADDRESS,
-            senderTgId: mockUserTelegramID,
-            recipientTgId: mockUserTelegramID1,
-            tokenAmount: '100',
-            status: TRANSACTION_STATUS.PENDING,
-          },
-        ]);
+      chai.expect(await collectionTransfersMock.find({}).toArray()).to.be.empty;
     });
 
     it('Should not send tokens if error in PatchWallet get address', async function () {
@@ -771,9 +758,15 @@ describe('handleNewTransaction function', async function () {
             tokenSymbol: 'g1',
             tokenAddress: process.env.G1_POLYGON_ADDRESS,
             senderTgId: mockUserTelegramID,
+            senderWallet: mockWallet,
+            senderName: mockUserName,
+            senderHandle: mockUserHandle,
             recipientTgId: mockUserTelegramID1,
+            recipientWallet: mockWallet,
             tokenAmount: '100',
             status: TRANSACTION_STATUS.PENDING,
+            transactionHash: null,
+            userOpHash: null,
           },
         ]);
     });
@@ -864,6 +857,8 @@ describe('handleNewTransaction function', async function () {
             recipientWallet: mockWallet,
             tokenAmount: '100',
             status: TRANSACTION_STATUS.FAILURE,
+            transactionHash: null,
+            userOpHash: null,
           },
         ]);
     });
@@ -947,9 +942,15 @@ describe('handleNewTransaction function', async function () {
             tokenSymbol: 'g1',
             tokenAddress: process.env.G1_POLYGON_ADDRESS,
             senderTgId: mockUserTelegramID,
+            senderWallet: mockWallet,
+            senderName: mockUserName,
+            senderHandle: mockUserHandle,
             recipientTgId: mockUserTelegramID1,
+            recipientWallet: mockWallet,
             tokenAmount: '100',
             status: TRANSACTION_STATUS.PENDING,
+            transactionHash: null,
+            userOpHash: null,
           },
         ]);
     });
@@ -1043,6 +1044,7 @@ describe('handleNewTransaction function', async function () {
               tokenAmount: '100',
               status: TRANSACTION_STATUS.PENDING_HASH,
               userOpHash: mockUserOpHash,
+              transactionHash: null,
             },
           ]);
       });
@@ -1129,7 +1131,6 @@ describe('handleNewTransaction function', async function () {
           .excluding(['_id', 'dateAdded'])
           .to.deep.equal([
             {
-              TxId: mockTransactionHash.substring(1, 8),
               eventId: txId,
               chainId: 'eip155:137',
               tokenSymbol: 'g1',
@@ -1162,24 +1163,20 @@ describe('handleNewTransaction function', async function () {
             (e) => e.firstArg === process.env.FLOWXO_NEW_TRANSACTION_WEBHOOK
           ).args[1];
 
-        chai
-          .expect(FlowXOCallArgs)
-          .excluding(['dateAdded'])
-          .to.deep.equal({
-            senderResponsePath: mockResponsePath,
-            TxId: mockTransactionHash.substring(1, 8),
-            chainId: 'eip155:137',
-            tokenSymbol: 'g1',
-            tokenAddress: process.env.G1_POLYGON_ADDRESS,
-            senderTgId: mockUserTelegramID,
-            senderWallet: mockWallet,
-            senderName: mockUserName,
-            senderHandle: mockUserHandle,
-            recipientTgId: mockUserTelegramID1,
-            recipientWallet: mockWallet,
-            tokenAmount: '100',
-            transactionHash: mockTransactionHash,
-          });
+        chai.expect(FlowXOCallArgs).excluding(['dateAdded']).to.deep.equal({
+          senderResponsePath: mockResponsePath,
+          chainId: 'eip155:137',
+          tokenSymbol: 'g1',
+          tokenAddress: process.env.G1_POLYGON_ADDRESS,
+          senderTgId: mockUserTelegramID,
+          senderWallet: mockWallet,
+          senderName: mockUserName,
+          senderHandle: mockUserHandle,
+          recipientTgId: mockUserTelegramID1,
+          recipientWallet: mockWallet,
+          tokenAmount: '100',
+          transactionHash: mockTransactionHash,
+        });
 
         chai
           .expect(FlowXOCallArgs.dateAdded)
@@ -1272,6 +1269,7 @@ describe('handleNewTransaction function', async function () {
               tokenAmount: '100',
               status: TRANSACTION_STATUS.PENDING_HASH,
               userOpHash: mockUserOpHash,
+              transactionHash: null,
             },
           ]);
       });
@@ -1480,6 +1478,7 @@ describe('handleNewTransaction function', async function () {
               tokenAmount: '100',
               status: TRANSACTION_STATUS.FAILURE,
               userOpHash: mockUserOpHash,
+              transactionHash: null,
             },
           ]);
       });
@@ -1577,6 +1576,8 @@ describe('handleNewTransaction function', async function () {
               recipientWallet: mockWallet,
               tokenAmount: '100',
               status: TRANSACTION_STATUS.SUCCESS,
+              transactionHash: null,
+              userOpHash: null,
             },
           ]);
       });
@@ -1682,6 +1683,8 @@ describe('handleNewTransaction function', async function () {
               recipientWallet: mockWallet,
               tokenAmount: '100',
               status: TRANSACTION_STATUS.FAILURE,
+              transactionHash: null,
+              userOpHash: null,
             },
           ]);
       });

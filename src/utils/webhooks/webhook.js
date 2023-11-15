@@ -17,6 +17,7 @@ import 'dotenv/config';
 import { sendTelegramMessage } from '../telegram.js';
 import { reward_helpers } from '../rewardHelpers.js';
 import { createUserTelegram } from '../user.js';
+import { TransferTelegram, createTransferTelegram } from '../transfers.js';
 
 /**
  * Handles the signup reward for a user.
@@ -754,11 +755,369 @@ export async function handleNewReward(params) {
   return true;
 }
 
-/**
- * Handles a new transaction event.
- * @param {object} params - Transaction parameters.
- * @returns {Promise<boolean>} Returns a Promise that resolves to true if the transaction is successfully processed, false otherwise.
- */
+// /**
+//  * Handles a new transaction event.
+//  * @param {object} params - Transaction parameters.
+//  * @returns {Promise<boolean>} Returns a Promise that resolves to true if the transaction is successfully processed, false otherwise.
+//  */
+// export async function handleNewTransaction(params) {
+//   const db = await Database.getInstance();
+
+//   // Retrieve sender information from the "users" collection
+//   const senderInformation = await db
+//     .collection(USERS_COLLECTION)
+//     .findOne({ userTelegramID: params.senderTgId });
+
+//   if (!senderInformation) {
+//     console.error(
+//       `[${params.eventId}] Sender ${params.senderTgId} is not a user`
+//     );
+//     return true;
+//   }
+
+//   const tx_db = await db
+//     .collection(TRANSFERS_COLLECTION)
+//     .findOne({ eventId: params.eventId });
+
+//   if (!tx_db) {
+//     await db.collection(TRANSFERS_COLLECTION).insertOne({
+//       eventId: params.eventId,
+//       chainId: 'eip155:137',
+//       tokenSymbol: 'g1',
+//       tokenAddress: process.env.G1_POLYGON_ADDRESS,
+//       senderTgId: params.senderTgId,
+//       recipientTgId: params.recipientTgId,
+//       tokenAmount: params.amount.toString(),
+//       status: TRANSACTION_STATUS.PENDING,
+//       dateAdded: new Date(),
+//     });
+//     console.log(
+//       `[${params.eventId}] transaction from ${params.senderTgId} to ${
+//         params.recipientTgId
+//       } for ${params.amount.toString()} added to MongoDB as pending.`
+//     );
+//   }
+
+//   if (tx_db?.status === TRANSACTION_STATUS.SUCCESS) {
+//     console.log(
+//       `[${tx_db?.transactionHash}] with event ID ${tx_db?.eventId} is already a success.`
+//     );
+//     return true;
+//   }
+
+//   if (tx_db?.status === TRANSACTION_STATUS.FAILURE) {
+//     console.log(
+//       `[${tx_db?.transactionHash}] with event ID ${tx_db?.eventId} is already a failure.`
+//     );
+//     return true;
+//   }
+
+//   let recipientWallet = undefined;
+
+//   try {
+//     recipientWallet = await getPatchWalletAddressFromTgId(params.recipientTgId);
+//   } catch (error) {
+//     return false;
+//   }
+
+//   let tx = undefined;
+
+//   if (tx_db?.status === TRANSACTION_STATUS.PENDING_HASH) {
+//     if (tx_db.dateAdded < new Date(new Date() - 10 * 60 * 1000)) {
+//       console.log(
+//         `[${params.eventId}] was stopped due to too long treatment duration (> 10 min).`
+//       );
+
+//       await db.collection(TRANSFERS_COLLECTION).updateOne(
+//         { eventId: params.eventId },
+//         {
+//           $set: {
+//             chainId: 'eip155:137',
+//             tokenSymbol: 'g1',
+//             tokenAddress: process.env.G1_POLYGON_ADDRESS,
+//             senderTgId: params.senderTgId,
+//             senderWallet: senderInformation.patchwallet,
+//             senderName: senderInformation.userName,
+//             senderHandle: senderInformation.userHandle,
+//             recipientTgId: params.recipientTgId,
+//             recipientWallet: recipientWallet,
+//             tokenAmount: params.amount.toString(),
+//             dateAdded: new Date(),
+//             status: TRANSACTION_STATUS.FAILURE,
+//           },
+//         },
+//         { upsert: true }
+//       );
+
+//       return true;
+//     }
+
+//     if (tx_db?.userOpHash) {
+//       try {
+//         tx = await getTxStatus(tx_db.userOpHash);
+//       } catch (error) {
+//         console.error(
+//           `[${params.eventId}] Error processing PatchWallet transaction status: ${error}`
+//         );
+//         if (error?.response?.status === 470) {
+//           await db.collection(TRANSFERS_COLLECTION).updateOne(
+//             { eventId: params.eventId },
+//             {
+//               $set: {
+//                 chainId: 'eip155:137',
+//                 tokenSymbol: 'g1',
+//                 tokenAddress: process.env.G1_POLYGON_ADDRESS,
+//                 senderTgId: params.senderTgId,
+//                 senderWallet: senderInformation.patchwallet,
+//                 senderName: senderInformation.userName,
+//                 senderHandle: senderInformation.userHandle,
+//                 recipientTgId: params.recipientTgId,
+//                 recipientWallet: recipientWallet,
+//                 tokenAmount: params.amount.toString(),
+//                 dateAdded: new Date(),
+//                 status: TRANSACTION_STATUS.FAILURE,
+//               },
+//             },
+//             { upsert: true }
+//           );
+//           return true;
+//         }
+//         return false;
+//       }
+//     } else {
+//       // Update the reward record to mark it as successful
+//       await db.collection(TRANSFERS_COLLECTION).updateOne(
+//         { eventId: params.eventId },
+//         {
+//           $set: {
+//             chainId: 'eip155:137',
+//             tokenSymbol: 'g1',
+//             tokenAddress: process.env.G1_POLYGON_ADDRESS,
+//             senderTgId: params.senderTgId,
+//             senderWallet: senderInformation.patchwallet,
+//             senderName: senderInformation.userName,
+//             senderHandle: senderInformation.userHandle,
+//             recipientTgId: params.recipientTgId,
+//             recipientWallet: recipientWallet,
+//             tokenAmount: params.amount.toString(),
+//             dateAdded: new Date(),
+//             status: TRANSACTION_STATUS.SUCCESS,
+//           },
+//         },
+//         { upsert: true }
+//       );
+//       return true;
+//     }
+//   }
+
+//   if (!tx) {
+//     try {
+//       tx = await sendTokens(
+//         params.senderTgId,
+//         recipientWallet,
+//         params.amount.toString(),
+//         await getPatchWalletAccessToken()
+//       );
+//     } catch (error) {
+//       console.error(
+//         `[${params.eventId}] transaction from ${params.senderTgId} to ${
+//           params.recipientTgId
+//         } for ${params.amount.toString()} - Error processing PatchWallet token sending: ${error}`
+//       );
+
+//       let drop = false;
+//       if (!/^\d+$/.test(params.amount.toString())) {
+//         console.warn(`Potentially invalid amount: ${params.amount}, dropping`);
+//         drop = true;
+//       }
+//       if (error?.response?.status === 470) {
+//         drop = true;
+//       }
+//       if (drop) {
+//         await db.collection(TRANSFERS_COLLECTION).updateOne(
+//           { eventId: params.eventId },
+//           {
+//             $set: {
+//               chainId: 'eip155:137',
+//               tokenSymbol: 'g1',
+//               tokenAddress: process.env.G1_POLYGON_ADDRESS,
+//               senderTgId: params.senderTgId,
+//               senderWallet: senderInformation.patchwallet,
+//               senderName: senderInformation.userName,
+//               senderHandle: senderInformation.userHandle,
+//               recipientTgId: params.recipientTgId,
+//               recipientWallet: recipientWallet,
+//               tokenAmount: params.amount.toString(),
+//               dateAdded: new Date(),
+//               status: TRANSACTION_STATUS.FAILURE,
+//             },
+//           },
+//           { upsert: true }
+//         );
+//         return true;
+//       }
+//       return false;
+//     }
+//   }
+
+//   if (tx.data.txHash) {
+//     const dateAdded = new Date();
+
+//     // Add the transfer to the "transfers" collection
+//     await db.collection(TRANSFERS_COLLECTION).updateOne(
+//       { eventId: params.eventId },
+//       {
+//         $set: {
+//           eventId: params.eventId,
+//           TxId: tx.data.txHash.substring(1, 8),
+//           chainId: 'eip155:137',
+//           tokenSymbol: 'g1',
+//           tokenAddress: process.env.G1_POLYGON_ADDRESS,
+//           senderTgId: params.senderTgId,
+//           senderWallet: senderInformation.patchwallet,
+//           senderName: senderInformation.userName,
+//           senderHandle: senderInformation.userHandle,
+//           recipientTgId: params.recipientTgId,
+//           recipientWallet: recipientWallet,
+//           tokenAmount: params.amount.toString(),
+//           transactionHash: tx.data.txHash,
+//           dateAdded: dateAdded,
+//           status: TRANSACTION_STATUS.SUCCESS,
+//         },
+//       },
+//       { upsert: true }
+//     );
+
+//     const tx_db = await db
+//       .collection(TRANSFERS_COLLECTION)
+//       .findOne({ transactionHash: tx.data.txHash });
+
+//     console.log(
+//       `[${tx.data.txHash}] transaction with event ID ${params.eventId} from ${
+//         params.senderTgId
+//       } to ${
+//         params.recipientTgId
+//       } for ${params.amount.toString()} added to MongoDB with Object ID ${tx_db._id.toString()}.`
+//     );
+
+//     try {
+//       await addTrackSegment({
+//         userTelegramID: params.senderTgId,
+//         TxId: tx.data.txHash.substring(1, 8),
+//         senderTgId: params.senderTgId,
+//         senderWallet: senderInformation.patchwallet,
+//         senderName: senderInformation.userName,
+//         senderHandle: senderInformation.userHandle,
+//         recipientTgId: params.recipientTgId,
+//         recipientWallet: recipientWallet,
+//         tokenAmount: params.amount.toString(),
+//         transactionHash: tx.data.txHash,
+//         dateAdded: dateAdded,
+//         eventId: params.eventId,
+//       });
+
+//       console.log(
+//         `[${tx.data.txHash}] transaction with event ID ${params.eventId} from ${
+//           params.senderTgId
+//         } to ${
+//           params.recipientTgId
+//         } for ${params.amount.toString()} added to Segment.`
+//       );
+
+//       await axios.post(process.env.FLOWXO_NEW_TRANSACTION_WEBHOOK, {
+//         senderResponsePath: senderInformation.responsePath,
+//         TxId: tx.data.txHash.substring(1, 8),
+//         chainId: 'eip155:137',
+//         tokenSymbol: 'g1',
+//         tokenAddress: process.env.G1_POLYGON_ADDRESS,
+//         senderTgId: params.senderTgId,
+//         senderWallet: senderInformation.patchwallet,
+//         senderName: senderInformation.userName,
+//         senderHandle: senderInformation.userHandle,
+//         recipientTgId: params.recipientTgId,
+//         recipientWallet: recipientWallet,
+//         tokenAmount: params.amount.toString(),
+//         transactionHash: tx.data.txHash,
+//         dateAdded: dateAdded,
+//       });
+
+//       console.log(
+//         `[${tx.data.txHash}] transaction with event ID ${params.eventId} from ${
+//           params.senderTgId
+//         } to ${
+//           params.recipientTgId
+//         } for ${params.amount.toString()} sent to FlowXO.`
+//       );
+
+//       // send telegram message if params.message exists and sender has a telegram session
+//       if (params.message && senderInformation.telegramSession) {
+//         const messageSendingResult = await sendTelegramMessage(
+//           params.message,
+//           params.recipientTgId,
+//           senderInformation
+//         );
+//         // log error if message sending failed
+//         if (!messageSendingResult.success) {
+//           console.error(
+//             'Error sending telegram message:',
+//             messageSendingResult.message
+//           );
+//         }
+//       }
+//     } catch (error) {
+//       console.error(
+//         `[${params.eventId}] Error processing Segment or FlowXO webhook, or sending telegram message: ${error}`
+//       );
+//     }
+
+//     console.log(
+//       `[${tx.data.txHash}] transaction from ${params.senderTgId} to ${
+//         params.recipientTgId
+//       } for ${params.amount.toString()} with event ID ${
+//         params.eventId
+//       } finished.`
+//     );
+//     return true;
+//   }
+
+//   if (tx.data.userOpHash) {
+//     await db.collection(TRANSFERS_COLLECTION).updateOne(
+//       { eventId: params.eventId },
+//       {
+//         $set: {
+//           chainId: 'eip155:137',
+//           tokenSymbol: 'g1',
+//           tokenAddress: process.env.G1_POLYGON_ADDRESS,
+//           senderTgId: params.senderTgId,
+//           senderWallet: senderInformation.patchwallet,
+//           senderName: senderInformation.userName,
+//           senderHandle: senderInformation.userHandle,
+//           recipientTgId: params.recipientTgId,
+//           recipientWallet: recipientWallet,
+//           tokenAmount: params.amount.toString(),
+//           status: TRANSACTION_STATUS.PENDING_HASH,
+//           userOpHash: tx.data.userOpHash,
+//         },
+//       },
+//       { upsert: true }
+//     );
+
+//     console.log(
+//       `[${tx.data.userOpHash}] transaction userOpHash added to Mongo DB with event ID ${params.eventId}.`
+//     );
+//   }
+
+//   return false;
+// }
+
+// ################################################
+// ################################################
+// ################################################
+// ################################################
+// ################################################
+// ################################################
+// ################################################
+
 export async function handleNewTransaction(params) {
   const db = await Database.getInstance();
 
@@ -774,110 +1133,49 @@ export async function handleNewTransaction(params) {
     return true;
   }
 
-  const tx_db = await db
-    .collection(TRANSFERS_COLLECTION)
-    .findOne({ eventId: params.eventId });
+  const transfer = await createTransferTelegram(
+    params.eventId,
+    senderInformation,
+    params.recipientTgId,
+    params.amount
+  );
 
-  if (!tx_db) {
-    await db.collection(TRANSFERS_COLLECTION).insertOne({
-      eventId: params.eventId,
-      chainId: 'eip155:137',
-      tokenSymbol: 'g1',
-      tokenAddress: process.env.G1_POLYGON_ADDRESS,
-      senderTgId: params.senderTgId,
-      recipientTgId: params.recipientTgId,
-      tokenAmount: params.amount.toString(),
-      status: TRANSACTION_STATUS.PENDING,
-      dateAdded: new Date(),
-    });
-    console.log(
-      `[${params.eventId}] transaction from ${params.senderTgId} to ${
-        params.recipientTgId
-      } for ${params.amount.toString()} added to MongoDB as pending.`
-    );
-  }
-
-  if (tx_db?.status === TRANSACTION_STATUS.SUCCESS) {
-    console.log(
-      `[${tx_db?.transactionHash}] with event ID ${tx_db?.eventId} is already a success.`
-    );
-    return true;
-  }
-
-  if (tx_db?.status === TRANSACTION_STATUS.FAILURE) {
-    console.log(
-      `[${tx_db?.transactionHash}] with event ID ${tx_db?.eventId} is already a failure.`
-    );
-    return true;
-  }
-
-  let recipientWallet = undefined;
-
-  try {
-    recipientWallet = await getPatchWalletAddressFromTgId(params.recipientTgId);
-  } catch (error) {
+  if (!transfer) {
     return false;
+  }
+
+  if (transfer.status === TRANSACTION_STATUS.SUCCESS) {
+    console.log(
+      `[${transfer.tx?.transactionHash}] with event ID ${transfer.eventId} is already a success.`
+    );
+    return true;
+  }
+
+  if (transfer.status === TRANSACTION_STATUS.FAILURE) {
+    console.log(
+      `[${transfer.tx?.transactionHash}] with event ID ${transfer.eventId} is already a failure.`
+    );
+    return true;
   }
 
   let tx = undefined;
 
-  if (tx_db?.status === TRANSACTION_STATUS.PENDING_HASH) {
-    if (tx_db.dateAdded < new Date(new Date() - 10 * 60 * 1000)) {
-      console.log(
-        `[${params.eventId}] was stopped due to too long treatment duration (> 10 min).`
-      );
-
-      await db.collection(TRANSFERS_COLLECTION).updateOne(
-        { eventId: params.eventId },
-        {
-          $set: {
-            chainId: 'eip155:137',
-            tokenSymbol: 'g1',
-            tokenAddress: process.env.G1_POLYGON_ADDRESS,
-            senderTgId: params.senderTgId,
-            senderWallet: senderInformation.patchwallet,
-            senderName: senderInformation.userName,
-            senderHandle: senderInformation.userHandle,
-            recipientTgId: params.recipientTgId,
-            recipientWallet: recipientWallet,
-            tokenAmount: params.amount.toString(),
-            dateAdded: new Date(),
-            status: TRANSACTION_STATUS.FAILURE,
-          },
-        },
-        { upsert: true }
-      );
-
+  if (transfer.status === TRANSACTION_STATUS.PENDING_HASH) {
+    if (await transfer.checkOOT()) {
       return true;
     }
 
-    if (tx_db?.userOpHash) {
+    if (transfer.userOpHash) {
       try {
-        tx = await getTxStatus(tx_db.userOpHash);
+        tx = await getTxStatus(transfer.userOpHash);
       } catch (error) {
         console.error(
           `[${params.eventId}] Error processing PatchWallet transaction status: ${error}`
         );
         if (error?.response?.status === 470) {
-          await db.collection(TRANSFERS_COLLECTION).updateOne(
-            { eventId: params.eventId },
-            {
-              $set: {
-                chainId: 'eip155:137',
-                tokenSymbol: 'g1',
-                tokenAddress: process.env.G1_POLYGON_ADDRESS,
-                senderTgId: params.senderTgId,
-                senderWallet: senderInformation.patchwallet,
-                senderName: senderInformation.userName,
-                senderHandle: senderInformation.userHandle,
-                recipientTgId: params.recipientTgId,
-                recipientWallet: recipientWallet,
-                tokenAmount: params.amount.toString(),
-                dateAdded: new Date(),
-                status: TRANSACTION_STATUS.FAILURE,
-              },
-            },
-            { upsert: true }
+          await transfer.updateInDatabase(
+            TRANSACTION_STATUS.FAILURE,
+            new Date()
           );
           return true;
         }
@@ -885,26 +1183,7 @@ export async function handleNewTransaction(params) {
       }
     } else {
       // Update the reward record to mark it as successful
-      await db.collection(TRANSFERS_COLLECTION).updateOne(
-        { eventId: params.eventId },
-        {
-          $set: {
-            chainId: 'eip155:137',
-            tokenSymbol: 'g1',
-            tokenAddress: process.env.G1_POLYGON_ADDRESS,
-            senderTgId: params.senderTgId,
-            senderWallet: senderInformation.patchwallet,
-            senderName: senderInformation.userName,
-            senderHandle: senderInformation.userHandle,
-            recipientTgId: params.recipientTgId,
-            recipientWallet: recipientWallet,
-            tokenAmount: params.amount.toString(),
-            dateAdded: new Date(),
-            status: TRANSACTION_STATUS.SUCCESS,
-          },
-        },
-        { upsert: true }
-      );
+      await transfer.updateInDatabase(TRANSACTION_STATUS.SUCCESS, new Date());
       return true;
     }
   }
@@ -913,7 +1192,7 @@ export async function handleNewTransaction(params) {
     try {
       tx = await sendTokens(
         params.senderTgId,
-        recipientWallet,
+        transfer.recipientWallet,
         params.amount.toString(),
         await getPatchWalletAccessToken()
       );
@@ -933,26 +1212,7 @@ export async function handleNewTransaction(params) {
         drop = true;
       }
       if (drop) {
-        await db.collection(TRANSFERS_COLLECTION).updateOne(
-          { eventId: params.eventId },
-          {
-            $set: {
-              chainId: 'eip155:137',
-              tokenSymbol: 'g1',
-              tokenAddress: process.env.G1_POLYGON_ADDRESS,
-              senderTgId: params.senderTgId,
-              senderWallet: senderInformation.patchwallet,
-              senderName: senderInformation.userName,
-              senderHandle: senderInformation.userHandle,
-              recipientTgId: params.recipientTgId,
-              recipientWallet: recipientWallet,
-              tokenAmount: params.amount.toString(),
-              dateAdded: new Date(),
-              status: TRANSACTION_STATUS.FAILURE,
-            },
-          },
-          { upsert: true }
-        );
+        await transfer.updateInDatabase(TRANSACTION_STATUS.FAILURE, new Date());
         return true;
       }
       return false;
@@ -960,93 +1220,14 @@ export async function handleNewTransaction(params) {
   }
 
   if (tx.data.txHash) {
+    transfer.updateTxHash(tx.data.txHash);
+    await transfer.updateInDatabase(TRANSACTION_STATUS.SUCCESS, new Date());
+
     const dateAdded = new Date();
 
-    // Add the transfer to the "transfers" collection
-    await db.collection(TRANSFERS_COLLECTION).updateOne(
-      { eventId: params.eventId },
-      {
-        $set: {
-          eventId: params.eventId,
-          TxId: tx.data.txHash.substring(1, 8),
-          chainId: 'eip155:137',
-          tokenSymbol: 'g1',
-          tokenAddress: process.env.G1_POLYGON_ADDRESS,
-          senderTgId: params.senderTgId,
-          senderWallet: senderInformation.patchwallet,
-          senderName: senderInformation.userName,
-          senderHandle: senderInformation.userHandle,
-          recipientTgId: params.recipientTgId,
-          recipientWallet: recipientWallet,
-          tokenAmount: params.amount.toString(),
-          transactionHash: tx.data.txHash,
-          dateAdded: dateAdded,
-          status: TRANSACTION_STATUS.SUCCESS,
-        },
-      },
-      { upsert: true }
-    );
-
-    const tx_db = await db
-      .collection(TRANSFERS_COLLECTION)
-      .findOne({ transactionHash: tx.data.txHash });
-
-    console.log(
-      `[${tx.data.txHash}] transaction with event ID ${params.eventId} from ${
-        params.senderTgId
-      } to ${
-        params.recipientTgId
-      } for ${params.amount.toString()} added to MongoDB with Object ID ${tx_db._id.toString()}.`
-    );
-
     try {
-      await addTrackSegment({
-        userTelegramID: params.senderTgId,
-        TxId: tx.data.txHash.substring(1, 8),
-        senderTgId: params.senderTgId,
-        senderWallet: senderInformation.patchwallet,
-        senderName: senderInformation.userName,
-        senderHandle: senderInformation.userHandle,
-        recipientTgId: params.recipientTgId,
-        recipientWallet: recipientWallet,
-        tokenAmount: params.amount.toString(),
-        transactionHash: tx.data.txHash,
-        dateAdded: dateAdded,
-        eventId: params.eventId,
-      });
-
-      console.log(
-        `[${tx.data.txHash}] transaction with event ID ${params.eventId} from ${
-          params.senderTgId
-        } to ${
-          params.recipientTgId
-        } for ${params.amount.toString()} added to Segment.`
-      );
-
-      await axios.post(process.env.FLOWXO_NEW_TRANSACTION_WEBHOOK, {
-        senderResponsePath: senderInformation.responsePath,
-        TxId: tx.data.txHash.substring(1, 8),
-        chainId: 'eip155:137',
-        tokenSymbol: 'g1',
-        tokenAddress: process.env.G1_POLYGON_ADDRESS,
-        senderTgId: params.senderTgId,
-        senderWallet: senderInformation.patchwallet,
-        senderName: senderInformation.userName,
-        senderHandle: senderInformation.userHandle,
-        recipientTgId: params.recipientTgId,
-        recipientWallet: recipientWallet,
-        tokenAmount: params.amount.toString(),
-        transactionHash: tx.data.txHash,
-        dateAdded: dateAdded,
-      });
-
-      console.log(
-        `[${tx.data.txHash}] transaction with event ID ${params.eventId} from ${
-          params.senderTgId
-        } to ${
-          params.recipientTgId
-        } for ${params.amount.toString()} sent to FlowXO.`
-      );
+      await transfer.saveToSegment();
+      await transfer.saveToFlowXO();
 
       // send telegram message if params.message exists and sender has a telegram session
       if (params.message && senderInformation.telegramSession) {
@@ -1070,44 +1251,26 @@ export async function handleNewTransaction(params) {
     }
 
     console.log(
-      `[${tx.data.txHash}] transaction from ${params.senderTgId} to ${
-        params.recipientTgId
-      } for ${params.amount.toString()} with event ID ${
-        params.eventId
-      } finished.`
+      `[${transfer.txHash}] transaction from ${transfer.senderInformation.senderTgId} to ${transfer.recipientTgId} for ${transfer.amount} with event ID ${params.eventId} finished.`
     );
     return true;
   }
 
   if (tx.data.userOpHash) {
-    await db.collection(TRANSFERS_COLLECTION).updateOne(
-      { eventId: params.eventId },
-      {
-        $set: {
-          chainId: 'eip155:137',
-          tokenSymbol: 'g1',
-          tokenAddress: process.env.G1_POLYGON_ADDRESS,
-          senderTgId: params.senderTgId,
-          senderWallet: senderInformation.patchwallet,
-          senderName: senderInformation.userName,
-          senderHandle: senderInformation.userHandle,
-          recipientTgId: params.recipientTgId,
-          recipientWallet: recipientWallet,
-          tokenAmount: params.amount.toString(),
-          status: TRANSACTION_STATUS.PENDING_HASH,
-          userOpHash: tx.data.userOpHash,
-        },
-      },
-      { upsert: true }
-    );
-
-    console.log(
-      `[${tx.data.userOpHash}] transaction userOpHash added to Mongo DB with event ID ${params.eventId}.`
-    );
+    transfer.updateUserOpHash(tx.data.userOpHash);
+    await transfer.updateInDatabase(TRANSACTION_STATUS.PENDING_HASH, null);
   }
 
   return false;
 }
+
+// ################################################
+// ################################################
+// ################################################
+// ################################################
+// ################################################
+// ################################################
+// ################################################
 
 export const webhook_utils = {
   handleSignUpReward,
