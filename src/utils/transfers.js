@@ -310,29 +310,20 @@ export class TransferTelegram {
    * @returns {Promise<object|undefined>} - The result of adding the transaction to the Segment.
    */
   async saveToSegment() {
-    try {
-      // Add transaction information to the Segment
-      return await addTrackSegment({
-        userTelegramID: this.senderInformation.userTelegramID,
-        senderTgId: this.senderInformation.userTelegramID,
-        senderWallet: this.senderInformation.patchwallet,
-        senderName: this.senderInformation.userName,
-        senderHandle: this.senderInformation.userHandle,
-        recipientTgId: this.recipientTgId,
-        recipientWallet: this.recipientWallet,
-        tokenAmount: this.amount,
-        transactionHash: this.txHash,
-        dateAdded: new Date(),
-        eventId: this.eventId,
-      });
-    } catch (error) {
-      // Log error if adding transaction to Segment fails
-      console.error(
-        `[${eventId}] Error processing new transaction in Segment: ${error}`
-      );
-    }
-
-    return undefined;
+    // Add transaction information to the Segment
+    await addTrackSegment({
+      userTelegramID: this.senderInformation.userTelegramID,
+      senderTgId: this.senderInformation.userTelegramID,
+      senderWallet: this.senderInformation.patchwallet,
+      senderName: this.senderInformation.userName,
+      senderHandle: this.senderInformation.userHandle,
+      recipientTgId: this.recipientTgId,
+      recipientWallet: this.recipientWallet,
+      tokenAmount: this.amount,
+      transactionHash: this.txHash,
+      dateAdded: new Date(),
+      eventId: this.eventId,
+    });
   }
 
   /**
@@ -340,31 +331,22 @@ export class TransferTelegram {
    * @returns {Promise<object|undefined>} - The result of sending the transaction to FlowXO.
    */
   async saveToFlowXO() {
-    try {
-      // Send transaction information to FlowXO
-      return await axios.post(process.env.FLOWXO_NEW_TRANSACTION_WEBHOOK, {
-        senderResponsePath: this.senderInformation.responsePath,
-        chainId: 'eip155:137',
-        tokenSymbol: 'g1',
-        tokenAddress: process.env.G1_POLYGON_ADDRESS,
-        senderTgId: this.senderInformation.userTelegramID,
-        senderWallet: this.senderInformation.patchwallet,
-        senderName: this.senderInformation.userName,
-        senderHandle: this.senderInformation.userHandle,
-        recipientTgId: this.recipientTgId,
-        recipientWallet: this.recipientWallet,
-        tokenAmount: this.amount,
-        transactionHash: this.txHash,
-        dateAdded: new Date(),
-      });
-    } catch (error) {
-      // Log error if sending transaction to FlowXO fails
-      console.error(
-        `[${eventId}] Error processing new transaction in FlowXO: ${error}`
-      );
-    }
-
-    return undefined;
+    // Send transaction information to FlowXO
+    await axios.post(process.env.FLOWXO_NEW_TRANSACTION_WEBHOOK, {
+      senderResponsePath: this.senderInformation.responsePath,
+      chainId: 'eip155:137',
+      tokenSymbol: 'g1',
+      tokenAddress: process.env.G1_POLYGON_ADDRESS,
+      senderTgId: this.senderInformation.userTelegramID,
+      senderWallet: this.senderInformation.patchwallet,
+      senderName: this.senderInformation.userName,
+      senderHandle: this.senderInformation.userHandle,
+      recipientTgId: this.recipientTgId,
+      recipientWallet: this.recipientWallet,
+      tokenAmount: this.amount,
+      transactionHash: this.txHash,
+      dateAdded: new Date(),
+    });
   }
 
   /**
