@@ -391,6 +391,7 @@ describe('handleSignUpReward function', async function () {
             message: 'Sign up reward',
             transactionHash: mockTransactionHash,
             status: TRANSACTION_STATUS.SUCCESS,
+            userOpHash: null,
           },
         ]);
     });
@@ -508,6 +509,7 @@ describe('handleSignUpReward function', async function () {
             message: 'Sign up reward',
             transactionHash: mockTransactionHash,
             status: TRANSACTION_STATUS.SUCCESS,
+            userOpHash: null,
           },
         ]);
 
@@ -605,6 +607,7 @@ describe('handleSignUpReward function', async function () {
         message: 'Sign up reward',
         transactionHash: mockTransactionHash,
         status: TRANSACTION_STATUS.SUCCESS,
+        userOpHash: null,
       });
       chai
         .expect(rewards[0].dateAdded)
@@ -736,6 +739,8 @@ describe('handleSignUpReward function', async function () {
             message: 'Sign up reward',
             dateAdded: new Date(),
             status: TRANSACTION_STATUS.PENDING,
+            transactionHash: null,
+            userOpHash: null,
           },
         ]);
     });
@@ -811,6 +816,8 @@ describe('handleSignUpReward function', async function () {
             amount: '100',
             message: 'Sign up reward',
             status: TRANSACTION_STATUS.PENDING,
+            transactionHash: null,
+            userOpHash: null,
           },
         ]);
     });
@@ -884,6 +891,7 @@ describe('handleSignUpReward function', async function () {
               message: 'Sign up reward',
               status: TRANSACTION_STATUS.PENDING_HASH,
               userOpHash: mockUserOpHash,
+              transactionHash: null,
             },
           ]);
       });
@@ -1097,6 +1105,7 @@ describe('handleSignUpReward function', async function () {
               message: 'Sign up reward',
               status: TRANSACTION_STATUS.PENDING_HASH,
               userOpHash: mockUserOpHash,
+              transactionHash: null,
             },
           ]);
       });
@@ -1289,6 +1298,8 @@ describe('handleSignUpReward function', async function () {
               amount: '100',
               message: 'Sign up reward',
               status: TRANSACTION_STATUS.SUCCESS,
+              transactionHash: null,
+              userOpHash: null,
             },
           ]);
       });
@@ -1392,6 +1403,7 @@ describe('handleSignUpReward function', async function () {
               message: 'Sign up reward',
               userOpHash: mockUserOpHash,
               status: TRANSACTION_STATUS.FAILURE,
+              transactionHash: null,
             },
           ]);
       });
