@@ -8,6 +8,7 @@ import db from './routes/db.js';
 import support from './routes/support.js';
 import leaderboard from './routes/leaderboard.js';
 import analytics from './routes/analytics.js';
+import users from './routes/users.js';
 
 const router = Router();
 
@@ -20,5 +21,6 @@ router.use('/db', db);
 router.use('/support', support);
 router.use('/leaderboard', leaderboard);
 router.use('/analytics', analytics);
+router.use('/users', users);
 
 export default router;
