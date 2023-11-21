@@ -248,7 +248,6 @@ async function distributeReferralRewards() {
       if (batchPromises.length === batchSize || userCount === allUsers.length) {
         await Promise.all(batchPromises);
         batchPromises.length = 0;
-        break;
       }
     }
 
@@ -260,7 +259,7 @@ async function distributeReferralRewards() {
   }
 }
 
-distributeReferralRewards();
+// distributeReferralRewards();
 
 // Usage: startImport(filePath)
 // Description: This function imports rewards data from a CSV file into the database.
