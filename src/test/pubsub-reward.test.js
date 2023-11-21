@@ -16,6 +16,7 @@ import axios from 'axios';
 import 'dotenv/config';
 import chaiExclude from 'chai-exclude';
 import { v4 as uuidv4 } from 'uuid';
+import { signup_utils } from '../utils/webhooks/signup-reward.js';
 
 chai.use(chaiExclude);
 
@@ -44,7 +45,7 @@ describe('handleReferralReward function', function () {
         }
       });
     sandbox
-      .stub(webhook_utils, 'handleSignUpReward')
+      .stub(signup_utils, 'handleSignUpReward')
       .callsFake(async function () {
         return true;
       });
@@ -102,7 +103,7 @@ describe('handleReferralReward function', function () {
   });
 
   it('Should return false with no new user if signup reward is false', async function () {
-    webhook_utils.handleSignUpReward.callsFake(async function () {
+    signup_utils.handleSignUpReward.callsFake(async function () {
       return false;
     });
 
@@ -119,7 +120,7 @@ describe('handleReferralReward function', function () {
   });
 
   it('Should return true and populate database properly after restart', async function () {
-    webhook_utils.handleSignUpReward.callsFake(async function () {
+    signup_utils.handleSignUpReward.callsFake(async function () {
       return false;
     });
 
@@ -133,7 +134,7 @@ describe('handleReferralReward function', function () {
 
     chai.expect(result).to.be.false;
 
-    webhook_utils.handleSignUpReward.callsFake(async function () {
+    signup_utils.handleSignUpReward.callsFake(async function () {
       return true;
     });
 
