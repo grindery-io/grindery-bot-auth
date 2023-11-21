@@ -31,9 +31,18 @@ export async function createSignUpRewardTelegram(
 }
 
 /**
- * Represents a Telegram transfer.
+ * Represents a Telegram sign-up reward.
  */
 export class SignUpRewardTelegram {
+  /**
+   * Constructor for SignUpRewardTelegram class.
+   * @param {string} eventId - The event ID.
+   * @param {string} userTelegramID - The user's Telegram ID.
+   * @param {string} responsePath - The response path.
+   * @param {string} userHandle - The user's handle.
+   * @param {string} userName - The user's name.
+   * @param {string} patchwallet - The user's PatchWallet address.
+   */
   constructor(
     eventId,
     userTelegramID,
@@ -56,6 +65,10 @@ export class SignUpRewardTelegram {
     this.userOpHash = undefined;
   }
 
+  /**
+   * Initializes the sign-up reward object by connecting to the database and retrieving relevant information.
+   * @returns {Promise<boolean>} - True if initialization is successful, false otherwise.
+   */
   async initializeRewardDatabase() {
     this.db = await Database.getInstance();
     this.tx = await this.getRewardFromDatabase();
@@ -75,6 +88,10 @@ export class SignUpRewardTelegram {
     return true;
   }
 
+  /**
+   * Retrieves the status of the PatchWallet transaction.
+   * @returns {Promise<boolean>} - True if the transaction status is retrieved successfully, false otherwise.
+   */
   async getRewardFromDatabase() {
     return await this.db.collection(REWARDS_COLLECTION).findOne({
       userTelegramID: this.userTelegramID,
@@ -83,6 +100,10 @@ export class SignUpRewardTelegram {
     });
   }
 
+  /**
+   * Retrieves other reward information from the database for the same user but different event.
+   * @returns {Promise<object|null>} - The reward information or null if not found.
+   */
   async getOtherRewardFromDatabase() {
     return await this.db.collection(REWARDS_COLLECTION).findOne({
       userTelegramID: this.userTelegramID,
@@ -91,6 +112,11 @@ export class SignUpRewardTelegram {
     });
   }
 
+  /**
+   * Updates the reward information in the database.
+   * @param {string} status - The transaction status.
+   * @param {Date|null} date - The date of the transaction.
+   */
   async updateInDatabase(status, date) {
     await this.db.collection(REWARDS_COLLECTION).updateOne(
       { eventId: this.eventId },
@@ -118,6 +144,10 @@ export class SignUpRewardTelegram {
     );
   }
 
+  /**
+   * Checks if the treatment duration has exceeded the limit.
+   * @returns {Promise<boolean>} - True if the treatment duration has exceeded, false otherwise.
+   */
   async isTreatmentDurationExceeded() {
     return (
       (this.tx.dateAdded < new Date(new Date() - 10 * 60 * 1000) &&
@@ -130,26 +160,52 @@ export class SignUpRewardTelegram {
     );
   }
 
+  /**
+   * Updates the transaction hash.
+   * @param {string} txHash - The transaction hash to be updated.
+   * @returns {string} - The updated transaction hash.
+   */
   updateTxHash(txHash) {
     return (this.txHash = txHash);
   }
 
+  /**
+   * Updates the user operation hash.
+   * @param {string} userOpHash - The user operation hash to be updated.
+   * @returns {string} - The updated user operation hash.
+   */
   updateUserOpHash(userOpHash) {
     return (this.userOpHash = userOpHash);
   }
 
+  /**
+   * Checks if the transaction is successful.
+   * @returns {boolean} - True if the transaction is successful, false otherwise.
+   */
   isSuccess() {
     return this.status === TRANSACTION_STATUS.SUCCESS;
   }
 
+  /**
+   * Checks if the transaction has failed.
+   * @returns {boolean} - True if the transaction has failed, false otherwise.
+   */
   isFailure() {
     return this.status === TRANSACTION_STATUS.FAILURE;
   }
 
+  /**
+   * Checks if the transaction is in the pending hash state.
+   * @returns {boolean} - True if the transaction is in the pending hash state, false otherwise.
+   */
   isPendingHash() {
     return this.status === TRANSACTION_STATUS.PENDING_HASH;
   }
 
+  /**
+   * Retrieves the status of the PatchWallet transaction.
+   * @returns {Promise<boolean>} - True if the transaction status is retrieved successfully, false otherwise.
+   */
   async getStatus() {
     try {
       // Retrieve the status of the PatchWallet transaction
@@ -164,6 +220,10 @@ export class SignUpRewardTelegram {
     }
   }
 
+  /**
+   * Saves transaction information to FlowXO.
+   * @returns {Promise<object|undefined>} - The result of sending the transaction to FlowXO.
+   */
   async saveToFlowXO() {
     // Send transaction information to FlowXO
     await axios.post(process.env.FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK, {
@@ -180,6 +240,10 @@ export class SignUpRewardTelegram {
     });
   }
 
+  /**
+   * Sends tokens using PatchWallet.
+   * @returns {Promise<boolean>} - True if the tokens are sent successfully, false otherwise.
+   */
   async sendTx() {
     try {
       // Send tokens using PatchWallet
