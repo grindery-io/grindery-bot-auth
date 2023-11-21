@@ -31,7 +31,8 @@ import { createSignUpRewardTelegram } from '../rewards.js';
  */
 export async function handleSignUpReward(db, params) {
   try {
-    const rewardTest = await createSignUpRewardTelegram(
+    // Create a sign-up reward object
+    const reward = await createSignUpRewardTelegram(
       params.eventId,
       params.userTelegramID,
       params.responsePath,
@@ -40,35 +41,36 @@ export async function handleSignUpReward(db, params) {
       params.patchwallet
     );
 
-    if (!rewardTest) return true;
+    // If reward already exists, return true
+    if (!reward) return true;
 
     let txReward;
 
     // Handle pending hash status
-    if (rewardTest.isPendingHash()) {
-      if (await rewardTest.isTreatmentDurationExceeded()) return true;
+    if (reward.isPendingHash()) {
+      if (await reward.isTreatmentDurationExceeded()) return true;
 
       // Check userOpHash and updateInDatabase for success
-      if (!rewardTest.userOpHash)
+      if (!reward.userOpHash)
         return (
-          await rewardTest.updateInDatabase(
-            TRANSACTION_STATUS.SUCCESS,
-            new Date()
-          ),
+          await reward.updateInDatabase(TRANSACTION_STATUS.SUCCESS, new Date()),
           true
         );
 
-      if ((txReward = await rewardTest.getStatus()) === false) return txReward;
+      // Get status of reward test
+      if ((txReward = await reward.getStatus()) === false) return txReward;
     }
 
-    if (!txReward && (txReward = await rewardTest.sendTx()) === false)
+    // Check for txReward and send transaction if not present
+    if (!txReward && (txReward = await reward.sendTx()) === false)
       return txReward;
 
+    // Update transaction hash and perform additional actions
     if (txReward && txReward.data.txHash) {
-      rewardTest.updateTxHash(txReward.data.txHash);
+      reward.updateTxHash(txReward.data.txHash);
       await Promise.all([
-        rewardTest.updateInDatabase(TRANSACTION_STATUS.SUCCESS, new Date()),
-        rewardTest.saveToFlowXO(),
+        reward.updateInDatabase(TRANSACTION_STATUS.SUCCESS, new Date()),
+        reward.saveToFlowXO(),
       ]).catch((error) =>
         console.error(
           `[${params.eventId}] Error processing FlowXO webhook during sign up reward: ${error}`
@@ -77,12 +79,14 @@ export async function handleSignUpReward(db, params) {
       return true;
     }
 
+    // Update userOpHash if present in txReward
     if (txReward && txReward.data.userOpHash) {
-      rewardTest.updateUserOpHash(txReward.data.userOpHash);
-      await rewardTest.updateInDatabase(TRANSACTION_STATUS.PENDING_HASH, null);
+      reward.updateUserOpHash(txReward.data.userOpHash);
+      await reward.updateInDatabase(TRANSACTION_STATUS.PENDING_HASH, null);
     }
     return false;
   } catch (error) {
+    // Handle error
     console.error(
       `[${params.eventId}] Error processing sign up reward event: ${error}`
     );
