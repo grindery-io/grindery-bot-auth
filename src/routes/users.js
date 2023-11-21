@@ -20,26 +20,21 @@ router.post('/attributes', authenticateApiKey, async (req, res) => {
       msg: 'Updates successful',
       result: await db.collection(USERS_COLLECTION).bulkWrite(
         req.body.map((update) => {
-          const { userTelegramID, attributeNames, erased_others } = update;
+          const { userTelegramID, attributeNames } = update;
 
           if (
             !Array.isArray(attributeNames) ||
-            typeof userTelegramID !== 'string' ||
-            typeof erased_others !== 'boolean'
+            typeof userTelegramID !== 'string'
           ) {
             return res.status(400).send({
-              msg: 'Each item in the array should have "userTelegramID" as string, "attributeNames" as an array, and "erased_others" as a boolean.',
+              msg: 'Each item in the array should have "userTelegramID" as string, "attributeNames" as an array.',
             });
           }
 
           return {
             updateOne: {
               filter: { userTelegramID },
-              update: erased_others
-                ? { $set: { attributes: attributeNames } }
-                : {
-                    $addToSet: { attributes: { $each: attributeNames } },
-                  },
+              update: { $set: { attributes: attributeNames } },
               upsert: true,
             },
           };
