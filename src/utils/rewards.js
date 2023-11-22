@@ -73,6 +73,10 @@ export class SignUpRewardTelegram {
     this.userName = userName;
     this.patchwallet = patchwallet;
 
+    this.reason = 'user_sign_up';
+    this.amount = '100';
+    this.message = 'Sign up reward';
+
     this.isInDatabase = false;
     this.tx = undefined;
     this.status = undefined;
@@ -111,7 +115,7 @@ export class SignUpRewardTelegram {
     return await this.db.collection(REWARDS_COLLECTION).findOne({
       userTelegramID: this.userTelegramID,
       eventId: this.eventId,
-      reason: 'user_sign_up',
+      reason: this.reason,
     });
   }
 
@@ -123,7 +127,7 @@ export class SignUpRewardTelegram {
     return await this.db.collection(REWARDS_COLLECTION).findOne({
       userTelegramID: this.userTelegramID,
       eventId: { $ne: this.eventId },
-      reason: 'user_sign_up',
+      reason: this.reason,
     });
   }
 
@@ -136,7 +140,7 @@ export class SignUpRewardTelegram {
     await this.db.collection(REWARDS_COLLECTION).updateOne(
       {
         eventId: this.eventId,
-        reason: 'user_sign_up',
+        reason: this.reason,
         userTelegramID: this.userTelegramID,
       },
       {
@@ -146,10 +150,10 @@ export class SignUpRewardTelegram {
           responsePath: this.responsePath,
           userHandle: this.userHandle,
           userName: this.userName,
-          reason: 'user_sign_up',
+          reason: this.reason,
           walletAddress: this.patchwallet,
-          amount: '100',
-          message: 'Sign up reward',
+          amount: this.amount,
+          message: this.message,
           ...(date !== null ? { dateAdded: date } : {}),
           transactionHash: this.txHash,
           userOpHash: this.userOpHash,
@@ -249,11 +253,11 @@ export class SignUpRewardTelegram {
       userTelegramID: this.userTelegramID,
       responsePath: this.responsePath,
       walletAddress: this.patchwallet,
-      reason: 'user_sign_up',
+      reason: this.reason,
       userHandle: this.userHandle,
       userName: this.userName,
-      amount: '100',
-      message: 'Sign up reward',
+      amount: this.amount,
+      message: this.message,
       transactionHash: this.txHash,
       dateAdded: new Date(),
     });
@@ -269,7 +273,7 @@ export class SignUpRewardTelegram {
       return await sendTokens(
         process.env.SOURCE_TG_ID,
         this.patchwallet,
-        '100',
+        this.amount,
         await getPatchWalletAccessToken()
       );
     } catch (error) {
