@@ -37,6 +37,7 @@
     "jwt-decode": "^3.1.2",
     "mongodb": "^5.7.0",
     "mongodb-memory-server": "^8.15.1",
+    "node-cron": "^3.0.3",
     "sinon": "^16.0.0",
     "telegram": "^2.18.26",
     "uuid": "^9.0.1",

@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import './loadEnvironment.js';
 import router from './router.js';
 import { PORT } from '../secrets.js';
+import './scripts/cronjob.js';
 
 const { json, urlencoded } = pkg;
 const __filename = fileURLToPath(import.meta.url);
