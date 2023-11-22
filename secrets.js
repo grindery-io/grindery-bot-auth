@@ -12,7 +12,7 @@ const client = new SecretManagerServiceClient();
 async function getSecretVersion(secretName) {
   try {
     const [version] = await client.accessSecretVersion({
-      name: secretName,
+      name: `projects/${PROJECT_ID}/secrets/${secretName}/versions/latest`,
     });
 
     // Extract the secret's content
@@ -77,44 +77,28 @@ export const BOT_TOKEN = process.env.BOT_TOKEN || '';
  * Fallback: an empty string if not found in Secret Manager or environment.
  */
 export const CLIENT_ID =
-  process.env.CLIENT_ID ||
-  (await getSecretVersion(
-    'projects/my-project/secrets/client-id/versions/latest'
-  )) ||
-  '';
+  process.env.CLIENT_ID || (await getSecretVersion('client-id')) || '';
 
 /**
  * The client secret retrieved from Google Secret Manager or environment variables.
  * Fallback: an empty string if not found in Secret Manager or environment.
  */
 export const CLIENT_SECRET =
-  process.env.CLIENT_SECRET ||
-  (await getSecretVersion(
-    'projects/my-project/secrets/client-secret/versions/latest'
-  )) ||
-  '';
+  process.env.CLIENT_SECRET || (await getSecretVersion('client-secret')) || '';
 
 /**
  * The API key retrieved from Google Secret Manager or environment variables.
  * Fallback: an empty string if not found in Secret Manager or environment.
  */
 export const API_KEY =
-  process.env.API_KEY ||
-  (await getSecretVersion(
-    'projects/my-project/secrets/api-key/versions/latest'
-  )) ||
-  '';
+  process.env.API_KEY || (await getSecretVersion('api-key')) || '';
 
 /**
  * The Atlas URI retrieved from Google Secret Manager or environment variables.
  * Fallback: an empty string if not found in Secret Manager or environment.
  */
 export const ATLAS_URI =
-  process.env.ATLAS_URI ||
-  (await getSecretVersion(
-    'projects/my-project/secrets/atlas-uri/versions/latest'
-  )) ||
-  '';
+  process.env.ATLAS_URI || (await getSecretVersion('atlas-uri')) || '';
 
 /**
  * The G1 Polygon address used for something.
