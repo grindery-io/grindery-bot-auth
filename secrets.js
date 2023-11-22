@@ -70,17 +70,22 @@ export const CHAINSTACK_API_KEY_2 = process.env.CHAINSTACK_API_KEY_2 || '';
  * The Bot token.
  * Fallback: an empty string if not defined in the environment.
  */
-export const BOT_TOKEN = process.env.BOT_TOKEN || '';
+export const BOT_TOKEN =
+  (await getSecretVersion(
+    `projects/${PROJECT_ID}/secrets/bot-token/versions/latest`
+  )) ||
+  process.env.BOT_TOKEN ||
+  '';
 
 /**
  * The client ID retrieved from Google Secret Manager or environment variables.
  * Fallback: an empty string if not found in Secret Manager or environment.
  */
 export const CLIENT_ID =
-  process.env.CLIENT_ID ||
   (await getSecretVersion(
     `projects/${PROJECT_ID}/secrets/client-id/versions/latest`
   )) ||
+  process.env.CLIENT_ID ||
   '';
 
 /**
@@ -88,10 +93,10 @@ export const CLIENT_ID =
  * Fallback: an empty string if not found in Secret Manager or environment.
  */
 export const CLIENT_SECRET =
-  process.env.CLIENT_SECRET ||
   (await getSecretVersion(
     `projects/${PROJECT_ID}/secrets/client-secret/versions/latest`
   )) ||
+  process.env.CLIENT_SECRET ||
   '';
 
 /**
@@ -99,10 +104,10 @@ export const CLIENT_SECRET =
  * Fallback: an empty string if not found in Secret Manager or environment.
  */
 export const API_KEY =
-  process.env.API_KEY ||
   (await getSecretVersion(
     `projects/${PROJECT_ID}/secrets/api-key/versions/latest`
   )) ||
+  process.env.API_KEY ||
   '';
 
 /**
@@ -110,10 +115,10 @@ export const API_KEY =
  * Fallback: an empty string if not found in Secret Manager or environment.
  */
 export const ATLAS_URI =
-  process.env.ATLAS_URI ||
   (await getSecretVersion(
     `projects/${PROJECT_ID}/secrets/atlas-uri/versions/latest`
   )) ||
+  process.env.ATLAS_URI ||
   '';
 
 /**
