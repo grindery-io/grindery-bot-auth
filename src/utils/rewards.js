@@ -8,27 +8,67 @@ import {
 } from './patchwallet.js';
 import axios from 'axios';
 
-export async function createSignUpRewardTelegram(
+/**
+ * Asynchronously creates a sign-up reward for Telegram users.
+ *
+ * This function initializes a sign-up reward for a Telegram user based on provided parameters.
+ * It creates an instance of SignUpRewardTelegram and initializes the reward database.
+ *
+ * @param {string} eventId - The ID of the event associated with the sign-up reward.
+ * @param {string} userTelegramID - The Telegram ID of the user.
+ * @param {string} responsePath - The response path for the reward.
+ * @param {string} userHandle - The handle of the user.
+ * @param {string} userName - The name of the user.
+ * @param {string} patchwallet - The patchwallet details for the reward.
+ * @returns {Promise<SignUpRewardTelegram|boolean>} The created sign-up reward instance if successful,
+ *                                                  or `false` if initialization fails.
+ */
+// export async function createSignUpRewardTelegram(
+//   eventId,
+//   userTelegramID,
+//   responsePath,
+//   userHandle,
+//   userName,
+//   patchwallet
+// ) {
+//   const reward = new SignUpRewardTelegram(
+//     eventId,
+//     userTelegramID,
+//     responsePath,
+//     userHandle,
+//     userName,
+//     patchwallet
+//   );
+
+//   if (!(await reward.initializeRewardDatabase())) return false;
+
+//   return reward;
+// }
+export const createSignUpRewardTelegram = async (
   eventId,
   userTelegramID,
   responsePath,
   userHandle,
   userName,
   patchwallet
-) {
-  const reward = new SignUpRewardTelegram(
+) =>
+  (await new SignUpRewardTelegram(
     eventId,
     userTelegramID,
     responsePath,
     userHandle,
     userName,
     patchwallet
-  );
-
-  if (!(await reward.initializeRewardDatabase())) return false;
-
-  return reward;
-}
+  ).initializeRewardDatabase())
+    ? new SignUpRewardTelegram(
+        eventId,
+        userTelegramID,
+        responsePath,
+        userHandle,
+        userName,
+        patchwallet
+      )
+    : false;
 
 /**
  * Represents a Telegram sign-up reward.
