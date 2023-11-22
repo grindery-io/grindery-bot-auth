@@ -23,52 +23,27 @@ import axios from 'axios';
  * @returns {Promise<SignUpRewardTelegram|boolean>} The created sign-up reward instance if successful,
  *                                                  or `false` if initialization fails.
  */
-// export async function createSignUpRewardTelegram(
-//   eventId,
-//   userTelegramID,
-//   responsePath,
-//   userHandle,
-//   userName,
-//   patchwallet
-// ) {
-//   const reward = new SignUpRewardTelegram(
-//     eventId,
-//     userTelegramID,
-//     responsePath,
-//     userHandle,
-//     userName,
-//     patchwallet
-//   );
-
-//   if (!(await reward.initializeRewardDatabase())) return false;
-
-//   return reward;
-// }
-export const createSignUpRewardTelegram = async (
+export async function createSignUpRewardTelegram(
   eventId,
   userTelegramID,
   responsePath,
   userHandle,
   userName,
   patchwallet
-) =>
-  (await new SignUpRewardTelegram(
+) {
+  const reward = new SignUpRewardTelegram(
     eventId,
     userTelegramID,
     responsePath,
     userHandle,
     userName,
     patchwallet
-  ).initializeRewardDatabase())
-    ? new SignUpRewardTelegram(
-        eventId,
-        userTelegramID,
-        responsePath,
-        userHandle,
-        userName,
-        patchwallet
-      )
-    : false;
+  );
+
+  if (!(await reward.initializeRewardDatabase())) return false;
+
+  return reward;
+}
 
 /**
  * Represents a Telegram sign-up reward.
