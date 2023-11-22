@@ -24,6 +24,19 @@ async function getSecretVersion(secretName) {
   }
 }
 
+const PROJECT_ID_PATH = `projects/${process.env.PROJECT_ID}/secrets`;
+
+/**
+ * Retrieves a secret from Google Secret Manager based on the provided secret name.
+ * @param {string} secretName - The name of the secret to retrieve.
+ * @returns {Promise<string>} - The retrieved secret value or an empty string if not found.
+ */
+async function getSecret(secretName) {
+  return await getSecretVersion(
+    `${PROJECT_ID_PATH}/${secretName}/versions/latest`
+  );
+}
+
 /**
  * The port number used for the application.
  * Fallback: an empty string if not defined in the environment.
@@ -71,55 +84,35 @@ export const CHAINSTACK_API_KEY_2 = process.env.CHAINSTACK_API_KEY_2 || '';
  * Fallback: an empty string if not defined in the environment.
  */
 export const BOT_TOKEN =
-  (await getSecretVersion(
-    `projects/${PROJECT_ID}/secrets/bot-token/versions/latest`
-  )) ||
-  process.env.BOT_TOKEN ||
-  '';
+  (await getSecret('bot-token')) || process.env.BOT_TOKEN || '';
 
 /**
  * The client ID retrieved from Google Secret Manager or environment variables.
  * Fallback: an empty string if not found in Secret Manager or environment.
  */
 export const CLIENT_ID =
-  (await getSecretVersion(
-    `projects/${PROJECT_ID}/secrets/client-id/versions/latest`
-  )) ||
-  process.env.CLIENT_ID ||
-  '';
+  (await getSecret('client-id')) || process.env.CLIENT_ID || '';
 
 /**
  * The client secret retrieved from Google Secret Manager or environment variables.
  * Fallback: an empty string if not found in Secret Manager or environment.
  */
 export const CLIENT_SECRET =
-  (await getSecretVersion(
-    `projects/${PROJECT_ID}/secrets/client-secret/versions/latest`
-  )) ||
-  process.env.CLIENT_SECRET ||
-  '';
+  (await getSecret('client-secret')) || process.env.CLIENT_SECRET || '';
 
 /**
  * The API key retrieved from Google Secret Manager or environment variables.
  * Fallback: an empty string if not found in Secret Manager or environment.
  */
 export const API_KEY =
-  (await getSecretVersion(
-    `projects/${PROJECT_ID}/secrets/api-key/versions/latest`
-  )) ||
-  process.env.API_KEY ||
-  '';
+  (await getSecret('api-key/versions/latest')) || process.env.API_KEY || '';
 
 /**
  * The Atlas URI retrieved from Google Secret Manager or environment variables.
  * Fallback: an empty string if not found in Secret Manager or environment.
  */
 export const ATLAS_URI =
-  (await getSecretVersion(
-    `projects/${PROJECT_ID}/secrets/atlas-uri/versions/latest`
-  )) ||
-  process.env.ATLAS_URI ||
-  '';
+  (await getSecret('atlas-uri')) || process.env.ATLAS_URI || '';
 
 /**
  * The G1 Polygon address used for something.
