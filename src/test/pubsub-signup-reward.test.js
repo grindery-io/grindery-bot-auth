@@ -317,12 +317,20 @@ describe('handleSignUpReward function', async function () {
 
   describe('Sign up reward status pending at the beginning with same eventID', async function () {
     beforeEach(async function () {
-      await collectionRewardsMock.insertOne({
-        eventId: rewardId,
-        userTelegramID: mockUserTelegramID,
-        reason: 'user_sign_up',
-        status: TRANSACTION_STATUS.PENDING,
-      });
+      await collectionRewardsMock.insertMany([
+        {
+          eventId: rewardId,
+          userTelegramID: mockUserTelegramID,
+          reason: '2x_reward',
+          status: TRANSACTION_STATUS.PENDING,
+        },
+        {
+          eventId: rewardId,
+          userTelegramID: mockUserTelegramID,
+          reason: 'user_sign_up',
+          status: TRANSACTION_STATUS.PENDING,
+        },
+      ]);
     });
 
     it('Should return true if Sign up reward status pending at the beginning with same eventID', async function () {
@@ -379,6 +387,12 @@ describe('handleSignUpReward function', async function () {
         .expect(await collectionRewardsMock.find({}).toArray())
         .excluding(['_id', 'dateAdded'])
         .to.deep.equal([
+          {
+            eventId: rewardId,
+            userTelegramID: mockUserTelegramID,
+            reason: '2x_reward',
+            status: TRANSACTION_STATUS.PENDING,
+          },
           {
             eventId: rewardId,
             userTelegramID: mockUserTelegramID,

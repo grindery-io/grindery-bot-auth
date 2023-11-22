@@ -119,7 +119,11 @@ export class SignUpRewardTelegram {
    */
   async updateInDatabase(status, date) {
     await this.db.collection(REWARDS_COLLECTION).updateOne(
-      { eventId: this.eventId },
+      {
+        eventId: this.eventId,
+        reason: 'user_sign_up',
+        userTelegramID: this.userTelegramID,
+      },
       {
         $set: {
           eventId: this.eventId,
