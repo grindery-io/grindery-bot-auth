@@ -1,12 +1,9 @@
 import { MongoClient } from 'mongodb';
 import * as dotenv from 'dotenv';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { ATLAS_URI } from '../../secrets.js';
+import { getAtlasUri } from '../../secrets.js';
 
 dotenv.config();
-
-const connectionString = ATLAS_URI || '';
-const client = new MongoClient(connectionString);
 
 export class Database {
   static instance;
@@ -16,6 +13,7 @@ export class Database {
       if (req !== 'unit-test') {
         let conn;
         try {
+          const client = new MongoClient(await getAtlasUri());
           conn = await client.connect();
         } catch (e) {
           console.error(e);
