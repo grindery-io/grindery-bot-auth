@@ -11,8 +11,11 @@ import {
   sendTokens,
 } from '../patchwallet.js';
 import axios from 'axios';
-import 'dotenv/config';
 import { reward_helpers } from '../rewardHelpers.js';
+import {
+  FLOWXO_NEW_ISOLATED_REWARD_WEBHOOK,
+  SOURCE_TG_ID,
+} from '../../../secrets.js';
 
 export async function handleIsolatedReward(params) {
   try {
@@ -135,7 +138,7 @@ export async function handleIsolatedReward(params) {
       try {
         // Send tokens to the user
         txReward = await sendTokens(
-          process.env.SOURCE_TG_ID,
+          SOURCE_TG_ID,
           patchwallet,
           params.amount,
           await getPatchWalletAccessToken()
@@ -181,7 +184,7 @@ export async function handleIsolatedReward(params) {
       );
 
       // Notify external system about the reward
-      await axios.post(process.env.FLOWXO_NEW_ISOLATED_REWARD_WEBHOOK, {
+      await axios.post(FLOWXO_NEW_ISOLATED_REWARD_WEBHOOK, {
         userTelegramID: params.userTelegramID,
         responsePath: params.responsePath,
         walletAddress: patchwallet,

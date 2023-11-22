@@ -12,10 +12,14 @@ import {
   sendTokens,
 } from '../patchwallet.js';
 import axios from 'axios';
-import 'dotenv/config';
 import { reward_helpers } from '../rewardHelpers.js';
 import { createUserTelegram } from '../user.js';
 import { signup_utils } from './signup-reward.js';
+import {
+  FLOWXO_NEW_LINK_REWARD_WEBHOOK,
+  FLOWXO_NEW_REFERRAL_REWARD_WEBHOOK,
+  SOURCE_TG_ID,
+} from '../../../secrets.js';
 
 /**
  * Handles the referral reward for a user.
@@ -170,7 +174,7 @@ export async function handleReferralReward(db, params) {
     if (!txReward) {
       try {
         txReward = await sendTokens(
-          process.env.SOURCE_TG_ID,
+          SOURCE_TG_ID,
           senderWallet,
           '50',
           await getPatchWalletAccessToken()
@@ -207,7 +211,7 @@ export async function handleReferralReward(db, params) {
         `[${txReward.data.txHash}] referral reward added to Mongo DB with event ID ${params.eventId}.`
       );
 
-      await axios.post(process.env.FLOWXO_NEW_REFERRAL_REWARD_WEBHOOK, {
+      await axios.post(FLOWXO_NEW_REFERRAL_REWARD_WEBHOOK, {
         newUserTgId: params.userTelegramID,
         newUserResponsePath: params.responsePath,
         newUserUserHandle: params.userHandle,
@@ -396,7 +400,7 @@ export async function handleLinkReward(
     if (!txReward) {
       try {
         txReward = await sendTokens(
-          process.env.SOURCE_TG_ID,
+          SOURCE_TG_ID,
           rewardWallet,
           '10',
           await getPatchWalletAccessToken()
@@ -433,7 +437,7 @@ export async function handleLinkReward(
         `[${txReward.data.txHash}] link reward added to Mongo DB with event ID ${eventId}.`
       );
 
-      await axios.post(process.env.FLOWXO_NEW_LINK_REWARD_WEBHOOK, {
+      await axios.post(FLOWXO_NEW_LINK_REWARD_WEBHOOK, {
         userTelegramID: referentUserTelegramID,
         responsePath: referent.responsePath,
         walletAddress: rewardWallet,

@@ -1,6 +1,5 @@
 import Web3 from 'web3';
 import express from 'express';
-import 'dotenv/config';
 import ERC20 from './abi/ERC20.json' assert { type: 'json' };
 import BigNumber from 'bignumber.js';
 import { CHAIN_MAPPING } from '../utils/chains.js';

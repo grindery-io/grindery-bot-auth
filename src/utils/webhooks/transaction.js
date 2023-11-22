@@ -1,6 +1,5 @@
 import { Database } from '../../db/conn.js';
 import { TRANSACTION_STATUS, USERS_COLLECTION } from '../constants.js';
-import 'dotenv/config';
 import { sendTelegramMessage } from '../telegram.js';
 import { createTransferTelegram } from '../transfers.js';
 

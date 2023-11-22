@@ -1,11 +1,11 @@
-import 'dotenv/config';
 import { TelegramClient } from 'telegram';
+import { TELEGRAM_API_HASH, TELEGRAM_API_ID } from '../../secrets.js';
 
 const TGClient = (session) => {
   return new TelegramClient(
     session,
-    Number(process.env.TELEGRAM_API_ID),
-    process.env.TELEGRAM_API_HASH,
+    Number(TELEGRAM_API_ID),
+    TELEGRAM_API_HASH,
     {
       connectionRetries: 5,
     }

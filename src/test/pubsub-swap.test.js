@@ -29,11 +29,12 @@ import {
 } from './utils.js';
 import Sinon from 'sinon';
 import axios from 'axios';
-import 'dotenv/config';
+
 import chaiExclude from 'chai-exclude';
 import { TRANSACTION_STATUS } from '../utils/constants.js';
 import { v4 as uuidv4 } from 'uuid';
 import { handleSwap } from '../utils/webhooks/swap.js';
+import { FLOWXO_NEW_SWAP_WEBHOOK } from '../../secrets.js';
 
 chai.use(chaiExclude);
 
@@ -80,7 +81,7 @@ describe('handleSwap function', async function () {
           });
         }
 
-        if (url == process.env.FLOWXO_NEW_SWAP_WEBHOOK) {
+        if (url == FLOWXO_NEW_SWAP_WEBHOOK) {
           return Promise.resolve({
             result: 'success',
           });
@@ -253,8 +254,7 @@ describe('handleSwap function', async function () {
 
       const FlowXOCallArgs = axiosStub
         .getCalls()
-        .find((e) => e.firstArg === process.env.FLOWXO_NEW_SWAP_WEBHOOK)
-        .args[1];
+        .find((e) => e.firstArg === FLOWXO_NEW_SWAP_WEBHOOK).args[1];
 
       chai
         .expect(FlowXOCallArgs)
@@ -386,9 +386,7 @@ describe('handleSwap function', async function () {
       });
 
       chai.expect(
-        axiosStub
-          .getCalls()
-          .find((e) => e.firstArg === process.env.FLOWXO_NEW_SWAP_WEBHOOK)
+        axiosStub.getCalls().find((e) => e.firstArg === FLOWXO_NEW_SWAP_WEBHOOK)
       ).to.be.undefined;
     });
 
@@ -520,9 +518,7 @@ describe('handleSwap function', async function () {
       });
 
       chai.expect(
-        axiosStub
-          .getCalls()
-          .find((e) => e.firstArg === process.env.FLOWXO_NEW_SWAP_WEBHOOK)
+        axiosStub.getCalls().find((e) => e.firstArg === FLOWXO_NEW_SWAP_WEBHOOK)
       ).to.be.undefined;
     });
 
@@ -646,9 +642,7 @@ describe('handleSwap function', async function () {
       });
 
       chai.expect(
-        axiosStub
-          .getCalls()
-          .find((e) => e.firstArg === process.env.FLOWXO_NEW_SWAP_WEBHOOK)
+        axiosStub.getCalls().find((e) => e.firstArg === FLOWXO_NEW_SWAP_WEBHOOK)
       ).to.be.undefined;
     });
 
@@ -799,9 +793,7 @@ describe('handleSwap function', async function () {
       });
 
       chai.expect(
-        axiosStub
-          .getCalls()
-          .find((e) => e.firstArg === process.env.FLOWXO_NEW_SWAP_WEBHOOK)
+        axiosStub.getCalls().find((e) => e.firstArg === FLOWXO_NEW_SWAP_WEBHOOK)
       ).to.be.undefined;
     });
 
@@ -924,9 +916,7 @@ describe('handleSwap function', async function () {
       });
 
       chai.expect(
-        axiosStub
-          .getCalls()
-          .find((e) => e.firstArg === process.env.FLOWXO_NEW_SWAP_WEBHOOK)
+        axiosStub.getCalls().find((e) => e.firstArg === FLOWXO_NEW_SWAP_WEBHOOK)
       ).to.be.undefined;
     });
 
@@ -1054,9 +1044,7 @@ describe('handleSwap function', async function () {
       });
 
       chai.expect(
-        axiosStub
-          .getCalls()
-          .find((e) => e.firstArg === process.env.FLOWXO_NEW_SWAP_WEBHOOK)
+        axiosStub.getCalls().find((e) => e.firstArg === FLOWXO_NEW_SWAP_WEBHOOK)
       ).to.be.undefined;
     });
 
@@ -1184,9 +1172,7 @@ describe('handleSwap function', async function () {
       });
 
       chai.expect(
-        axiosStub
-          .getCalls()
-          .find((e) => e.firstArg === process.env.FLOWXO_NEW_SWAP_WEBHOOK)
+        axiosStub.getCalls().find((e) => e.firstArg === FLOWXO_NEW_SWAP_WEBHOOK)
       ).to.be.undefined;
     });
 
@@ -1311,9 +1297,7 @@ describe('handleSwap function', async function () {
       });
 
       chai.expect(
-        axiosStub
-          .getCalls()
-          .find((e) => e.firstArg === process.env.FLOWXO_NEW_SWAP_WEBHOOK)
+        axiosStub.getCalls().find((e) => e.firstArg === FLOWXO_NEW_SWAP_WEBHOOK)
       ).to.be.undefined;
     });
 
@@ -1446,7 +1430,7 @@ describe('handleSwap function', async function () {
         chai.expect(
           axiosStub
             .getCalls()
-            .find((e) => e.firstArg === process.env.FLOWXO_NEW_SWAP_WEBHOOK)
+            .find((e) => e.firstArg === FLOWXO_NEW_SWAP_WEBHOOK)
         ).to.be.undefined;
       });
     });
@@ -1588,8 +1572,7 @@ describe('handleSwap function', async function () {
         });
         const FlowXOCallArgs = axiosStub
           .getCalls()
-          .find((e) => e.firstArg === process.env.FLOWXO_NEW_SWAP_WEBHOOK)
-          .args[1];
+          .find((e) => e.firstArg === FLOWXO_NEW_SWAP_WEBHOOK).args[1];
 
         chai
           .expect(FlowXOCallArgs)
@@ -1766,7 +1749,7 @@ describe('handleSwap function', async function () {
         chai.expect(
           axiosStub
             .getCalls()
-            .find((e) => e.firstArg === process.env.FLOWXO_NEW_SWAP_WEBHOOK)
+            .find((e) => e.firstArg === FLOWXO_NEW_SWAP_WEBHOOK)
         ).to.be.undefined;
       });
     });
@@ -1908,7 +1891,7 @@ describe('handleSwap function', async function () {
         chai.expect(
           axiosStub
             .getCalls()
-            .find((e) => e.firstArg === process.env.FLOWXO_NEW_SWAP_WEBHOOK)
+            .find((e) => e.firstArg === FLOWXO_NEW_SWAP_WEBHOOK)
         ).to.be.undefined;
       });
     });
@@ -2055,7 +2038,7 @@ describe('handleSwap function', async function () {
         chai.expect(
           axiosStub
             .getCalls()
-            .find((e) => e.firstArg === process.env.FLOWXO_NEW_SWAP_WEBHOOK)
+            .find((e) => e.firstArg === FLOWXO_NEW_SWAP_WEBHOOK)
         ).to.be.undefined;
       });
     });
@@ -2194,7 +2177,7 @@ describe('handleSwap function', async function () {
         chai.expect(
           axiosStub
             .getCalls()
-            .find((e) => e.firstArg === process.env.FLOWXO_NEW_SWAP_WEBHOOK)
+            .find((e) => e.firstArg === FLOWXO_NEW_SWAP_WEBHOOK)
         ).to.be.undefined;
       });
     });
@@ -2341,7 +2324,7 @@ describe('handleSwap function', async function () {
         chai.expect(
           axiosStub
             .getCalls()
-            .find((e) => e.firstArg === process.env.FLOWXO_NEW_SWAP_WEBHOOK)
+            .find((e) => e.firstArg === FLOWXO_NEW_SWAP_WEBHOOK)
         ).to.be.undefined;
       });
     });

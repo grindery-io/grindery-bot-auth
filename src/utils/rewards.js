@@ -1,12 +1,15 @@
 import { Database } from '../db/conn.js';
 import { REWARDS_COLLECTION, TRANSACTION_STATUS } from './constants.js';
-import 'dotenv/config';
 import {
   getPatchWalletAccessToken,
   getTxStatus,
   sendTokens,
 } from './patchwallet.js';
 import axios from 'axios';
+import {
+  FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK,
+  SOURCE_TG_ID,
+} from '../../secrets.js';
 
 /**
  * Asynchronously creates a sign-up reward for Telegram users.
@@ -249,7 +252,7 @@ export class SignUpRewardTelegram {
    */
   async saveToFlowXO() {
     // Send transaction information to FlowXO
-    await axios.post(process.env.FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK, {
+    await axios.post(FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK, {
       userTelegramID: this.userTelegramID,
       responsePath: this.responsePath,
       walletAddress: this.patchwallet,
@@ -271,7 +274,7 @@ export class SignUpRewardTelegram {
     try {
       // Send tokens using PatchWallet
       return await sendTokens(
-        process.env.SOURCE_TG_ID,
+        SOURCE_TG_ID,
         this.patchwallet,
         this.amount,
         await getPatchWalletAccessToken()

@@ -1,10 +1,11 @@
 import crypto from 'crypto';
+import { TELEGRAM_API_HASH } from '../../secrets.js';
 
 export const encrypt = (text, algo = 'aes-256-cbc', format = 'base64') => {
   const iv = crypto.randomBytes(16);
   const cipher = crypto.createCipheriv(
     algo,
-    Buffer.from(process.env.TELEGRAM_API_HASH),
+    Buffer.from(TELEGRAM_API_HASH),
     iv
   );
   let encrypted = cipher.update(text, 'utf-8', format);
@@ -22,7 +23,7 @@ export const decrypt = (text, algo = 'aes-256-cbc', format = 'base64') => {
   const encryptedText = textParts[1];
   const decipher = crypto.createDecipheriv(
     algo,
-    Buffer.from(process.env.TELEGRAM_API_HASH),
+    Buffer.from(TELEGRAM_API_HASH),
     iv
   );
   let decrypted = decipher.update(encryptedText, format, 'utf-8');

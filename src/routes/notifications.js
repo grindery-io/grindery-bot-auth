@@ -1,17 +1,16 @@
-import 'dotenv/config';
 import express from 'express';
 import axios from 'axios';
 import grinderyClient from 'grindery-nexus-client';
 import { generateWorkflow } from '../utils/generateWorkflow.js';
+import {
+  GRINDERY_ACCOUNT_REFRESH_TOKEN,
+  GRINDERY_ACCOUNT_WORKSPACE_KEY,
+  WALLET_NOTIFICATION_WEBHOOK_URL,
+} from '../../secrets.js';
 
 const NexusClient = grinderyClient.default;
 
 const router = express.Router();
-
-const GRINDERY_ACCOUNT_REFRESH_TOKEN =
-    process.env.GRINDERY_ACCOUNT_REFRESH_TOKEN,
-  GRINDERY_ACCOUNT_WORKSPACE_KEY = process.env.GRINDERY_ACCOUNT_WORKSPACE_KEY,
-  WALLET_NOTIFICATION_WEBHOOK_URL = process.env.WALLET_NOTIFICATION_WEBHOOK_URL;
 
 /**
  * POST /v1/notifications/wallet

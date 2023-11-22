@@ -1,5 +1,4 @@
 import { TRANSACTION_STATUS } from '../constants.js';
-import 'dotenv/config';
 import { createSignUpRewardTelegram } from '../rewards.js';
 
 /**

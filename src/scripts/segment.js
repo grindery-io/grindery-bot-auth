@@ -2,10 +2,10 @@ import { Database } from '../db/conn.js';
 import axios from 'axios';
 import {
   SEGMENT_API_ENDPOINT,
-  SEGMENT_WRITE_KEY,
   TRANSFERS_COLLECTION,
   USERS_COLLECTION,
 } from '../utils/constants.js';
+import { SEGMENT_WRITE_KEY } from '../../secrets.js';
 
 // Usage: sendUsersBatchRequest()
 // Description: Sends a batch request to the Segment API with user details.

@@ -5,7 +5,6 @@ import {
   TRANSFERS_COLLECTION,
   USERS_COLLECTION,
 } from './constants.js';
-import 'dotenv/config';
 import {
   getPatchWalletAccessToken,
   getPatchWalletAddressFromTgId,
@@ -14,6 +13,10 @@ import {
 } from './patchwallet.js';
 import { addTrackSegment } from './segment.js';
 import axios from 'axios';
+import {
+  FLOWXO_NEW_TRANSACTION_WEBHOOK,
+  G1_POLYGON_ADDRESS,
+} from '../../secrets.js';
 
 export async function getIncomingTxsUser(db, userId, start, limit) {
   return await Promise.all(
@@ -250,7 +253,7 @@ export class TransferTelegram {
           eventId: this.eventId,
           chainId: 'eip155:137',
           tokenSymbol: 'g1',
-          tokenAddress: process.env.G1_POLYGON_ADDRESS,
+          tokenAddress: G1_POLYGON_ADDRESS,
           senderTgId: this.senderInformation.userTelegramID,
           senderWallet: this.senderInformation.patchwallet,
           senderName: this.senderInformation.userName,
@@ -332,11 +335,11 @@ export class TransferTelegram {
    */
   async saveToFlowXO() {
     // Send transaction information to FlowXO
-    await axios.post(process.env.FLOWXO_NEW_TRANSACTION_WEBHOOK, {
+    await axios.post(FLOWXO_NEW_TRANSACTION_WEBHOOK, {
       senderResponsePath: this.senderInformation.responsePath,
       chainId: 'eip155:137',
       tokenSymbol: 'g1',
-      tokenAddress: process.env.G1_POLYGON_ADDRESS,
+      tokenAddress: G1_POLYGON_ADDRESS,
       senderTgId: this.senderInformation.userTelegramID,
       senderWallet: this.senderInformation.patchwallet,
       senderName: this.senderInformation.userName,

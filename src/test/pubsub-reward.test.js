@@ -13,7 +13,7 @@ import {
 import { handleNewReward, webhook_utils } from '../utils/webhooks/webhook.js';
 import Sinon from 'sinon';
 import axios from 'axios';
-import 'dotenv/config';
+
 import chaiExclude from 'chai-exclude';
 import { v4 as uuidv4 } from 'uuid';
 import { signup_utils } from '../utils/webhooks/signup-reward.js';

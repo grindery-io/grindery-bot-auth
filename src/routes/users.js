@@ -2,7 +2,6 @@ import express from 'express';
 import { Database } from '../db/conn.js';
 import { authenticateApiKey } from '../utils/auth.js';
 import { USERS_COLLECTION } from '../utils/constants.js';
-import 'dotenv/config';
 
 const router = express.Router();
 

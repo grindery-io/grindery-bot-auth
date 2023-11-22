@@ -19,11 +19,15 @@ import {
 } from './utils.js';
 import Sinon from 'sinon';
 import axios from 'axios';
-import 'dotenv/config';
+
 import chaiExclude from 'chai-exclude';
 import { TRANSACTION_STATUS } from '../utils/constants.js';
 import { v4 as uuidv4 } from 'uuid';
 import { handleNewTransaction } from '../utils/webhooks/transaction.js';
+import {
+  FLOWXO_NEW_TRANSACTION_WEBHOOK,
+  G1_POLYGON_ADDRESS,
+} from '../../secrets.js';
 
 chai.use(chaiExclude);
 
@@ -70,7 +74,7 @@ describe('handleNewTransaction function', async function () {
           });
         }
 
-        if (url == process.env.FLOWXO_NEW_TRANSACTION_WEBHOOK) {
+        if (url == FLOWXO_NEW_TRANSACTION_WEBHOOK) {
           return Promise.resolve({
             result: 'success',
           });
@@ -130,7 +134,7 @@ describe('handleNewTransaction function', async function () {
             eventId: txId,
             chainId: 'eip155:137',
             tokenSymbol: 'g1',
-            tokenAddress: process.env.G1_POLYGON_ADDRESS,
+            tokenAddress: G1_POLYGON_ADDRESS,
             senderTgId: mockUserTelegramID,
             senderWallet: mockWallet,
             senderName: mockUserName,
@@ -167,7 +171,7 @@ describe('handleNewTransaction function', async function () {
           properties: {
             chainId: 'eip155:137',
             tokenSymbol: 'g1',
-            tokenAddress: process.env.G1_POLYGON_ADDRESS,
+            tokenAddress: G1_POLYGON_ADDRESS,
             senderTgId: mockUserTelegramID,
             senderWallet: mockWallet,
             senderName: mockUserName,
@@ -191,14 +195,13 @@ describe('handleNewTransaction function', async function () {
 
       const FlowXOCallArgs = axiosStub
         .getCalls()
-        .find((e) => e.firstArg === process.env.FLOWXO_NEW_TRANSACTION_WEBHOOK)
-        .args[1];
+        .find((e) => e.firstArg === FLOWXO_NEW_TRANSACTION_WEBHOOK).args[1];
 
       chai.expect(FlowXOCallArgs).excluding(['dateAdded']).to.deep.equal({
         senderResponsePath: mockResponsePath,
         chainId: 'eip155:137',
         tokenSymbol: 'g1',
-        tokenAddress: process.env.G1_POLYGON_ADDRESS,
+        tokenAddress: G1_POLYGON_ADDRESS,
         senderTgId: mockUserTelegramID,
         senderWallet: mockWallet,
         senderName: mockUserName,
@@ -280,9 +283,7 @@ describe('handleNewTransaction function', async function () {
       chai.expect(
         axiosStub
           .getCalls()
-          .find(
-            (e) => e.firstArg === process.env.FLOWXO_NEW_TRANSACTION_WEBHOOK
-          )
+          .find((e) => e.firstArg === FLOWXO_NEW_TRANSACTION_WEBHOOK)
       ).to.be.undefined;
     });
 
@@ -371,9 +372,7 @@ describe('handleNewTransaction function', async function () {
       chai.expect(
         axiosStub
           .getCalls()
-          .find(
-            (e) => e.firstArg === process.env.FLOWXO_NEW_TRANSACTION_WEBHOOK
-          )
+          .find((e) => e.firstArg === FLOWXO_NEW_TRANSACTION_WEBHOOK)
       ).to.be.undefined;
     });
 
@@ -436,7 +435,7 @@ describe('handleNewTransaction function', async function () {
             eventId: txId,
             chainId: 'eip155:137',
             tokenSymbol: 'g1',
-            tokenAddress: process.env.G1_POLYGON_ADDRESS,
+            tokenAddress: G1_POLYGON_ADDRESS,
             senderTgId: mockUserTelegramID,
             senderWallet: mockWallet,
             senderName: mockUserName,
@@ -462,9 +461,7 @@ describe('handleNewTransaction function', async function () {
       chai.expect(
         axiosStub
           .getCalls()
-          .find(
-            (e) => e.firstArg === process.env.FLOWXO_NEW_TRANSACTION_WEBHOOK
-          )
+          .find((e) => e.firstArg === FLOWXO_NEW_TRANSACTION_WEBHOOK)
       ).to.be.undefined;
     });
 
@@ -563,9 +560,7 @@ describe('handleNewTransaction function', async function () {
       chai.expect(
         axiosStub
           .getCalls()
-          .find(
-            (e) => e.firstArg === process.env.FLOWXO_NEW_TRANSACTION_WEBHOOK
-          )
+          .find((e) => e.firstArg === FLOWXO_NEW_TRANSACTION_WEBHOOK)
       ).to.be.undefined;
     });
 
@@ -646,9 +641,7 @@ describe('handleNewTransaction function', async function () {
       chai.expect(
         axiosStub
           .getCalls()
-          .find(
-            (e) => e.firstArg === process.env.FLOWXO_NEW_TRANSACTION_WEBHOOK
-          )
+          .find((e) => e.firstArg === FLOWXO_NEW_TRANSACTION_WEBHOOK)
       ).to.be.undefined;
     });
 
@@ -693,7 +686,7 @@ describe('handleNewTransaction function', async function () {
 
   it('Should return true if error in FlowXO Webhook', async function () {
     axiosStub
-      .withArgs(process.env.FLOWXO_NEW_TRANSACTION_WEBHOOK)
+      .withArgs(FLOWXO_NEW_TRANSACTION_WEBHOOK)
       .rejects(new Error('Service not available'));
 
     await collectionUsersMock.insertOne({
@@ -756,7 +749,7 @@ describe('handleNewTransaction function', async function () {
             eventId: txId,
             chainId: 'eip155:137',
             tokenSymbol: 'g1',
-            tokenAddress: process.env.G1_POLYGON_ADDRESS,
+            tokenAddress: G1_POLYGON_ADDRESS,
             senderTgId: mockUserTelegramID,
             senderWallet: mockWallet,
             senderName: mockUserName,
@@ -782,9 +775,7 @@ describe('handleNewTransaction function', async function () {
       chai.expect(
         axiosStub
           .getCalls()
-          .find(
-            (e) => e.firstArg === process.env.FLOWXO_NEW_TRANSACTION_WEBHOOK
-          )
+          .find((e) => e.firstArg === FLOWXO_NEW_TRANSACTION_WEBHOOK)
       ).to.be.undefined;
     });
 
@@ -848,7 +839,7 @@ describe('handleNewTransaction function', async function () {
             eventId: txId,
             chainId: 'eip155:137',
             tokenSymbol: 'g1',
-            tokenAddress: process.env.G1_POLYGON_ADDRESS,
+            tokenAddress: G1_POLYGON_ADDRESS,
             senderTgId: mockUserTelegramID,
             senderWallet: mockWallet,
             senderName: mockUserName,
@@ -874,9 +865,7 @@ describe('handleNewTransaction function', async function () {
       chai.expect(
         axiosStub
           .getCalls()
-          .find(
-            (e) => e.firstArg === process.env.FLOWXO_NEW_TRANSACTION_WEBHOOK
-          )
+          .find((e) => e.firstArg === FLOWXO_NEW_TRANSACTION_WEBHOOK)
       ).to.be.undefined;
     });
 
@@ -940,7 +929,7 @@ describe('handleNewTransaction function', async function () {
             eventId: txId,
             chainId: 'eip155:137',
             tokenSymbol: 'g1',
-            tokenAddress: process.env.G1_POLYGON_ADDRESS,
+            tokenAddress: G1_POLYGON_ADDRESS,
             senderTgId: mockUserTelegramID,
             senderWallet: mockWallet,
             senderName: mockUserName,
@@ -966,9 +955,7 @@ describe('handleNewTransaction function', async function () {
       chai.expect(
         axiosStub
           .getCalls()
-          .find(
-            (e) => e.firstArg === process.env.FLOWXO_NEW_TRANSACTION_WEBHOOK
-          )
+          .find((e) => e.firstArg === FLOWXO_NEW_TRANSACTION_WEBHOOK)
       ).to.be.undefined;
     });
 
@@ -1034,7 +1021,7 @@ describe('handleNewTransaction function', async function () {
               eventId: txId,
               chainId: 'eip155:137',
               tokenSymbol: 'g1',
-              tokenAddress: process.env.G1_POLYGON_ADDRESS,
+              tokenAddress: G1_POLYGON_ADDRESS,
               senderTgId: mockUserTelegramID,
               senderWallet: mockWallet,
               senderName: mockUserName,
@@ -1060,9 +1047,7 @@ describe('handleNewTransaction function', async function () {
         chai.expect(
           axiosStub
             .getCalls()
-            .find(
-              (e) => e.firstArg === process.env.FLOWXO_NEW_TRANSACTION_WEBHOOK
-            )
+            .find((e) => e.firstArg === FLOWXO_NEW_TRANSACTION_WEBHOOK)
         ).to.be.undefined;
       });
     });
@@ -1081,7 +1066,7 @@ describe('handleNewTransaction function', async function () {
           eventId: txId,
           chainId: 'eip155:137',
           tokenSymbol: 'g1',
-          tokenAddress: process.env.G1_POLYGON_ADDRESS,
+          tokenAddress: G1_POLYGON_ADDRESS,
           senderTgId: mockUserTelegramID,
           senderWallet: mockWallet,
           senderName: mockUserName,
@@ -1134,7 +1119,7 @@ describe('handleNewTransaction function', async function () {
               eventId: txId,
               chainId: 'eip155:137',
               tokenSymbol: 'g1',
-              tokenAddress: process.env.G1_POLYGON_ADDRESS,
+              tokenAddress: G1_POLYGON_ADDRESS,
               senderTgId: mockUserTelegramID,
               senderWallet: mockWallet,
               senderName: mockUserName,
@@ -1159,15 +1144,13 @@ describe('handleNewTransaction function', async function () {
 
         const FlowXOCallArgs = axiosStub
           .getCalls()
-          .find(
-            (e) => e.firstArg === process.env.FLOWXO_NEW_TRANSACTION_WEBHOOK
-          ).args[1];
+          .find((e) => e.firstArg === FLOWXO_NEW_TRANSACTION_WEBHOOK).args[1];
 
         chai.expect(FlowXOCallArgs).excluding(['dateAdded']).to.deep.equal({
           senderResponsePath: mockResponsePath,
           chainId: 'eip155:137',
           tokenSymbol: 'g1',
-          tokenAddress: process.env.G1_POLYGON_ADDRESS,
+          tokenAddress: G1_POLYGON_ADDRESS,
           senderTgId: mockUserTelegramID,
           senderWallet: mockWallet,
           senderName: mockUserName,
@@ -1199,7 +1182,7 @@ describe('handleNewTransaction function', async function () {
           eventId: txId,
           chainId: 'eip155:137',
           tokenSymbol: 'g1',
-          tokenAddress: process.env.G1_POLYGON_ADDRESS,
+          tokenAddress: G1_POLYGON_ADDRESS,
           senderTgId: mockUserTelegramID,
           senderWallet: mockWallet,
           senderName: mockUserName,
@@ -1259,7 +1242,7 @@ describe('handleNewTransaction function', async function () {
               eventId: txId,
               chainId: 'eip155:137',
               tokenSymbol: 'g1',
-              tokenAddress: process.env.G1_POLYGON_ADDRESS,
+              tokenAddress: G1_POLYGON_ADDRESS,
               senderTgId: mockUserTelegramID,
               senderWallet: mockWallet,
               senderName: mockUserName,
@@ -1285,9 +1268,7 @@ describe('handleNewTransaction function', async function () {
         chai.expect(
           axiosStub
             .getCalls()
-            .find(
-              (e) => e.firstArg === process.env.FLOWXO_NEW_TRANSACTION_WEBHOOK
-            )
+            .find((e) => e.firstArg === FLOWXO_NEW_TRANSACTION_WEBHOOK)
         ).to.be.undefined;
       });
     });
@@ -1306,7 +1287,7 @@ describe('handleNewTransaction function', async function () {
           eventId: txId,
           chainId: 'eip155:137',
           tokenSymbol: 'g1',
-          tokenAddress: process.env.G1_POLYGON_ADDRESS,
+          tokenAddress: G1_POLYGON_ADDRESS,
           senderTgId: mockUserTelegramID,
           senderWallet: mockWallet,
           senderName: mockUserName,
@@ -1363,7 +1344,7 @@ describe('handleNewTransaction function', async function () {
               eventId: txId,
               chainId: 'eip155:137',
               tokenSymbol: 'g1',
-              tokenAddress: process.env.G1_POLYGON_ADDRESS,
+              tokenAddress: G1_POLYGON_ADDRESS,
               senderTgId: mockUserTelegramID,
               senderWallet: mockWallet,
               senderName: mockUserName,
@@ -1388,9 +1369,7 @@ describe('handleNewTransaction function', async function () {
         chai.expect(
           axiosStub
             .getCalls()
-            .find(
-              (e) => e.firstArg === process.env.FLOWXO_NEW_TRANSACTION_WEBHOOK
-            )
+            .find((e) => e.firstArg === FLOWXO_NEW_TRANSACTION_WEBHOOK)
         ).to.be.undefined;
       });
     });
@@ -1409,7 +1388,7 @@ describe('handleNewTransaction function', async function () {
           eventId: txId,
           chainId: 'eip155:137',
           tokenSymbol: 'g1',
-          tokenAddress: process.env.G1_POLYGON_ADDRESS,
+          tokenAddress: G1_POLYGON_ADDRESS,
           senderTgId: mockUserTelegramID,
           senderWallet: mockWallet,
           senderName: mockUserName,
@@ -1468,7 +1447,7 @@ describe('handleNewTransaction function', async function () {
               eventId: txId,
               chainId: 'eip155:137',
               tokenSymbol: 'g1',
-              tokenAddress: process.env.G1_POLYGON_ADDRESS,
+              tokenAddress: G1_POLYGON_ADDRESS,
               senderTgId: mockUserTelegramID,
               senderWallet: mockWallet,
               senderName: mockUserName,
@@ -1494,9 +1473,7 @@ describe('handleNewTransaction function', async function () {
         chai.expect(
           axiosStub
             .getCalls()
-            .find(
-              (e) => e.firstArg === process.env.FLOWXO_NEW_TRANSACTION_WEBHOOK
-            )
+            .find((e) => e.firstArg === FLOWXO_NEW_TRANSACTION_WEBHOOK)
         ).to.be.undefined;
       });
     });
@@ -1515,7 +1492,7 @@ describe('handleNewTransaction function', async function () {
           eventId: txId,
           chainId: 'eip155:137',
           tokenSymbol: 'g1',
-          tokenAddress: process.env.G1_POLYGON_ADDRESS,
+          tokenAddress: G1_POLYGON_ADDRESS,
           senderTgId: mockUserTelegramID,
           senderWallet: mockWallet,
           senderName: mockUserName,
@@ -1567,7 +1544,7 @@ describe('handleNewTransaction function', async function () {
               eventId: txId,
               chainId: 'eip155:137',
               tokenSymbol: 'g1',
-              tokenAddress: process.env.G1_POLYGON_ADDRESS,
+              tokenAddress: G1_POLYGON_ADDRESS,
               senderTgId: mockUserTelegramID,
               senderWallet: mockWallet,
               senderName: mockUserName,
@@ -1593,9 +1570,7 @@ describe('handleNewTransaction function', async function () {
         chai.expect(
           axiosStub
             .getCalls()
-            .find(
-              (e) => e.firstArg === process.env.FLOWXO_NEW_TRANSACTION_WEBHOOK
-            )
+            .find((e) => e.firstArg === FLOWXO_NEW_TRANSACTION_WEBHOOK)
         ).to.be.undefined;
       });
     });
@@ -1614,7 +1589,7 @@ describe('handleNewTransaction function', async function () {
           eventId: txId,
           chainId: 'eip155:137',
           tokenSymbol: 'g1',
-          tokenAddress: process.env.G1_POLYGON_ADDRESS,
+          tokenAddress: G1_POLYGON_ADDRESS,
           senderTgId: mockUserTelegramID,
           senderWallet: mockWallet,
           senderName: mockUserName,
@@ -1674,7 +1649,7 @@ describe('handleNewTransaction function', async function () {
               eventId: txId,
               chainId: 'eip155:137',
               tokenSymbol: 'g1',
-              tokenAddress: process.env.G1_POLYGON_ADDRESS,
+              tokenAddress: G1_POLYGON_ADDRESS,
               senderTgId: mockUserTelegramID,
               senderWallet: mockWallet,
               senderName: mockUserName,
@@ -1700,9 +1675,7 @@ describe('handleNewTransaction function', async function () {
         chai.expect(
           axiosStub
             .getCalls()
-            .find(
-              (e) => e.firstArg === process.env.FLOWXO_NEW_TRANSACTION_WEBHOOK
-            )
+            .find((e) => e.firstArg === FLOWXO_NEW_TRANSACTION_WEBHOOK)
         ).to.be.undefined;
       });
     });

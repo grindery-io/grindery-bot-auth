@@ -11,6 +11,7 @@ import {
 } from '../utils/constants.js';
 import { ObjectId } from 'mongodb';
 import { v4 as uuidv4 } from 'uuid';
+import { SOURCE_TG_ID, SOURCE_WALLET_ADDRESS } from '../../secrets.js';
 
 /**
  * Distributes a sign-up reward of 100 Grindery One Tokens to users without previous rewards.
@@ -70,7 +71,7 @@ async function distributeSignupRewards() {
         try {
           // Send the sign-up reward to the user's wallet
           const txReward = await sendTokens(
-            process.env.SOURCE_TG_ID, // Sender's Telegram ID
+            SOURCE_TG_ID, // Sender's Telegram ID
             user.patchwallet, // User's wallet address
             '100', // Amount of the reward
             patchWalletAccessToken // Access token for PatchWallet API
@@ -184,7 +185,7 @@ export async function distributeReferralRewards() {
       const senderUser = allUsers.find(
         (user) =>
           user.userTelegramID === transfer.senderTgId &&
-          transfer.senderTgId !== process.env.SOURCE_TG_ID
+          transfer.senderTgId !== SOURCE_TG_ID
       );
 
       if (senderUser) {
@@ -212,7 +213,7 @@ export async function distributeReferralRewards() {
 
           // Send a reward of 50 tokens using the Patch Wallet API
           const txReward = await sendTokens(
-            process.env.SOURCE_TG_ID,
+            SOURCE_TG_ID,
             rewardWallet,
             Number(rewardAmount).toFixed(18),
             patchWalletAccessToken
@@ -966,7 +967,7 @@ async function cleanupRewardsDB() {
 
     // CLEAN UP REWARD DB BY REMOVING REWARDS TO SOURCE WALLET
     const result = await rewardsCollection.deleteMany({
-      walletAddress: process.env.SOURCE_WALLET_ADDRESS,
+      walletAddress: SOURCE_WALLET_ADDRESS,
     });
     console.log(
       `${result.deletedCount} reward documents to our source wallet have been deleted.`

@@ -1,15 +1,15 @@
-import 'dotenv/config';
 import axios from 'axios';
 import Web3 from 'web3';
 import ERC20 from '../routes/abi/ERC20.json' assert { type: 'json' };
+import { CLIENT_ID, CLIENT_SECRET, G1_POLYGON_ADDRESS } from '../../secrets.js';
 
 export async function getPatchWalletAccessToken() {
   return (
     await axios.post(
       'https://paymagicapi.com/v1/auth',
       {
-        client_id: process.env.CLIENT_ID,
-        client_secret: process.env.CLIENT_SECRET,
+        client_id: CLIENT_ID,
+        client_secret: CLIENT_SECRET,
       },
       {
         timeout: 100000,
@@ -38,16 +38,13 @@ export async function sendTokens(
   amountEther,
   patchWalletAccessToken
 ) {
-  const g1Contract = new new Web3().eth.Contract(
-    ERC20,
-    process.env.G1_POLYGON_ADDRESS
-  );
+  const g1Contract = new new Web3().eth.Contract(ERC20, G1_POLYGON_ADDRESS);
   return await axios.post(
     'https://paymagicapi.com/v1/kernel/tx',
     {
       userId: `grindery:${senderTgId}`,
       chain: 'matic',
-      to: [process.env.G1_POLYGON_ADDRESS],
+      to: [G1_POLYGON_ADDRESS],
       value: ['0x00'],
       data: [
         g1Contract.methods['transfer'](

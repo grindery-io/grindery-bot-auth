@@ -12,6 +12,7 @@ import { swap_helpers } from '../swapHelpers.js';
 import { Database } from '../../db/conn.js';
 import axios from 'axios';
 import { addTrackSwapSegment } from '../segment.js';
+import { FLOWXO_NEW_SWAP_WEBHOOK } from '../../../secrets.js';
 
 export async function handleSwap(params) {
   const db = await Database.getInstance();
@@ -226,7 +227,7 @@ export async function handleSwap(params) {
         `[SWAP EVENT] transaction hash [${tx.data.txHash}] with event ID [${params.eventId}] from ${params.senderTgId} added to Segment.`
       );
 
-      await axios.post(process.env.FLOWXO_NEW_SWAP_WEBHOOK, {
+      await axios.post(FLOWXO_NEW_SWAP_WEBHOOK, {
         eventId: params.eventId,
         chainId: 'eip155:137',
         userTelegramID: params.userTelegramID,
