@@ -1,7 +1,7 @@
 import axios from 'axios';
 import jwt_decode from 'jwt-decode';
 import { webcrypto } from 'crypto';
-import { getApiKey, getBotToken } from '../../secrets.js';
+import { API_KEY, BOT_TOKEN } from '../../secrets.js';
 
 export const checkToken = async (token, workspaceKey) => {
   try {
@@ -67,7 +67,7 @@ export const authenticateApiKey = async (req, res, next) => {
       msg: 'Missing API key in headers',
     });
   }
-  if (apiKey !== `Bearer ${await getApiKey()}`) {
+  if (apiKey !== `Bearer ${API_KEY}`) {
     return res.status(401).send({
       msg: 'Invalid API key',
     });
@@ -76,7 +76,6 @@ export const authenticateApiKey = async (req, res, next) => {
 };
 
 export const telegramHashIsValid = async (req, res, next) => {
-  const BOT_TOKEN = await getBotToken();
   if (!BOT_TOKEN) {
     return res.status(500).json({ error: 'Internal server error' });
   }

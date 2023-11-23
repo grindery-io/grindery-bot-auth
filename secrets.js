@@ -24,8 +24,6 @@ async function getSecretVersion(secretName) {
   }
 }
 
-const PROJECT_ID_PATH = `projects/${process.env.PROJECT_ID}/secrets`;
-
 /**
  * Retrieves a secret from Google Secret Manager based on the provided secret name.
  * @param {string} secretName - The name of the secret to retrieve.
@@ -33,9 +31,7 @@ const PROJECT_ID_PATH = `projects/${process.env.PROJECT_ID}/secrets`;
  */
 async function getSecret(secretName) {
   if (process.env.NOT_GOOGLE_SECRET) return null;
-  return await getSecretVersion(
-    `${PROJECT_ID_PATH}/${secretName}/versions/latest`
-  );
+  return await getSecretVersion(secretName);
 }
 
 /**
@@ -81,49 +77,41 @@ export const CHAINSTACK_API_KEY = process.env.CHAINSTACK_API_KEY || '';
 export const CHAINSTACK_API_KEY_2 = process.env.CHAINSTACK_API_KEY_2 || '';
 
 /**
- * Récupère de manière asynchrone le jeton du bot depuis Google Secret Manager ou les variables d'environnement.
- * Par défaut : une chaîne vide si non trouvé dans Secret Manager ou l'environnement.
- * @returns {Promise<string>} Le jeton du bot récupéré ou une chaîne vide.
+ * The token used for the bot's authentication.
+ * Retrieves the BOT_TOKEN from secrets or falls back to the environment variable BOT_TOKEN.
  */
-export const getBotToken = async () => {
-  return (await getSecret('bot-token')) || process.env.BOT_TOKEN || '';
-};
+export const BOT_TOKEN =
+  (await getSecret(process.env.BOT_TOKEN_NAME)) || process.env.BOT_TOKEN || '';
 
 /**
- * Récupère de manière asynchrone l'ID du client depuis Google Secret Manager ou les variables d'environnement.
- * Par défaut : une chaîne vide si non trouvé dans Secret Manager ou l'environnement.
- * @returns {Promise<string>} L'ID du client récupéré ou une chaîne vide.
+ * The client ID required for authentication.
+ * Retrieves the CLIENT_ID from secrets or falls back to the environment variable CLIENT_ID.
  */
-export const getClientId = async () => {
-  return (await getSecret('client-id')) || process.env.CLIENT_ID || '';
-};
+export const CLIENT_ID =
+  (await getSecret(process.env.CLIENT_ID_NAME)) || process.env.CLIENT_ID || '';
 
 /**
- * Récupère de manière asynchrone le secret du client depuis Google Secret Manager ou les variables d'environnement.
- * Par défaut : une chaîne vide si non trouvé dans Secret Manager ou l'environnement.
- * @returns {Promise<string>} Le secret du client récupéré ou une chaîne vide.
+ * The client secret used for authentication.
+ * Retrieves the CLIENT_SECRET from secrets or falls back to the environment variable CLIENT_SECRET.
  */
-export const getClientSecret = async () => {
-  return (await getSecret('client-secret')) || process.env.CLIENT_SECRET || '';
-};
+export const CLIENT_SECRET =
+  (await getSecret(process.env.CLIENT_SECRET_NAME)) ||
+  process.env.CLIENT_SECRET ||
+  '';
 
 /**
- * Récupère de manière asynchrone la clé API depuis Google Secret Manager ou les variables d'environnement.
- * Par défaut : une chaîne vide si non trouvé dans Secret Manager ou l'environnement.
- * @returns {Promise<string>} La clé API récupérée ou une chaîne vide.
+ * The API key used for authentication.
+ * Retrieves the API_KEY from secrets or falls back to the environment variable API_KEY.
  */
-export const getApiKey = async () => {
-  return (await getSecret('api-key')) || process.env.API_KEY || '';
-};
+export const API_KEY =
+  (await getSecret(process.env.API_KEY_NAME)) || process.env.API_KEY || '';
 
 /**
- * Récupère de manière asynchrone l'URI Atlas depuis Google Secret Manager ou les variables d'environnement.
- * Par défaut : une chaîne vide si non trouvé dans Secret Manager ou l'environnement.
- * @returns {Promise<string>} L'URI Atlas récupéré ou une chaîne vide.
+ * The URI for the Atlas.
+ * Retrieves the ATLAS_URI from secrets or falls back to the environment variable ATLAS_URI.
  */
-export const getAtlasUri = async () => {
-  return (await getSecret('atlas-uri')) || process.env.ATLAS_URI || '';
-};
+export const ATLAS_URI =
+  (await getSecret(process.env.ATLAS_URI_NAME)) || process.env.ATLAS_URI || '';
 
 /**
  * The G1 Polygon address used for something.
