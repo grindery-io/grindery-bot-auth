@@ -118,6 +118,8 @@ describe('handleNewTransaction function', async function () {
         amount: '100',
         recipientTgId: mockUserTelegramID1,
         eventId: txId,
+        chainId: 'eip155:55',
+        tokenAddress: '0x12345678910',
       });
 
       const transfers = await collectionTransfersMock.find({}).toArray();
@@ -128,9 +130,9 @@ describe('handleNewTransaction function', async function () {
         .to.deep.equal([
           {
             eventId: txId,
-            chainId: 'eip155:137',
+            chainId: 'eip155:55',
             tokenSymbol: 'g1',
-            tokenAddress: process.env.G1_POLYGON_ADDRESS,
+            tokenAddress: '0x12345678910',
             senderTgId: mockUserTelegramID,
             senderWallet: mockWallet,
             senderName: mockUserName,

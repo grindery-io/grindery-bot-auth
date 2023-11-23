@@ -36,7 +36,9 @@ export async function handleNewTransaction(params) {
     params.eventId,
     senderInformation,
     params.recipientTgId,
-    params.amount
+    params.amount,
+    params.chainId,
+    params.tokenAddress
   );
   if (!transfer) return false;
   if (transfer.isSuccess() || transfer.isFailure()) return true;
