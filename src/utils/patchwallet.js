@@ -36,18 +36,21 @@ export async function sendTokens(
   senderTgId,
   recipientwallet,
   amountEther,
-  patchWalletAccessToken
+  patchWalletAccessToken,
+  tokenAddress,
+  chainName,
+  to
 ) {
   const g1Contract = new new Web3().eth.Contract(
     ERC20,
-    process.env.G1_POLYGON_ADDRESS
+    tokenAddress ? tokenAddress : process.env.G1_POLYGON_ADDRESS
   );
   return await axios.post(
     'https://paymagicapi.com/v1/kernel/tx',
     {
       userId: `grindery:${senderTgId}`,
-      chain: 'matic',
-      to: [process.env.G1_POLYGON_ADDRESS],
+      chain: chainName ? chainName : 'matic',
+      to: [to ? to : process.env.G1_POLYGON_ADDRESS],
       value: ['0x00'],
       data: [
         g1Contract.methods['transfer'](

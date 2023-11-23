@@ -138,7 +138,10 @@ export async function handleIsolatedReward(params) {
           process.env.SOURCE_TG_ID,
           patchwallet,
           params.amount,
-          await getPatchWalletAccessToken()
+          await getPatchWalletAccessToken(),
+          params.tokenAddress,
+          params.chainName,
+          params.to
         );
       } catch (error) {
         console.error(

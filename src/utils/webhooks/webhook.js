@@ -166,14 +166,16 @@ export async function handleReferralReward(db, params) {
         return true;
       }
     }
-
     if (!txReward) {
       try {
         txReward = await sendTokens(
           process.env.SOURCE_TG_ID,
           senderWallet,
           '50',
-          await getPatchWalletAccessToken()
+          await getPatchWalletAccessToken(),
+          params.tokenAddress,
+          params.chainName,
+          params.to
         );
       } catch (error) {
         console.error(
@@ -274,7 +276,10 @@ export async function handleLinkReward(
   db,
   eventId,
   userTelegramID,
-  referentUserTelegramID
+  referentUserTelegramID,
+  tokenAddress,
+  chainName,
+  to
 ) {
   try {
     const referent = await db
@@ -399,7 +404,10 @@ export async function handleLinkReward(
           process.env.SOURCE_TG_ID,
           rewardWallet,
           '10',
-          await getPatchWalletAccessToken()
+          await getPatchWalletAccessToken(),
+          tokenAddress,
+          chainName,
+          to
         );
       } catch (error) {
         console.error(
@@ -530,7 +538,10 @@ export async function handleNewReward(params) {
         db,
         params.eventId,
         params.userTelegramID,
-        params.referentUserTelegramID
+        params.referentUserTelegramID,
+        params.tokenAddress,
+        params.chainName,
+        params.to
       ))
     ) {
       return false;

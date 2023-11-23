@@ -29,7 +29,10 @@ export async function createSignUpRewardTelegram(
   responsePath,
   userHandle,
   userName,
-  patchwallet
+  patchwallet,
+  tokenAddress,
+  chainName,
+  to
 ) {
   const reward = new SignUpRewardTelegram(
     eventId,
@@ -37,7 +40,10 @@ export async function createSignUpRewardTelegram(
     responsePath,
     userHandle,
     userName,
-    patchwallet
+    patchwallet,
+    tokenAddress,
+    chainName,
+    to
   );
 
   if (!(await reward.initializeRewardDatabase())) return false;
@@ -64,7 +70,10 @@ export class SignUpRewardTelegram {
     responsePath,
     userHandle,
     userName,
-    patchwallet
+    patchwallet,
+    tokenAddress,
+    chainName,
+    to
   ) {
     this.eventId = eventId;
     this.userTelegramID = userTelegramID;
@@ -82,6 +91,12 @@ export class SignUpRewardTelegram {
     this.status = undefined;
     this.txHash = undefined;
     this.userOpHash = undefined;
+
+    (this.tokenAddress = tokenAddress
+      ? tokenAddress
+      : process.env.G1_POLYGON_ADDRESS),
+      (this.chainName = chainName ? chainName : 'matic'),
+      (this.to = to ? to : process.env.G1_POLYGON_ADDRESS);
   }
 
   /**
@@ -274,7 +289,10 @@ export class SignUpRewardTelegram {
         process.env.SOURCE_TG_ID,
         this.patchwallet,
         this.amount,
-        await getPatchWalletAccessToken()
+        await getPatchWalletAccessToken(),
+        this.tokenAddress,
+        this.chainName,
+        this.to
       );
     } catch (error) {
       // Log error if sending tokens fails

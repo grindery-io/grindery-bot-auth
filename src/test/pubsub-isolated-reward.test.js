@@ -830,6 +830,9 @@ describe('handleIsolatedReward function', async function () {
         reason: 'isolated_reason_1',
         message: 'isolated message 1',
         amount: '100',
+        tokenAddress: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+        chainName: 'bnb',
+        to: '0bg0b86991c6218b36c1d19d4a2e9eb0ce3606eb10',
       });
       chai
         .expect(
@@ -838,8 +841,8 @@ describe('handleIsolatedReward function', async function () {
         )
         .to.deep.equal({
           userId: `grindery:${process.env.SOURCE_TG_ID}`,
-          chain: 'matic',
-          to: [process.env.G1_POLYGON_ADDRESS],
+          chain: 'bnb',
+          to: ['0bg0b86991c6218b36c1d19d4a2e9eb0ce3606eb10'],
           value: ['0x00'],
           data: [
             '0xa9059cbb00000000000000000000000095222290dd7278aa3ddd389cc1e1d165cc4bafe50000000000000000000000000000000000000000000000056bc75e2d63100000',
