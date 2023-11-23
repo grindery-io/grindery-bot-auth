@@ -55,8 +55,6 @@ async function importUsersFromCSV(filePath) {
   }
 }
 
-importUsersFromCSV('/Users/tcoratger/Downloads/655a479c0e30ca0027b8347f.csv');
-
 // Usage: importUsersFromJSON(filePath)
 // Description: This function imports user data from a JSON file into the database.
 // - filePath: The path to the JSON file containing user data.
