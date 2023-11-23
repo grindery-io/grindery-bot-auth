@@ -18,129 +18,154 @@ import { ObjectId } from 'mongodb';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
- * Distributes a sign-up reward of 100 Grindery One Tokens to users without previous rewards.
- * Renewal of Patch Wallet access token is handled.
+ * Distributes sign-up rewards of 100 Grindery One Tokens to eligible users.
+ * Manages the renewal of the Patch Wallet access token.
+ *
+ * @returns {void} No return value.
  */
 async function distributeSignupRewards() {
+  // Set startDate to 24 hours before the current date and time
+  const startDate = new Date();
+  startDate.setHours(startDate.getHours() - 24);
+
+  // Number of users processed in each batch
+  const batchSize = 10;
+
   try {
+    // Retrieve database instance and rewards collection
     const db = await Database.getInstance();
     const rewardsCollection = db.collection(REWARDS_COLLECTION);
 
+    // Initialize Patch Wallet access token and last renewal time
     let patchWalletAccessToken = await getPatchWalletAccessToken();
     let lastTokenRenewalTime = Date.now();
 
+    // Fetch users added within the last 24 hours
     const allUsers = await db
       .collection(USERS_COLLECTION)
       .find({
-        dateAdded: { $gt: new Date('2023-11-16T12:00:00.000Z') },
+        dateAdded: { $gt: new Date(startDate) },
       })
       .toArray();
 
+    // Counter for processed users
     let userCount = 0;
 
+    // Fetch successful sign-up rewards within the last 48 hours
     const allRewards = await rewardsCollection
       .find({
         reason: 'user_sign_up',
         status: 'success',
-        dateAdded: { $gt: new Date('2023-11-15T09:00:00.000Z') },
+        dateAdded: { $gt: new Date(new Date(startDate) - 24 * 60 * 60 * 1000) },
       })
       .toArray();
 
-    async function processBatch(startIndex, batchSize) {
-      const endIndex = Math.min(startIndex + batchSize, allUsers.length);
-      const batchPromises = [];
+    // Array to hold batch promises
+    const batchPromises = [];
 
-      for (let i = startIndex; i < endIndex; i++) {
-        const user = allUsers[i];
-        userCount++;
+    for (const user of allUsers) {
+      // Increment user count for logging
+      userCount++;
 
-        if (
-          !allRewards.some(
-            (reward) => reward.userTelegramID === user.userTelegramID
-          )
-        ) {
-          console.log(
-            `[${userCount}/${allUsers.length}] User ${user.userTelegramID} has no sign up reward`
-          );
+      // Check if the user has not received a sign-up reward
+      if (
+        !allRewards.some(
+          (reward) => reward.userTelegramID === user.userTelegramID
+        )
+      ) {
+        console.log(
+          `[${userCount}/${allUsers.length}] User ${user.userTelegramID} has no sign up reward`
+        );
 
-          if (Date.now() - lastTokenRenewalTime >= 50 * 60 * 1000) {
-            patchWalletAccessToken = await getPatchWalletAccessToken();
-            lastTokenRenewalTime = Date.now();
+        // Manage token renewal at intervals
+        if (Date.now() - lastTokenRenewalTime >= 50 * 60 * 1000) {
+          patchWalletAccessToken = await getPatchWalletAccessToken();
+          lastTokenRenewalTime = Date.now();
 
-            console.log('PatchWallet access token has been updated.');
-          }
+          console.log('PatchWallet access token has been updated.');
+        }
 
-          const userPromise = (async () => {
-            try {
-              const txReward = await sendTokens(
-                process.env.SOURCE_TG_ID,
-                user.patchwallet,
-                '100',
-                patchWalletAccessToken
-              );
+        const userPromise = (async () => {
+          try {
+            // Send reward to eligible users
+            const txReward = await sendTokens(
+              process.env.SOURCE_TG_ID,
+              user.patchwallet,
+              '100',
+              patchWalletAccessToken
+            );
 
-              if (txReward.data.txHash) {
-                await rewardsCollection.insertOne({
-                  userTelegramID: user.userTelegramID,
-                  responsePath: user.responsePath,
-                  walletAddress: user.patchwallet,
-                  reason: 'user_sign_up',
-                  userHandle: user.userHandle,
-                  userName: user.userName,
-                  amount: '100',
-                  message: 'Sign up reward',
-                  transactionHash: txReward.data.txHash,
-                  userOpHash: txReward.data.userOpHash,
-                  dateAdded: new Date(Date.now()),
-                  status: 'success',
-                  eventId: uuidv4(),
-                });
+            // Record successful transactions in rewards collection
+            if (txReward.data.txHash) {
+              await rewardsCollection.insertOne({
+                userTelegramID: user.userTelegramID,
+                responsePath: user.responsePath,
+                walletAddress: user.patchwallet,
+                reason: 'user_sign_up',
+                userHandle: user.userHandle,
+                userName: user.userName,
+                amount: '100',
+                message: 'Sign up reward',
+                transactionHash: txReward.data.txHash,
+                userOpHash: txReward.data.userOpHash,
+                dateAdded: new Date(Date.now()),
+                status: 'success',
+                eventId: uuidv4(),
+              });
 
-                console.log(
-                  `[${userCount}/${allUsers.length}] User ${user.userTelegramID} has been rewarded for signing up.`
-                );
-              }
-            } catch (error) {
-              console.error(
-                'An error occurred during reward distribution:',
-                error
+              console.log(
+                `[${userCount}/${allUsers.length}] User ${user.userTelegramID} has been rewarded for signing up.`
               );
             }
-          })();
+          } catch (error) {
+            console.error(
+              'An error occurred during reward distribution:',
+              error
+            );
+          }
+        })();
 
-          batchPromises.push(userPromise);
-        }
-
-        if (batchPromises.length === batchSize || i === endIndex - 1) {
-          await Promise.all(batchPromises);
-          batchPromises.length = 0;
-        }
+        batchPromises.push(userPromise);
       }
-    }
 
-    const batchSize = 20;
-    for (let start = 0; start < allUsers.length; start += batchSize) {
-      await processBatch(start, batchSize);
+      // Execute reward distribution in batches
+      if (batchPromises.length === batchSize || userCount === allUsers.length) {
+        await Promise.all(batchPromises);
+        batchPromises.length = 0; // Reset batch promises array
+      }
     }
 
     console.log('All sign-up rewards have been distributed.');
   } catch (error) {
     console.error('An error occurred:', error);
   } finally {
+    // Ensure process exit for cleanup and termination
     process.exit(0);
   }
 }
 
+/**
+ * Distributes referral rewards to eligible users who made successful referrals.
+ * Manages the renewal of the Patch Wallet access token.
+ *
+ * @returns {void} No return value.
+ */
 async function distributeReferralRewards() {
-  const startDate = '2023-11-14T12:00:00.000Z';
+  // Set startDate to 24 hours before the current date and time
+  const startDate = new Date();
+  startDate.setHours(startDate.getHours() - 24);
+
+  // Number of users processed in each batch
   const batchSize = 10;
 
   try {
+    // Retrieve database instance and necessary collections
     const db = await Database.getInstance();
     const rewardsCollection = db.collection(REWARDS_COLLECTION);
     const usersCollection = db.collection(USERS_COLLECTION);
     const transfersCollection = db.collection(TRANSFERS_COLLECTION);
 
+    // Fetch users and transfers added within the last 24 hours
     const allUsers = await usersCollection
       .find({ dateAdded: { $gt: new Date(startDate) } })
       .toArray();
@@ -156,17 +181,20 @@ async function distributeReferralRewards() {
       })
       .toArray();
 
-    // Initial PatchWallet access token
+    // Initial PatchWallet access token and last renewal time
     let patchWalletAccessToken = await getPatchWalletAccessToken();
     let lastTokenRenewalTime = Date.now();
 
+    // Counter for processed users
     let userCount = 0;
+    // Array to hold batch promises
     const batchPromises = [];
 
     for (const user of allUsers) {
+      // Increment user count for logging
       userCount++;
 
-      // Finding the first valid transfer
+      // Find the first valid transfer for the user
       const firstValidTransfer = allTransfers.find(
         (transfer) =>
           transfer.recipientTgId === user.userTelegramID &&
@@ -176,7 +204,7 @@ async function distributeReferralRewards() {
 
       if (!firstValidTransfer) continue;
 
-      // Checking for existing rewards for this user
+      // Check for existing rewards for this user
       const existingReward = allRewards.some(
         (reward) =>
           reward.parentTransactionHash === firstValidTransfer.transactionHash ||
@@ -191,7 +219,7 @@ async function distributeReferralRewards() {
 
       const rewardPromise = (async () => {
         try {
-          // Determining reward details
+          // Determine reward details
           const rewardWallet = await getPatchWalletAddressFromTgId(
             firstValidTransfer.senderTgId
           );
@@ -202,14 +230,14 @@ async function distributeReferralRewards() {
               ? (Number(firstValidTransfer.tokenAmount) * 2).toString()
               : '50';
 
-          // Renewing PatchWallet access token if needed
+          // Renew PatchWallet access token if needed
           if (Date.now() - lastTokenRenewalTime >= 50 * 60 * 1000) {
             patchWalletAccessToken = await getPatchWalletAccessToken();
             lastTokenRenewalTime = Date.now();
             console.log('PatchWallet access token has been updated.');
           }
 
-          // Sending tokens and adding rewards
+          // Send tokens and add rewards to collection
           const txReward = await sendTokens(
             process.env.SOURCE_TG_ID,
             rewardWallet,
@@ -227,7 +255,7 @@ async function distributeReferralRewards() {
             transactionHash: txReward.data.txHash,
             userOpHash: txReward.data.userOpHash,
             parentTransactionHash: firstValidTransfer.transactionHash,
-            dateAdded: new Date(Date.now()),
+            dateAdded: new Date(),
             newUserAddress:
               user.patchwallet ??
               (await getPatchWalletAddressFromTgId(user.userTelegramID)),
@@ -244,10 +272,10 @@ async function distributeReferralRewards() {
 
       batchPromises.push(rewardPromise);
 
-      // Executing the batch when reaching batchSize
+      // Execute batch when reaching batchSize or end of user list
       if (batchPromises.length === batchSize || userCount === allUsers.length) {
         await Promise.all(batchPromises);
-        batchPromises.length = 0;
+        batchPromises.length = 0; // Reset batch promises array
       }
     }
 
@@ -255,11 +283,9 @@ async function distributeReferralRewards() {
   } catch (error) {
     console.error('An error occurred:', error);
   } finally {
-    process.exit(0);
+    process.exit(0); // Exit the process after execution
   }
 }
-
-// distributeReferralRewards();
 
 // Usage: startImport(filePath)
 // Description: This function imports rewards data from a CSV file into the database.
