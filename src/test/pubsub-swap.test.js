@@ -151,6 +151,8 @@ describe('handleSwap function', async function () {
         from: mockFromSwap,
         tokenInSymbol: mockTokenInSymbol,
         tokenOutSymbol: mockTokenOutSymbol,
+        chainId: 'eip155:55',
+        chainName: 'matic',
       });
 
       const swaps = await collectionSwapsMock.find({}).toArray();
@@ -162,7 +164,7 @@ describe('handleSwap function', async function () {
           {
             eventId: swapId,
             TxId: mockTransactionHash.substring(1, 8),
-            chainId: 'eip155:137',
+            chainId: 'eip155:55',
             userTelegramID: mockUserTelegramID,
             userWallet: mockWallet,
             userName: mockUserName,

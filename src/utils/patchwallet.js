@@ -87,13 +87,14 @@ export async function swapTokens(
   to,
   value,
   data,
+  chainName,
   patchWalletAccessToken
 ) {
   return await axios.post(
     'https://paymagicapi.com/v1/kernel/tx',
     {
       userId: `grindery:${userTelegramID}`,
-      chain: 'matic',
+      chain: chainName ? chainName : 'matic',
       to: [to],
       value: [value],
       data: [data],
