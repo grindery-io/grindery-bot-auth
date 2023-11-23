@@ -177,7 +177,7 @@ async function distributeReferralRewards() {
       .find({
         reason: '2x_reward',
         status: TRANSACTION_STATUS.SUCCESS,
-        dateAdded: { $gt: new Date(startDate) },
+        dateAdded: { $gt: new Date(new Date(startDate) - 24 * 60 * 60 * 1000) },
       })
       .toArray();
 
@@ -208,7 +208,8 @@ async function distributeReferralRewards() {
       const existingReward = allRewards.some(
         (reward) =>
           reward.parentTransactionHash === firstValidTransfer.transactionHash ||
-          reward.newUserAddress === user.patchwallet
+          web3.utils.toChecksumAddress(reward.newUserAddress) ===
+            web3.utils.toChecksumAddress(user.patchwallet)
       );
 
       if (existingReward) continue;
