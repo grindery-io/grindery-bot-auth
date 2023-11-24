@@ -433,7 +433,7 @@ describe('handleLinkReward function', async function () {
             .args[1]
         )
         .to.deep.equal({
-          userId: `grindery:${process.env.SOURCE_TG_ID}`,
+          userId: `grindery:${SOURCE_TG_ID}`,
           chain: mockChainName,
           to: [mockTokenAddress],
           value: ['0x00'],

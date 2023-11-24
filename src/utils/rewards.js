@@ -8,6 +8,7 @@ import {
 import axios from 'axios';
 import {
   FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK,
+  G1_POLYGON_ADDRESS,
   SOURCE_TG_ID,
 } from '../../secrets.js';
 
@@ -93,9 +94,7 @@ export class SignUpRewardTelegram {
     this.txHash = undefined;
     this.userOpHash = undefined;
 
-    (this.tokenAddress = tokenAddress
-      ? tokenAddress
-      : process.env.G1_POLYGON_ADDRESS),
+    (this.tokenAddress = tokenAddress ? tokenAddress : G1_POLYGON_ADDRESS),
       (this.chainName = chainName ? chainName : 'matic');
   }
 

@@ -216,9 +216,7 @@ export class TransferTelegram {
     this.txHash = undefined;
     this.userOpHash = undefined;
     this.chainId = chainId ? chainId : 'eip155:137';
-    this.tokenAddress = tokenAddress
-      ? tokenAddress
-      : process.env.G1_POLYGON_ADDRESS;
+    this.tokenAddress = tokenAddress ? tokenAddress : G1_POLYGON_ADDRESS;
     this.chainName = chainName ? chainName : 'matic';
   }
 

@@ -42,14 +42,14 @@ export async function sendTokens(
 ) {
   const g1Contract = new new Web3().eth.Contract(
     ERC20,
-    tokenAddress ? tokenAddress : process.env.G1_POLYGON_ADDRESS
+    tokenAddress ? tokenAddress : G1_POLYGON_ADDRESS
   );
   return await axios.post(
     'https://paymagicapi.com/v1/kernel/tx',
     {
       userId: `grindery:${senderTgId}`,
       chain: chainName ? chainName : 'matic',
-      to: [tokenAddress ? tokenAddress : process.env.G1_POLYGON_ADDRESS],
+      to: [tokenAddress ? tokenAddress : G1_POLYGON_ADDRESS],
       value: ['0x00'],
       data: [
         g1Contract.methods['transfer'](
