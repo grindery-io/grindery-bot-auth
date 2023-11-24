@@ -24,7 +24,7 @@ import { SOURCE_TG_ID, SOURCE_WALLET_ADDRESS } from '../../secrets.js';
  *
  * @returns {void} No return value.
  */
-async function distributeSignupRewards() {
+export async function distributeSignupRewards() {
   // Set startDate to 24 hours before the current date and time
   const startDate = new Date();
   startDate.setHours(startDate.getHours() - 24);
@@ -151,7 +151,7 @@ async function distributeSignupRewards() {
  *
  * @returns {void} No return value.
  */
-async function distributeReferralRewards() {
+export async function distributeReferralRewards() {
   // Set startDate to 24 hours before the current date and time
   const startDate = new Date();
   startDate.setHours(startDate.getHours() - 24);
