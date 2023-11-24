@@ -1,4 +1,3 @@
-import { Database } from '../../db/conn.js';
 import { createUserTelegram } from '../user.js';
 import { signup_utils } from './signup-reward.js';
 import { referral_utils } from './referral-reward.js';
@@ -11,8 +10,6 @@ import { link_reward_utils } from './link-reward.js';
  * @returns {Promise<boolean>} - Returns true if the operation was successful, false otherwise.
  */
 export async function handleNewReward(params) {
-  const db = await Database.getInstance();
-
   const user = await createUserTelegram(
     params.userTelegramID,
     params.responsePath,
@@ -28,41 +25,35 @@ export async function handleNewReward(params) {
     return true;
   }
 
-  if (!user.patchwallet) {
-    return false;
-  }
+  if (!user.patchwallet) return false;
 
   if (
     !(await signup_utils.handleSignUpReward({
       ...params,
       patchwallet: user.patchwallet,
     }))
-  ) {
+  )
     return false;
-  }
 
   if (
     !(await referral_utils.handleReferralReward({
       ...params,
       patchwallet: user.patchwallet,
     }))
-  ) {
+  )
     return false;
-  }
 
-  if (params.referentUserTelegramID) {
-    if (
-      !(await link_reward_utils.handleLinkReward(
-        params.eventId,
-        params.userTelegramID,
-        params.referentUserTelegramID,
-        params.tokenAddress,
-        params.chainName
-      ))
-    ) {
-      return false;
-    }
-  }
+  if (
+    params.referentUserTelegramID &&
+    !(await link_reward_utils.handleLinkReward(
+      params.eventId,
+      params.userTelegramID,
+      params.referentUserTelegramID,
+      params.tokenAddress,
+      params.chainName
+    ))
+  )
+    return false;
 
   if (!(await user.isUserInDatabase())) {
     await user.saveToDatabase(params.eventId);
