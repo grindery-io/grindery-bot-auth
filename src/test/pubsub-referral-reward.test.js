@@ -38,7 +38,6 @@ import {
   mockTokenAddress,
   mockChainName,
 } from './utils.js';
-import { handleReferralReward } from '../utils/webhooks/webhook.js';
 import Sinon from 'sinon';
 import axios from 'axios';
 
@@ -50,6 +49,7 @@ import {
   G1_POLYGON_ADDRESS,
   SOURCE_TG_ID,
 } from '../../secrets.js';
+import { handleReferralReward } from '../utils/webhooks/referral-reward.js';
 
 chai.use(chaiExclude);
 
@@ -148,7 +148,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should return true if No transactions are eligible for a reward', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -161,7 +161,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should not send any tokens if No transactions are eligible for a reward', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -176,7 +176,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should not update the reward database if No transactions are eligible for a reward', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -189,7 +189,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should not call FlowXO if No transactions are eligible for a reward', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -257,7 +257,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should return true if The transaction is already rewarded with the same eventId', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -270,7 +270,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should not send any tokens if The transaction is already rewarded with the same eventId', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -285,7 +285,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should not update the database if The transaction is already rewarded with the same eventId', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -316,7 +316,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should not call FlowXO if The transaction is already rewarded with the same eventId', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -384,7 +384,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should return true if The transaction is already rewarded with another eventId', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -397,7 +397,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should not send any tokens if The transaction is already rewarded with another eventId', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -412,7 +412,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should not update the database if The transaction is already rewarded with another eventId', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -443,7 +443,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should not call FlowXO if The transaction is already rewarded with another eventId', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -509,7 +509,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should return true if The transaction is already rewarded with no eventId', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -522,7 +522,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should not send any tokens if The transaction is already rewarded with no eventId', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -537,7 +537,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should not update the database if The transaction is already rewarded with no eventId', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -566,7 +566,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should not call FlowXO if The transaction is already rewarded with no eventId', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -654,7 +654,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should return true if Reward status are pending at the beginning', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -667,7 +667,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should call the sendTokens function only one time properly if Reward status are pending at the beginning', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -696,7 +696,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should add success reward in database if Reward status are pending at the beginning', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -749,7 +749,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should call FlowXO properly if Reward status are pending at the beginning', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -859,7 +859,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should return true if Reward status are failure at the beginning', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -872,7 +872,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should call the sendTokens function properly if Reward status are failure at the beginning', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -899,7 +899,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should add success reward in database if Reward status are failure at the beginning', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -953,7 +953,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should call FlowXO properly if Reward status are failure at the beginning', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -1044,7 +1044,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should return true if transactions to be rewarded', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -1057,7 +1057,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should call the sendTokens function only once properly if transactions to be rewarded', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -1084,7 +1084,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should add success reward in database if transactions to be rewarded', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -1123,7 +1123,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should call FlowXO properly if transactions to be rewarded', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -1213,7 +1213,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should add success reward in database if transactions to be rewarded', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -1294,7 +1294,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should return true if transactions to be rewarded with same hash', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -1307,7 +1307,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should call the sendTokens function only once properly if transactions to be rewarded with same hash', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -1334,7 +1334,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should add success reward in database if transactions to be rewarded with same hash', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -1373,7 +1373,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should call FlowXO properly if transactions to be rewarded with same hash', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -1458,7 +1458,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should return true if duplicate user in transactions to be rewarded', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -1471,7 +1471,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should call the sendTokens function properly only once if duplicate user in transactions to be rewarded', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -1498,7 +1498,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should add success reward in database only once if duplicate user in transactions to be rewarded', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -1537,7 +1537,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should call FlowXO properly only one time if duplicate user in transactions to be rewarded', async function () {
-      const result = await handleReferralReward(dbMock, {
+      const result = await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -1615,7 +1615,7 @@ describe('handleReferralReward function', function () {
     ]);
 
     chai.expect(
-      await handleReferralReward(dbMock, {
+      await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -1673,7 +1673,7 @@ describe('handleReferralReward function', function () {
         .rejects(new Error('Service not available'));
 
       chai.expect(
-        await handleReferralReward(dbMock, {
+        await handleReferralReward({
           eventId: rewardId,
           userTelegramID: mockUserTelegramID,
           responsePath: mockResponsePath,
@@ -1690,7 +1690,7 @@ describe('handleReferralReward function', function () {
         .rejects(new Error('Service not available'));
 
       chai.expect(
-        await handleReferralReward(dbMock, {
+        await handleReferralReward({
           eventId: rewardId,
           userTelegramID: mockUserTelegramID,
           responsePath: mockResponsePath,
@@ -1706,7 +1706,7 @@ describe('handleReferralReward function', function () {
         .withArgs(patchwalletTxUrl)
         .rejects(new Error('Service not available'));
 
-      await handleReferralReward(dbMock, {
+      await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -1743,7 +1743,7 @@ describe('handleReferralReward function', function () {
         .withArgs(patchwalletTxUrl)
         .rejects(new Error('Service not available'));
 
-      await handleReferralReward(dbMock, {
+      await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -1809,7 +1809,7 @@ describe('handleReferralReward function', function () {
       });
 
       chai.expect(
-        await handleReferralReward(dbMock, {
+        await handleReferralReward({
           eventId: rewardId,
           userTelegramID: mockUserTelegramID,
           responsePath: mockResponsePath,
@@ -1827,7 +1827,7 @@ describe('handleReferralReward function', function () {
         },
       });
 
-      await handleReferralReward(dbMock, {
+      await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -1866,7 +1866,7 @@ describe('handleReferralReward function', function () {
         },
       });
 
-      await handleReferralReward(dbMock, {
+      await handleReferralReward({
         eventId: rewardId,
         userTelegramID: mockUserTelegramID,
         responsePath: mockResponsePath,
@@ -1942,7 +1942,7 @@ describe('handleReferralReward function', function () {
         ]);
       });
       it('Should return false if transaction hash is empty in tx PatchWallet endpoint', async function () {
-        const result = await handleReferralReward(dbMock, {
+        const result = await handleReferralReward({
           eventId: rewardId,
           userTelegramID: mockUserTelegramID,
           responsePath: mockResponsePath,
@@ -1953,7 +1953,7 @@ describe('handleReferralReward function', function () {
         chai.expect(result).to.be.false;
       });
       it('Should update reward database with a pending_hash status and userOpHash if transaction hash is empty in tx PatchWallet endpoint', async function () {
-        const result = await handleReferralReward(dbMock, {
+        const result = await handleReferralReward({
           eventId: rewardId,
           userTelegramID: mockUserTelegramID,
           responsePath: mockResponsePath,
@@ -1984,7 +1984,7 @@ describe('handleReferralReward function', function () {
           ]);
       });
       it('Should not call FlowXO webhook if transaction hash is empty in tx PatchWallet endpoint', async function () {
-        await handleReferralReward(dbMock, {
+        await handleReferralReward({
           eventId: rewardId,
           userTelegramID: mockUserTelegramID,
           responsePath: mockResponsePath,
@@ -2074,7 +2074,7 @@ describe('handleReferralReward function', function () {
         ]);
       });
       it('Should return true if transaction hash is present in PatchWallet status endpoint', async function () {
-        const result = await handleReferralReward(dbMock, {
+        const result = await handleReferralReward({
           eventId: rewardId,
           userTelegramID: mockUserTelegramID,
           responsePath: mockResponsePath,
@@ -2085,7 +2085,7 @@ describe('handleReferralReward function', function () {
         chai.expect(result).to.be.true;
       });
       it('Should not send tokens if transaction hash is present in PatchWallet status endpoint', async function () {
-        const result = await handleReferralReward(dbMock, {
+        const result = await handleReferralReward({
           eventId: rewardId,
           userTelegramID: mockUserTelegramID,
           responsePath: mockResponsePath,
@@ -2098,7 +2098,7 @@ describe('handleReferralReward function', function () {
         ).to.be.undefined;
       });
       it('Should update the database with a success status if transaction hash is present in PatchWallet status endpoint', async function () {
-        const result = await handleReferralReward(dbMock, {
+        const result = await handleReferralReward({
           eventId: rewardId,
           userTelegramID: mockUserTelegramID,
           responsePath: mockResponsePath,
@@ -2129,7 +2129,7 @@ describe('handleReferralReward function', function () {
           ]);
       });
       it('Should call FlowXO webhook properly if transaction hash is present in PatchWallet status endpoint', async function () {
-        await handleReferralReward(dbMock, {
+        await handleReferralReward({
           eventId: rewardId,
           userTelegramID: mockUserTelegramID,
           responsePath: mockResponsePath,
@@ -2251,7 +2251,7 @@ describe('handleReferralReward function', function () {
         });
       });
       it('Should return false if transaction hash is not present in PatchWallet status endpoint', async function () {
-        const result = await handleReferralReward(dbMock, {
+        const result = await handleReferralReward({
           eventId: rewardId,
           userTelegramID: mockUserTelegramID,
           responsePath: mockResponsePath,
@@ -2262,7 +2262,7 @@ describe('handleReferralReward function', function () {
         chai.expect(result).to.be.false;
       });
       it('Should not send tokens if transaction hash is not present in PatchWallet status endpoint', async function () {
-        const result = await handleReferralReward(dbMock, {
+        const result = await handleReferralReward({
           eventId: rewardId,
           userTelegramID: mockUserTelegramID,
           responsePath: mockResponsePath,
@@ -2275,7 +2275,7 @@ describe('handleReferralReward function', function () {
         ).to.be.undefined;
       });
       it('Should not update database if transaction hash is not present in PatchWallet status endpoint', async function () {
-        const result = await handleReferralReward(dbMock, {
+        const result = await handleReferralReward({
           eventId: rewardId,
           userTelegramID: mockUserTelegramID,
           responsePath: mockResponsePath,
@@ -2306,7 +2306,7 @@ describe('handleReferralReward function', function () {
           ]);
       });
       it('Should not call FlowXO webhook if transaction hash is not present in PatchWallet status endpoint', async function () {
-        await handleReferralReward(dbMock, {
+        await handleReferralReward({
           eventId: rewardId,
           userTelegramID: mockUserTelegramID,
           responsePath: mockResponsePath,
@@ -2400,7 +2400,7 @@ describe('handleReferralReward function', function () {
           .rejects(new Error('Service not available'));
       });
       it('Should return false if Error in PatchWallet get status endpoint', async function () {
-        const result = await handleReferralReward(dbMock, {
+        const result = await handleReferralReward({
           eventId: rewardId,
           userTelegramID: mockUserTelegramID,
           responsePath: mockResponsePath,
@@ -2411,7 +2411,7 @@ describe('handleReferralReward function', function () {
         chai.expect(result).to.be.false;
       });
       it('Should not send tokens if Error in PatchWallet get status endpoint', async function () {
-        const result = await handleReferralReward(dbMock, {
+        const result = await handleReferralReward({
           eventId: rewardId,
           userTelegramID: mockUserTelegramID,
           responsePath: mockResponsePath,
@@ -2424,7 +2424,7 @@ describe('handleReferralReward function', function () {
         ).to.be.undefined;
       });
       it('Should not update database if Error in PatchWallet get status endpoint', async function () {
-        const result = await handleReferralReward(dbMock, {
+        const result = await handleReferralReward({
           eventId: rewardId,
           userTelegramID: mockUserTelegramID,
           responsePath: mockResponsePath,
@@ -2453,7 +2453,7 @@ describe('handleReferralReward function', function () {
           ]);
       });
       it('Should not call FlowXO webhook if Error in PatchWallet get status endpoint', async function () {
-        await handleReferralReward(dbMock, {
+        await handleReferralReward({
           eventId: rewardId,
           userTelegramID: mockUserTelegramID,
           responsePath: mockResponsePath,
@@ -2543,7 +2543,7 @@ describe('handleReferralReward function', function () {
         ]);
       });
       it('Should return true if transaction hash is pending_hash without userOpHash', async function () {
-        const result = await handleReferralReward(dbMock, {
+        const result = await handleReferralReward({
           eventId: rewardId,
           userTelegramID: mockUserTelegramID,
           responsePath: mockResponsePath,
@@ -2554,7 +2554,7 @@ describe('handleReferralReward function', function () {
         chai.expect(result).to.be.true;
       });
       it('Should not send tokens if transaction hash is pending_hash without userOpHash', async function () {
-        const result = await handleReferralReward(dbMock, {
+        const result = await handleReferralReward({
           eventId: rewardId,
           userTelegramID: mockUserTelegramID,
           responsePath: mockResponsePath,
@@ -2567,7 +2567,7 @@ describe('handleReferralReward function', function () {
         ).to.be.undefined;
       });
       it('Should update reward database with a success status if transaction hash is pending_hash without userOpHash', async function () {
-        const result = await handleReferralReward(dbMock, {
+        const result = await handleReferralReward({
           eventId: rewardId,
           userTelegramID: mockUserTelegramID,
           responsePath: mockResponsePath,
@@ -2598,7 +2598,7 @@ describe('handleReferralReward function', function () {
           ]);
       });
       it('Should not call FlowXO webhook if transaction hash is empty in tx PatchWallet endpoint', async function () {
-        await handleReferralReward(dbMock, {
+        await handleReferralReward({
           eventId: rewardId,
           userTelegramID: mockUserTelegramID,
           responsePath: mockResponsePath,
@@ -2696,7 +2696,7 @@ describe('handleReferralReward function', function () {
         });
       });
       it('Should return true after 10 min of trying to get status', async function () {
-        const result = await handleReferralReward(dbMock, {
+        const result = await handleReferralReward({
           eventId: rewardId,
           userTelegramID: mockUserTelegramID,
           responsePath: mockResponsePath,
@@ -2707,7 +2707,7 @@ describe('handleReferralReward function', function () {
         chai.expect(result).to.be.true;
       });
       it('Should not send tokens after 10 min of trying to get status', async function () {
-        const result = await handleReferralReward(dbMock, {
+        const result = await handleReferralReward({
           eventId: rewardId,
           userTelegramID: mockUserTelegramID,
           responsePath: mockResponsePath,
@@ -2720,7 +2720,7 @@ describe('handleReferralReward function', function () {
         ).to.be.undefined;
       });
       it('Should update reward database with a failure status after 10 min of trying to get status', async function () {
-        const result = await handleReferralReward(dbMock, {
+        const result = await handleReferralReward({
           eventId: rewardId,
           userTelegramID: mockUserTelegramID,
           responsePath: mockResponsePath,
@@ -2751,7 +2751,7 @@ describe('handleReferralReward function', function () {
           ]);
       });
       it('Should not call FlowXO webhook after 10 min of trying to get status', async function () {
-        await handleReferralReward(dbMock, {
+        await handleReferralReward({
           eventId: rewardId,
           userTelegramID: mockUserTelegramID,
           responsePath: mockResponsePath,

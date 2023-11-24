@@ -310,6 +310,22 @@ export class SignUpRewardTelegram {
   }
 }
 
+/**
+ * Creates a ReferralRewardTelegram instance and initializes reward database.
+ *
+ * This function initializes a referral reward for a Telegram user based on the provided parameters.
+ * It creates an instance of ReferralRewardTelegram and initializes the reward database by connecting to it.
+ *
+ * @param {string} eventId - The ID of the event associated with the referral reward.
+ * @param {string} userTelegramID - The Telegram ID of the user.
+ * @param {string} responsePath - The response path for the reward.
+ * @param {string} userHandle - The handle of the user.
+ * @param {string} userName - The name of the user.
+ * @param {string} patchwallet - The PatchWallet details for the reward.
+ * @param {string} tokenAddress - The token address for the reward.
+ * @param {string} chainName - The blockchain name for the reward.
+ * @returns {Promise<ReferralRewardTelegram>} - The created ReferralRewardTelegram instance with initialized reward database.
+ */
 export async function createReferralRewardTelegram(
   eventId,
   userTelegramID,
@@ -320,6 +336,7 @@ export async function createReferralRewardTelegram(
   tokenAddress,
   chainName
 ) {
+  // Create a new instance of ReferralRewardTelegram
   const reward = new ReferralRewardTelegram(
     eventId,
     userTelegramID,
@@ -331,12 +348,27 @@ export async function createReferralRewardTelegram(
     chainName
   );
 
+  // Initialize the reward database by connecting and retrieving necessary information
   await reward.initializeRewardDatabase();
 
   return reward;
 }
 
+/**
+ * Represents a Telegram referral reward.
+ */
 export class ReferralRewardTelegram {
+  /**
+   * Constructs a ReferralRewardTelegram object.
+   * @param {string} eventId - The event ID.
+   * @param {string} userTelegramID - The user's Telegram ID.
+   * @param {string} responsePath - The response path.
+   * @param {string} userHandle - The user's handle.
+   * @param {string} userName - The user's name.
+   * @param {string} patchwallet - The user's PatchWallet address.
+   * @param {string} tokenAddress - The token address for the reward.
+   * @param {string} chainName - The blockchain name.
+   */
   constructor(
     eventId,
     userTelegramID,
@@ -347,38 +379,42 @@ export class ReferralRewardTelegram {
     tokenAddress,
     chainName
   ) {
+    // Properties related to user and reward details
     this.eventId = eventId;
     this.userTelegramID = userTelegramID;
     this.responsePath = responsePath;
     this.userHandle = userHandle;
     this.userName = userName;
     this.patchwallet = patchwallet;
+    this.tokenAddress = tokenAddress ? tokenAddress : G1_POLYGON_ADDRESS;
+    this.chainName = chainName ? chainName : 'matic';
 
+    // Reward-specific details
     this.reason = '2x_reward';
     this.amount = '50';
     this.message = 'Referral reward';
 
+    // Properties to be initialized
     this.parentTx = undefined;
     this.referent = undefined;
     this.tx = undefined;
     this.status = undefined;
-
-    // this.isInDatabase = false;
-    // this.status = undefined;
     this.txHash = undefined;
     this.userOpHash = undefined;
-
-    // this.transfers = undefined;
-
-    (this.tokenAddress = tokenAddress ? tokenAddress : G1_POLYGON_ADDRESS),
-      (this.chainName = chainName ? chainName : 'matic');
   }
 
+  /**
+   * Initializes the reward database by connecting to the database and retrieving necessary information.
+   */
   async initializeRewardDatabase() {
     this.db = await Database.getInstance();
     this.transfers = await this.getTransfersFromDatabase();
   }
 
+  /**
+   * Retrieves transfers from the database based on certain conditions.
+   * @returns {Promise<object>} - The retrieved transfers.
+   */
   async getTransfersFromDatabase() {
     return this.db.collection(TRANSFERS_COLLECTION).find({
       senderTgId: { $ne: this.userTelegramID },
@@ -386,10 +422,16 @@ export class ReferralRewardTelegram {
     });
   }
 
+  /**
+   * Sets the parent transaction based on certain conditions from the retrieved transfers.
+   * @returns {Promise<boolean>} - True if the parent transaction is set successfully, false otherwise.
+   */
   async setParentTx() {
-    for await (const transfer of this.transfers)
-      if (!this.parentTx || transfer.dateAdded < this.parentTx.dateAdded)
+    for await (const transfer of this.transfers) {
+      if (!this.parentTx || transfer.dateAdded < this.parentTx.dateAdded) {
         this.parentTx = transfer;
+      }
+    }
 
     if (!this.parentTx) {
       console.log(
@@ -401,6 +443,10 @@ export class ReferralRewardTelegram {
     return true;
   }
 
+  /**
+   * Retrieves information about the referent user from the database.
+   * @returns {Promise<boolean>} - True if referent information is retrieved successfully, false otherwise.
+   */
   async getReferent() {
     try {
       this.referent = await this.db.collection(USERS_COLLECTION).findOne({
@@ -420,6 +466,10 @@ export class ReferralRewardTelegram {
     }
   }
 
+  /**
+   * Retrieves the referral reward from the database based on the event ID and reason.
+   * @returns {Promise<boolean>} - True if the referral reward is retrieved successfully, false otherwise.
+   */
   async getRewardSameFromDatabase() {
     this.tx = await this.db.collection(REWARDS_COLLECTION).findOne({
       eventId: this.eventId,
@@ -434,6 +484,10 @@ export class ReferralRewardTelegram {
     return Boolean(this.tx);
   }
 
+  /**
+   * Retrieves referral reward information from the database with a different event ID, user ID, and new user address.
+   * @returns {Promise<boolean>} - True if the referral reward information is retrieved successfully, false otherwise.
+   */
   async getRewardFromDatabaseWithOtherEventId() {
     return Boolean(
       await this.db.collection(REWARDS_COLLECTION).findOne({
@@ -446,7 +500,7 @@ export class ReferralRewardTelegram {
   }
 
   /**
-   * Updates the transaction hash.
+   * Updates the transaction hash for the referral reward.
    * @param {string} txHash - The transaction hash to be updated.
    * @returns {string} - The updated transaction hash.
    */
@@ -455,7 +509,7 @@ export class ReferralRewardTelegram {
   }
 
   /**
-   * Updates the user operation hash.
+   * Updates the user operation hash for the referral reward.
    * @param {string} userOpHash - The user operation hash to be updated.
    * @returns {string} - The updated user operation hash.
    */
@@ -464,7 +518,7 @@ export class ReferralRewardTelegram {
   }
 
   /**
-   * Checks if the transaction is successful.
+   * Checks if the transaction for the referral reward is successful.
    * @returns {boolean} - True if the transaction is successful, false otherwise.
    */
   isSuccess() {
@@ -472,7 +526,7 @@ export class ReferralRewardTelegram {
   }
 
   /**
-   * Checks if the transaction has failed.
+   * Checks if the transaction for the referral reward has failed.
    * @returns {boolean} - True if the transaction has failed, false otherwise.
    */
   isFailure() {
@@ -480,31 +534,32 @@ export class ReferralRewardTelegram {
   }
 
   /**
-   * Retrieves the status of the PatchWallet transaction.
+   * Retrieves the status of the PatchWallet transaction for the referral reward.
    * @returns {Promise<boolean>} - True if the transaction status is retrieved successfully, false otherwise.
    */
   async getStatus() {
     try {
-      // Retrieve the status of the PatchWallet transaction
       return await getTxStatus(this.userOpHash);
     } catch (error) {
-      // Log error if retrieving transaction status fails
       console.error(
         `[${this.eventId}] Error processing PatchWallet transaction status: ${error}`
       );
-      // Return true if the error status is 470, marking the transaction as failed
       return false;
     }
   }
 
   /**
-   * Checks if the transaction is in the pending hash state.
+   * Checks if the transaction for the referral reward is in the pending hash state.
    * @returns {boolean} - True if the transaction is in the pending hash state, false otherwise.
    */
   isPendingHash() {
     return this.status === TRANSACTION_STATUS.PENDING_HASH;
   }
 
+  /**
+   * Checks if the treatment duration has exceeded the limit for the referral reward.
+   * @returns {boolean} - True if the treatment duration has exceeded, false otherwise.
+   */
   async isTreatmentDurationExceeded() {
     return (
       (this.tx.dateAdded < new Date(new Date() - 10 * 60 * 1000) &&
@@ -517,12 +572,20 @@ export class ReferralRewardTelegram {
     );
   }
 
+  /**
+   * Updates the PatchWallet address of the referent user for the referral reward.
+   */
   async updateReferentWallet() {
     this.referent.patchwallet =
       this.referent?.patchwallet ??
       (await getPatchWalletAddressFromTgId(this.referent.userTelegramID));
   }
 
+  /**
+   * Updates the referral reward information in the database.
+   * @param {string} status - The transaction status.
+   * @param {Date|null} date - The date of the transaction.
+   */
   async updateInDatabase(status, date) {
     await this.db.collection(REWARDS_COLLECTION).updateOne(
       {
@@ -556,11 +619,9 @@ export class ReferralRewardTelegram {
   }
 
   /**
-   * Saves transaction information to FlowXO.
-   * @returns {Promise<object|undefined>} - The result of sending the transaction to FlowXO.
+   * Saves referral reward transaction information to FlowXO.
    */
   async saveToFlowXO() {
-    // Send transaction information to FlowXO
     await axios.post(FLOWXO_NEW_REFERRAL_REWARD_WEBHOOK, {
       newUserTgId: this.userTelegramID,
       newUserResponsePath: this.responsePath,
@@ -582,12 +643,11 @@ export class ReferralRewardTelegram {
   }
 
   /**
-   * Sends tokens using PatchWallet.
+   * Sends tokens for the referral reward using PatchWallet.
    * @returns {Promise<boolean>} - True if the tokens are sent successfully, false otherwise.
    */
   async sendTx() {
     try {
-      // Send tokens using PatchWallet
       return await sendTokens(
         SOURCE_TG_ID,
         this.referent.patchwallet,
@@ -597,7 +657,6 @@ export class ReferralRewardTelegram {
         this.chainName
       );
     } catch (error) {
-      // Log error if sending tokens fails
       console.error(
         `[${this.eventId}] Error processing PatchWallet referral reward for ${this.referent.patchwallet}: ${error}`
       );
