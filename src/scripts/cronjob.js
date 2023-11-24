@@ -7,11 +7,18 @@ import {
 // Schedule a task to run every hour
 cron.schedule('0 * * * *', async () => {
   console.log('CRON - importUsersLast24Hours task');
-  await importUsersLast24Hours();
+  try {
+    await importUsersLast24Hours();
+  } catch(error) {
+    console.log('CRON - importUsersLast24Hours error ', error);
+  }
 });
 
 // Schedule a task to run every hour
 cron.schedule('0 * * * *', async () => {
-  console.log('CRON - importTransfersLast24Hours task');
-  await importTransfersLast24Hours();
+  try {
+    await importTransfersLast24Hours();
+  } catch(error) {
+    console.log('CRON - importTransfersLast24Hours error ', error);
+  }
 });

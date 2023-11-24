@@ -25,7 +25,7 @@ async function importUsersFromCSV(filePath) {
           userHandle: data.UserHandle,
           userName: data.FirstName + ' ' + data.LastName,
           patchwallet: data.wallet,
-          dateAdded: new Date(data.FirstActive).toISOString(),
+          dateAdded: new Date(data.FirstActive),
         });
       })
       .on('end', async () => {
@@ -270,6 +270,46 @@ async function exportUsersWithHandleEndingInDigitsToCSV() {
     } else {
       console.log('No users with handle ending in digits found.');
     }
+  } catch (error) {
+    console.error(`An error occurred: ${error.message}`);
+  } finally {
+    process.exit(0);
+  }
+}
+
+async function convertDateAddedFieldToISODate() {
+  try {
+    const db = await Database.getInstance();
+    const collection = db.collection(USERS_COLLECTION);
+
+    // Filter for documents where dateAdded is not a Date type
+    const filter = { dateAdded: { $not: { $type: 'date' } } };
+
+    // Find documents matching the filter
+    const cursor = await collection.find(filter).toArray();
+
+    const bulkUpdateOps = [];
+
+    // Iterate over the cursor to prepare bulk update operations
+    await cursor.forEach((doc) => {
+      const updatedDateAdded = new Date(doc.dateAdded);
+      // Check if updatedDateAdded is a valid date
+      if (!isNaN(updatedDateAdded.getTime())) {
+        bulkUpdateOps.push({
+          updateOne: {
+            filter: { _id: doc._id },
+            update: { $set: { dateAdded: updatedDateAdded } },
+          },
+        });
+      }
+    });
+
+    // Execute bulk write with all update operations
+    if (bulkUpdateOps.length > 0) {
+      await collection.bulkWrite(bulkUpdateOps);
+    }
+
+    console.log('DateAdded field updated for documents not in ISODate format.');
   } catch (error) {
     console.error(`An error occurred: ${error.message}`);
   } finally {
