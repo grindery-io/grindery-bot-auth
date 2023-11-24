@@ -2,7 +2,6 @@ import { Database } from '../../db/conn.js';
 import {
   REWARDS_COLLECTION,
   TRANSACTION_STATUS,
-  TRANSFERS_COLLECTION,
   USERS_COLLECTION,
 } from '../constants.js';
 import {
@@ -17,9 +16,9 @@ import { createUserTelegram } from '../user.js';
 import { signup_utils } from './signup-reward.js';
 import {
   FLOWXO_NEW_LINK_REWARD_WEBHOOK,
-  FLOWXO_NEW_REFERRAL_REWARD_WEBHOOK,
   SOURCE_TG_ID,
 } from '../../../secrets.js';
+import { createReferralRewardTelegram } from '../rewards.js';
 
 /**
  * Handles the referral reward for a user.
@@ -35,226 +34,79 @@ import {
  */
 export async function handleReferralReward(db, params) {
   try {
-    let parentTx = undefined;
+    const rewardTest = await createReferralRewardTelegram(
+      params.eventId,
+      params.userTelegramID,
+      params.responsePath,
+      params.userHandle,
+      params.userName,
+      params.patchwallet,
+      params.tokenAddress,
+      params.chainName
+    );
 
-    // Retrieve all transfers where this user is the recipient
-    for await (const transfer of db.collection(TRANSFERS_COLLECTION).find({
-      senderTgId: { $ne: params.userTelegramID },
-      recipientTgId: params.userTelegramID,
-    })) {
-      if (!parentTx || transfer.dateAdded < parentTx.dateAdded) {
-        parentTx = transfer;
-      }
-    }
+    if (!(await rewardTest.setParentTx())) return true;
+    if (!(await rewardTest.getReferent())) return true;
 
-    if (!parentTx) {
-      console.log(
-        `[${params.eventId}] no referral reward to distribute with ${params.userTelegramID} as a new user.`
-      );
-      return true;
-    }
-
-    // Retrieve sender information from the "users" collection
-    const senderInformation = await db
-      .collection(USERS_COLLECTION)
-      .findOne({ userTelegramID: parentTx.senderTgId });
-
-    if (!senderInformation) {
-      console.log(
-        `[${params.eventId}] sender ${parentTx.senderTgId} who is supposed to receive a referral reward is not a user.`
-      );
-      return true;
-    }
-
-    const reward = await db.collection(REWARDS_COLLECTION).findOne({
-      reason: '2x_reward',
-      eventId: params.eventId,
-    });
+    await rewardTest.getRewardSameFromDatabase();
 
     if (
-      reward?.status === TRANSACTION_STATUS.SUCCESS ||
-      (await db.collection(REWARDS_COLLECTION).findOne({
-        reason: '2x_reward',
-        eventId: { $ne: params.eventId },
-        userTelegramID: senderInformation.userTelegramID,
-        newUserAddress: params.patchwallet,
-      }))
+      rewardTest.isSuccess() ||
+      (await rewardTest.getRewardFromDatabaseWithOtherEventId())
     ) {
       console.log(
-        `[${eventId}] referral reward already distributed or in process of distribution elsewhere for ${senderInformation.userTelegramID} concerning new user ${params.userTelegramID}`
+        `[${eventId}] referral reward already distributed or in process of distribution elsewhere for ${rewardTest.referent.userTelegramID} concerning new user ${params.userTelegramID}`
       );
       return true;
     }
 
-    const senderWallet =
-      senderInformation?.patchwallet ??
-      (await getPatchWalletAddressFromTgId(senderInformation.userTelegramID));
+    await rewardTest.updateReferentWallet();
 
-    if (!reward) {
-      await reward_helpers.insertRewardDB(db, {
-        eventId: params.eventId,
-        userTelegramID: senderInformation.userTelegramID,
-        responsePath: senderInformation.responsePath,
-        walletAddress: senderWallet,
-        reason: '2x_reward',
-        userHandle: senderInformation.userHandle,
-        userName: senderInformation.userName,
-        amount: '50',
-        message: 'Referral reward',
-        dateAdded: new Date(),
-        parentTransactionHash: parentTx.transactionHash,
-        status: TRANSACTION_STATUS.PENDING,
-        newUserAddress: params.patchwallet,
-      });
+    if (!rewardTest.tx)
+      await rewardTest.updateInDatabase(TRANSACTION_STATUS.PENDING, new Date());
 
-      console.log(
-        `[${params.eventId}] pending referral reward for ${senderWallet} about ${parentTx.transactionHash} concerning new user ${params.userTelegramID} added to the database.`
-      );
-    }
+    let txReward;
 
-    let txReward = undefined;
+    // Handle pending hash status
+    if (rewardTest.isPendingHash()) {
+      if (await rewardTest.isTreatmentDurationExceeded()) return true;
 
-    if (reward?.status === TRANSACTION_STATUS.PENDING_HASH) {
-      if (reward.dateAdded < new Date(new Date() - 10 * 60 * 1000)) {
-        console.log(
-          `[${params.eventId}] was stopped due to too long treatment duration (> 10 min).`
+      // Check userOpHash and updateInDatabase for success
+      if (!rewardTest.userOpHash)
+        return (
+          await rewardTest.updateInDatabase(
+            TRANSACTION_STATUS.SUCCESS,
+            new Date()
+          ),
+          true
         );
 
-        await reward_helpers.updateRewardDB(db, {
-          eventId: params.eventId,
-          reason: '2x_reward',
-          parentTransactionHash: parentTx.transactionHash,
-          userTelegramID: senderInformation.userTelegramID,
-          responsePath: senderInformation.responsePath,
-          walletAddress: senderWallet,
-          userHandle: senderInformation.userHandle,
-          userName: senderInformation.userName,
-          amount: '50',
-          message: 'Referral reward',
-          status: TRANSACTION_STATUS.FAILURE,
-          newUserAddress: params.patchwallet,
-        });
-
-        return true;
-      }
-
-      if (reward?.userOpHash) {
-        try {
-          txReward = await getTxStatus(reward.userOpHash);
-        } catch (error) {
-          console.error(
-            `[${params.eventId}] Error processing PatchWallet user sign up reward status for ${params.userTelegramID}: ${error}`
-          );
-          return false;
-        }
-      } else {
-        // Update the reward record to mark it as successful
-        await reward_helpers.updateRewardDB(db, {
-          eventId: params.eventId,
-          reason: '2x_reward',
-          userTelegramID: senderInformation.userTelegramID,
-          eventId: params.eventId,
-          reason: '2x_reward',
-          parentTransactionHash: parentTx.transactionHash,
-          userTelegramID: senderInformation.userTelegramID,
-          responsePath: senderInformation.responsePath,
-          walletAddress: senderWallet,
-          userHandle: senderInformation.userHandle,
-          userName: senderInformation.userName,
-          amount: '50',
-          message: 'Referral reward',
-          dateAdded: new Date(),
-          status: TRANSACTION_STATUS.SUCCESS,
-          newUserAddress: params.patchwallet,
-        });
-        return true;
-      }
+      // Get status of reward test
+      if ((txReward = await rewardTest.getStatus()) === false) return txReward;
     }
-    if (!txReward) {
-      try {
-        txReward = await sendTokens(
-          SOURCE_TG_ID,
-          senderWallet,
-          '50',
-          await getPatchWalletAccessToken(),
-          params.tokenAddress,
-          params.chainName
-        );
-      } catch (error) {
+
+    // Check for txReward and send transaction if not present
+    if (!txReward && (txReward = await rewardTest.sendTx()) === false)
+      return txReward;
+
+    // Update transaction hash and perform additional actions
+    if (txReward && txReward.data.txHash) {
+      rewardTest.updateTxHash(txReward.data.txHash);
+      await Promise.all([
+        rewardTest.updateInDatabase(TRANSACTION_STATUS.SUCCESS, new Date()),
+        rewardTest.saveToFlowXO(),
+      ]).catch((error) =>
         console.error(
-          `[${params.eventId}] Error processing PatchWallet referral reward for ${senderWallet}: ${error}`
-        );
-        return false;
-      }
-    }
-
-    if (txReward.data.txHash) {
-      const dateAdded = new Date();
-
-      await reward_helpers.updateRewardDB(db, {
-        eventId: params.eventId,
-        reason: '2x_reward',
-        parentTransactionHash: parentTx.transactionHash,
-        userTelegramID: senderInformation.userTelegramID,
-        responsePath: senderInformation.responsePath,
-        walletAddress: senderWallet,
-        userHandle: senderInformation.userHandle,
-        userName: senderInformation.userName,
-        amount: '50',
-        message: 'Referral reward',
-        transactionHash: txReward.data.txHash,
-        dateAdded: dateAdded,
-        status: TRANSACTION_STATUS.SUCCESS,
-        newUserAddress: params.patchwallet,
-      });
-
-      console.log(
-        `[${txReward.data.txHash}] referral reward added to Mongo DB with event ID ${params.eventId}.`
+          `[${params.eventId}] Error processing FlowXO webhook during referral reward: ${error}`
+        )
       );
-
-      await axios.post(FLOWXO_NEW_REFERRAL_REWARD_WEBHOOK, {
-        newUserTgId: params.userTelegramID,
-        newUserResponsePath: params.responsePath,
-        newUserUserHandle: params.userHandle,
-        newUserUserName: params.userName,
-        newUserPatchwallet: params.patchwallet,
-        userTelegramID: senderInformation.userTelegramID,
-        responsePath: senderInformation.responsePath,
-        walletAddress: senderWallet,
-        reason: '2x_reward',
-        userHandle: senderInformation.userHandle,
-        userName: senderInformation.userName,
-        amount: '50',
-        message: 'Referral reward',
-        transactionHash: txReward.data.txHash,
-        dateAdded: dateAdded,
-        parentTransactionHash: parentTx.transactionHash,
-      });
-
-      console.log(
-        `[${txReward.data.txHash}] referral reward sent to FlowXO with event ID ${params.eventId}.`
-      );
-
       return true;
     }
 
-    if (txReward.data.userOpHash) {
-      await reward_helpers.updateRewardDB(db, {
-        eventId: params.eventId,
-        reason: '2x_reward',
-        parentTransactionHash: parentTx.transactionHash,
-        userTelegramID: senderInformation.userTelegramID,
-        responsePath: senderInformation.responsePath,
-        walletAddress: senderWallet,
-        userHandle: senderInformation.userHandle,
-        userName: senderInformation.userName,
-        amount: '50',
-        message: 'Referral reward',
-        dateAdded: new Date(),
-        userOpHash: txReward.data.userOpHash,
-        status: TRANSACTION_STATUS.PENDING_HASH,
-        newUserAddress: params.patchwallet,
-      });
+    // Update userOpHash if present in txReward
+    if (txReward && txReward.data.userOpHash) {
+      rewardTest.updateUserOpHash(txReward.data.userOpHash);
+      await rewardTest.updateInDatabase(TRANSACTION_STATUS.PENDING_HASH, null);
     }
     return false;
   } catch (error) {

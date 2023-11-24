@@ -725,6 +725,7 @@ describe('handleReferralReward function', function () {
             parentTransactionHash: mockTransactionHash,
             status: TRANSACTION_STATUS.SUCCESS,
             newUserAddress: mockWallet,
+            userOpHash: null,
           },
           {
             eventId: rewardId,
@@ -927,6 +928,7 @@ describe('handleReferralReward function', function () {
             parentTransactionHash: mockTransactionHash,
             status: TRANSACTION_STATUS.SUCCESS,
             newUserAddress: mockWallet,
+            userOpHash: null,
           },
           {
             eventId: rewardId,
@@ -1111,6 +1113,7 @@ describe('handleReferralReward function', function () {
             parentTransactionHash: mockTransactionHash,
             status: TRANSACTION_STATUS.SUCCESS,
             newUserAddress: mockWallet,
+            userOpHash: null,
           },
         ]);
       chai
@@ -1160,6 +1163,92 @@ describe('handleReferralReward function', function () {
       chai
         .expect(flowXOCalls[0].args[1].dateAdded)
         .to.be.lessThanOrEqual(new Date());
+    });
+  });
+
+  describe('Normal process with a new user and transactions to be rewarded but no patchwallet for referent', async function () {
+    beforeEach(async function () {
+      await collectionUsersMock.insertMany([
+        {
+          userTelegramID: mockUserTelegramID1,
+          responsePath: mockResponsePath1,
+          userHandle: mockUserHandle1,
+          userName: mockUserName1,
+        },
+        {
+          userTelegramID: mockUserTelegramID2,
+          responsePath: mockResponsePath2,
+          userHandle: mockUserHandle2,
+          userName: mockUserName2,
+          patchwallet: mockWallet2,
+        },
+      ]);
+
+      await collectionTransfersMock.insertMany([
+        {
+          transactionHash: mockTransactionHash,
+          senderTgId: mockUserTelegramID1,
+          recipientTgId: mockUserTelegramID,
+          dateAdded: new Date(new Date() - 10),
+        },
+        {
+          transactionHash: mockTransactionHash,
+          senderTgId: mockUserTelegramID1,
+          recipientTgId: mockUserTelegramID,
+          dateAdded: new Date(new Date() - 10),
+        },
+        {
+          transactionHash: mockTransactionHash1,
+          senderTgId: mockUserTelegramID2,
+          recipientTgId: mockUserTelegramID,
+          dateAdded: new Date(new Date() - 5),
+        },
+        {
+          transactionHash: mockTransactionHash1,
+          senderTgId: mockUserTelegramID2,
+          recipientTgId: mockUserTelegramID,
+          dateAdded: new Date(new Date() - 10),
+        },
+      ]);
+    });
+
+    it('Should add success reward in database if transactions to be rewarded', async function () {
+      const result = await handleReferralReward(dbMock, {
+        eventId: rewardId,
+        userTelegramID: mockUserTelegramID,
+        responsePath: mockResponsePath,
+        userHandle: mockUserHandle,
+        userName: mockUserName,
+        patchwallet: mockWallet,
+      });
+
+      const rewards = await collectionRewardsMock.find({}).toArray();
+      chai.expect(rewards.length).to.equal(1);
+      chai
+        .expect(rewards)
+        .excluding(['_id', 'dateAdded'])
+        .to.deep.equal([
+          {
+            eventId: rewardId,
+            userTelegramID: mockUserTelegramID1,
+            responsePath: mockResponsePath1,
+            walletAddress: mockWallet,
+            reason: '2x_reward',
+            userHandle: mockUserHandle1,
+            userName: mockUserName1,
+            amount: '50',
+            message: 'Referral reward',
+            transactionHash: mockTransactionHash,
+            parentTransactionHash: mockTransactionHash,
+            status: TRANSACTION_STATUS.SUCCESS,
+            newUserAddress: mockWallet,
+            userOpHash: null,
+          },
+        ]);
+      chai
+        .expect(rewards[0].dateAdded)
+        .to.be.greaterThanOrEqual(new Date(Date.now() - 20000)); // 20 seconds
+      chai.expect(rewards[0].dateAdded).to.be.lessThanOrEqual(new Date());
     });
   });
 
@@ -1274,6 +1363,7 @@ describe('handleReferralReward function', function () {
             parentTransactionHash: mockTransactionHash,
             status: TRANSACTION_STATUS.SUCCESS,
             newUserAddress: mockWallet,
+            userOpHash: null,
           },
         ]);
       chai
@@ -1437,6 +1527,7 @@ describe('handleReferralReward function', function () {
             parentTransactionHash: mockTransactionHash,
             status: TRANSACTION_STATUS.SUCCESS,
             newUserAddress: mockWallet,
+            userOpHash: null,
           },
         ]);
       chai
@@ -1641,6 +1732,8 @@ describe('handleReferralReward function', function () {
             parentTransactionHash: mockTransactionHash,
             status: TRANSACTION_STATUS.PENDING,
             newUserAddress: mockWallet,
+            transactionHash: null,
+            userOpHash: null,
           },
         ]);
     });
@@ -1760,6 +1853,8 @@ describe('handleReferralReward function', function () {
             parentTransactionHash: mockTransactionHash,
             status: TRANSACTION_STATUS.PENDING,
             newUserAddress: mockWallet,
+            transactionHash: null,
+            userOpHash: null,
           },
         ]);
     });
@@ -1884,6 +1979,7 @@ describe('handleReferralReward function', function () {
               status: TRANSACTION_STATUS.PENDING_HASH,
               userOpHash: mockUserOpHash,
               newUserAddress: mockWallet,
+              transactionHash: null,
             },
           ]);
       });
@@ -2205,6 +2301,7 @@ describe('handleReferralReward function', function () {
               userOpHash: mockUserOpHash,
               parentTransactionHash: mockTransactionHash,
               newUserAddress: mockWallet,
+              transactionHash: null,
             },
           ]);
       });
@@ -2495,6 +2592,8 @@ describe('handleReferralReward function', function () {
               status: TRANSACTION_STATUS.SUCCESS,
               parentTransactionHash: mockTransactionHash,
               newUserAddress: mockWallet,
+              transactionHash: null,
+              userOpHash: null,
             },
           ]);
       });
@@ -2647,6 +2746,7 @@ describe('handleReferralReward function', function () {
               userOpHash: mockUserOpHash,
               parentTransactionHash: mockTransactionHash,
               newUserAddress: mockWallet,
+              transactionHash: null,
             },
           ]);
       });
