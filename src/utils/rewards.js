@@ -13,6 +13,7 @@ import {
 } from './patchwallet.js';
 import axios from 'axios';
 import {
+  FLOWXO_NEW_LINK_REWARD_WEBHOOK,
   FLOWXO_NEW_REFERRAL_REWARD_WEBHOOK,
   FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK,
   G1_POLYGON_ADDRESS,
@@ -659,6 +660,304 @@ export class ReferralRewardTelegram {
     } catch (error) {
       console.error(
         `[${this.eventId}] Error processing PatchWallet referral reward for ${this.referent.patchwallet}: ${error}`
+      );
+
+      return false;
+    }
+  }
+}
+
+/**
+ * Creates a Link Reward Telegram instance after initializing its reward database.
+ * @param {string} eventId - The event ID.
+ * @param {string} userTelegramID - The user's Telegram ID.
+ * @param {string} referentUserTelegramID - The referent's Telegram ID.
+ * @param {string} tokenAddress - The token address.
+ * @param {string} chainName - The blockchain name.
+ * @returns {Promise<LinkRewardTelegram|boolean>} - A LinkRewardTelegram instance if initialization is successful, otherwise returns false.
+ */
+export async function createLinkRewardTelegram(
+  eventId,
+  userTelegramID,
+  referentUserTelegramID,
+  tokenAddress,
+  chainName
+) {
+  const reward = new LinkRewardTelegram(
+    eventId,
+    userTelegramID,
+    referentUserTelegramID,
+    tokenAddress,
+    chainName
+  );
+
+  if (!(await reward.initializeRewardDatabase())) return false;
+
+  return reward;
+}
+
+/**
+ * Represents a link reward for Telegram users.
+ */
+export class LinkRewardTelegram {
+  /**
+   * Constructor for LinkRewardTelegram class.
+   * @param {string} eventId - The event ID.
+   * @param {string} userTelegramID - The user's Telegram ID.
+   * @param {string} referentUserTelegramID - The referent's Telegram ID.
+   * @param {string} tokenAddress - The token address.
+   * @param {string} chainName - The blockchain name.
+   */
+  constructor(
+    eventId,
+    userTelegramID,
+    referentUserTelegramID,
+    tokenAddress,
+    chainName
+  ) {
+    // Properties related to user and reward details
+    this.eventId = eventId;
+    this.userTelegramID = userTelegramID;
+    this.referentUserTelegramID = referentUserTelegramID;
+    this.tokenAddress = tokenAddress ? tokenAddress : G1_POLYGON_ADDRESS;
+    this.chainName = chainName ? chainName : 'matic';
+
+    // Reward-specific details
+    this.reason = 'referral_link';
+    this.amount = '10';
+    this.message = 'Referral link';
+
+    // Properties to be initialized
+    this.tx = undefined;
+    this.status = undefined;
+    this.txHash = undefined;
+    this.userOpHash = undefined;
+    this.referent = undefined;
+  }
+
+  /**
+   * Initializes the reward database by connecting to the database and retrieving necessary information.
+   * @returns {Promise<boolean>} - True if initialization is successful, false otherwise.
+   */
+  async initializeRewardDatabase() {
+    this.db = await Database.getInstance();
+
+    if (!(await this.getReferent())) {
+      console.log(
+        `[${this.eventId}] ${this.referentUserTelegramID} referent user is not a user to process the link reward.`
+      );
+      return false;
+    }
+
+    this.tx = await this.getRewardFromDatabase();
+
+    if (await this.getOtherRewardFromDatabase()) return false;
+
+    if (this.tx) {
+      this.isInDatabase = true;
+      this.status = this.tx.status;
+      this.userOpHash = this.tx.userOpHash;
+
+      if (this.isSuccess()) return false;
+    } else {
+      await this.updateInDatabase(TRANSACTION_STATUS.PENDING, new Date());
+    }
+
+    return true;
+  }
+
+  /**
+   * Retrieves the referent user information from the database.
+   * @returns {Promise<object|null>} - The referent user information or null if not found.
+   */
+  async getReferent() {
+    this.referent = await this.db
+      .collection(USERS_COLLECTION)
+      .findOne({ userTelegramID: this.referentUserTelegramID });
+
+    this.referent.patchwallet =
+      this.referent?.patchwallet ??
+      (await getPatchWalletAddressFromTgId(this.referentUserTelegramID));
+    return this.referent;
+  }
+
+  /**
+   * Retrieves the reward information from the database.
+   * @returns {Promise<object|null>} - The reward information or null if not found.
+   */
+  async getRewardFromDatabase() {
+    return await this.db.collection(REWARDS_COLLECTION).findOne({
+      eventId: this.eventId,
+      userTelegramID: this.referentUserTelegramID,
+      sponsoredUserTelegramID: this.userTelegramID,
+      reason: this.reason,
+    });
+  }
+
+  /**
+   * Retrieves other reward information from the database for a different event.
+   * @returns {Promise<object|null>} - The reward information or null if not found.
+   */
+  async getOtherRewardFromDatabase() {
+    return await this.db.collection(REWARDS_COLLECTION).findOne({
+      sponsoredUserTelegramID: this.userTelegramID,
+      reason: this.reason,
+      eventId: { $ne: this.eventId },
+    });
+  }
+
+  /**
+   * Updates the reward information in the database.
+   * @param {string} status - The transaction status.
+   * @param {Date|null} date - The date of the transaction.
+   */
+  async updateInDatabase(status, date) {
+    await this.db.collection(REWARDS_COLLECTION).updateOne(
+      {
+        eventId: this.eventId,
+        reason: this.reason,
+        userTelegramID: this.referentUserTelegramID,
+      },
+      {
+        $set: {
+          eventId: this.eventId,
+          userTelegramID: this.referentUserTelegramID,
+          responsePath: this.referent.responsePath,
+          userHandle: this.referent.userHandle,
+          userName: this.referent.userName,
+          reason: this.reason,
+          walletAddress: this.referent.patchwallet,
+          amount: this.amount,
+          message: this.message,
+          ...(date !== null ? { dateAdded: date } : {}),
+          transactionHash: this.txHash,
+          userOpHash: this.userOpHash,
+          status: status,
+          sponsoredUserTelegramID: this.userTelegramID,
+        },
+      },
+      { upsert: true }
+    );
+    console.log(
+      `[${this.eventId}] link for ${this.referentUserTelegramID} sponsoring ${this.userTelegramID} in MongoDB as ${status} with transaction hash : ${this.txHash}.`
+    );
+  }
+
+  /**
+   * Checks if the treatment duration has exceeded the limit.
+   * @returns {Promise<boolean>} - True if the treatment duration has exceeded, false otherwise.
+   */
+  async isTreatmentDurationExceeded() {
+    return (
+      (this.tx.dateAdded < new Date(new Date() - 10 * 60 * 1000) &&
+        (console.log(
+          `[${this.eventId}] was stopped due to too long treatment duration (> 10 min).`
+        ),
+        await this.updateInDatabase(TRANSACTION_STATUS.FAILURE, new Date()),
+        true)) ||
+      false
+    );
+  }
+
+  /**
+   * Updates the transaction hash.
+   * @param {string} txHash - The transaction hash to be updated.
+   * @returns {string} - The updated transaction hash.
+   */
+  updateTxHash(txHash) {
+    return (this.txHash = txHash);
+  }
+
+  /**
+   * Updates the user operation hash.
+   * @param {string} userOpHash - The user operation hash to be updated.
+   * @returns {string} - The updated user operation hash.
+   */
+  updateUserOpHash(userOpHash) {
+    return (this.userOpHash = userOpHash);
+  }
+
+  /**
+   * Checks if the transaction is successful.
+   * @returns {boolean} - True if the transaction is successful, false otherwise.
+   */
+  isSuccess() {
+    return this.status === TRANSACTION_STATUS.SUCCESS;
+  }
+
+  /**
+   * Checks if the transaction has failed.
+   * @returns {boolean} - True if the transaction has failed, false otherwise.
+   */
+  isFailure() {
+    return this.status === TRANSACTION_STATUS.FAILURE;
+  }
+
+  /**
+   * Checks if the transaction is in the pending hash state.
+   * @returns {boolean} - True if the transaction is in the pending hash state, false otherwise.
+   */
+  isPendingHash() {
+    return this.status === TRANSACTION_STATUS.PENDING_HASH;
+  }
+
+  /**
+   * Retrieves the transaction status.
+   * @returns {Promise<string|boolean>} - The transaction status or false if an error occurs.
+   */
+  async getStatus() {
+    try {
+      // Retrieve the status of the PatchWallet transaction
+      return await getTxStatus(this.userOpHash);
+    } catch (error) {
+      // Log error if retrieving transaction status fails
+      console.error(
+        `[${this.eventId}] Error processing PatchWallet transaction status: ${error}`
+      );
+      // Return true if the error status is 470, marking the transaction as failed
+      return false;
+    }
+  }
+
+  /**
+   * Saves transaction information to FlowXO.
+   */
+  async saveToFlowXO() {
+    // Send transaction information to FlowXO
+    await axios.post(FLOWXO_NEW_LINK_REWARD_WEBHOOK, {
+      userTelegramID: this.referentUserTelegramID,
+      responsePath: this.referent.responsePath,
+      walletAddress: this.referent.patchwallet,
+      reason: this.reason,
+      userHandle: this.referent.userHandle,
+      userName: this.referent.userName,
+      amount: this.amount,
+      message: this.message,
+      transactionHash: this.txHash,
+      dateAdded: new Date(),
+      sponsoredUserTelegramID: this.userTelegramID,
+    });
+  }
+
+  /**
+   * Sends tokens using PatchWallet.
+   * @returns {Promise<boolean>} - True if sending tokens is successful, false otherwise.
+   */
+  async sendTx() {
+    try {
+      // Send tokens using PatchWallet
+      return await sendTokens(
+        SOURCE_TG_ID,
+        this.referent.patchwallet,
+        this.amount,
+        await getPatchWalletAccessToken(),
+        this.tokenAddress,
+        this.chainName
+      );
+    } catch (error) {
+      // Log error if sending tokens fails
+      console.error(
+        `[${this.eventId}] link reward for ${this.referentUserTelegramID} - Error processing PatchWallet token sending: ${error}`
       );
 
       return false;

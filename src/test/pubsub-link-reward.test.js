@@ -468,6 +468,7 @@ describe('handleLinkReward function', async function () {
         message: 'Referral link',
         transactionHash: mockTransactionHash,
         status: TRANSACTION_STATUS.SUCCESS,
+        userOpHash: null,
       });
       chai
         .expect(rewards[0].dateAdded)
@@ -594,6 +595,8 @@ describe('handleLinkReward function', async function () {
             message: 'Referral link',
             sponsoredUserTelegramID: mockUserTelegramID,
             status: TRANSACTION_STATUS.PENDING,
+            transactionHash: null,
+            userOpHash: null,
           },
         ]);
     });
@@ -683,6 +686,8 @@ describe('handleLinkReward function', async function () {
             message: 'Referral link',
             sponsoredUserTelegramID: mockUserTelegramID,
             status: TRANSACTION_STATUS.PENDING,
+            transactionHash: null,
+            userOpHash: null,
           },
         ]);
     });
@@ -768,6 +773,7 @@ describe('handleLinkReward function', async function () {
               sponsoredUserTelegramID: mockUserTelegramID,
               status: TRANSACTION_STATUS.PENDING_HASH,
               userOpHash: mockUserOpHash,
+              transactionHash: null,
             },
           ]);
       });
@@ -982,6 +988,7 @@ describe('handleLinkReward function', async function () {
               sponsoredUserTelegramID: mockUserTelegramID,
               status: TRANSACTION_STATUS.PENDING_HASH,
               userOpHash: mockUserOpHash,
+              transactionHash: null,
             },
           ]);
       });
@@ -1174,6 +1181,8 @@ describe('handleLinkReward function', async function () {
               message: 'Referral link',
               sponsoredUserTelegramID: mockUserTelegramID,
               status: TRANSACTION_STATUS.SUCCESS,
+              transactionHash: null,
+              userOpHash: null,
             },
           ]);
       });
@@ -1275,6 +1284,8 @@ describe('handleLinkReward function', async function () {
               message: 'Referral link',
               sponsoredUserTelegramID: mockUserTelegramID,
               status: TRANSACTION_STATUS.FAILURE,
+              transactionHash: null,
+              userOpHash: null,
             },
           ]);
       });
