@@ -10,7 +10,7 @@ import {
   patchwalletResolverUrl,
   segmentIdentifyUrl,
 } from './utils.js';
-import { handleNewReward, webhook_utils } from '../utils/webhooks/webhook.js';
+import { handleNewReward } from '../utils/webhooks/webhook.js';
 import Sinon from 'sinon';
 import axios from 'axios';
 
@@ -18,6 +18,7 @@ import chaiExclude from 'chai-exclude';
 import { v4 as uuidv4 } from 'uuid';
 import { signup_utils } from '../utils/webhooks/signup-reward.js';
 import { referral_utils } from '../utils/webhooks/referral-reward.js';
+import { link_reward_utils } from '../utils/webhooks/link-reward.js';
 
 chai.use(chaiExclude);
 
@@ -51,7 +52,7 @@ describe('handleReferralReward function', function () {
         return true;
       });
     sandbox
-      .stub(webhook_utils, 'handleLinkReward')
+      .stub(link_reward_utils, 'handleLinkReward')
       .callsFake(async function () {
         return true;
       });
@@ -251,7 +252,7 @@ describe('handleReferralReward function', function () {
   });
 
   it('Should be able to restart and return true + populate the database properly', async function () {
-    webhook_utils.handleLinkReward.callsFake(async function () {
+    link_reward_utils.handleLinkReward.callsFake(async function () {
       return false;
     });
 
@@ -267,7 +268,7 @@ describe('handleReferralReward function', function () {
     chai.expect(result).to.be.false;
     chai.expect(await collectionUsersMock.find({}).toArray()).to.be.empty;
 
-    webhook_utils.handleLinkReward.callsFake(async function () {
+    link_reward_utils.handleLinkReward.callsFake(async function () {
       return true;
     });
 

@@ -1,7 +1,6 @@
 import chai from 'chai';
 import {
   collectionRewardsMock,
-  dbMock,
   mockResponsePath,
   mockUserHandle,
   mockUserName,
@@ -19,7 +18,6 @@ import {
   mockTokenAddress,
   mockChainName,
 } from './utils.js';
-import { handleLinkReward } from '../utils/webhooks/webhook.js';
 import Sinon from 'sinon';
 import axios from 'axios';
 
@@ -31,6 +29,7 @@ import {
   G1_POLYGON_ADDRESS,
   SOURCE_TG_ID,
 } from '../../secrets.js';
+import { handleLinkReward } from '../utils/webhooks/link-reward.js';
 
 chai.use(chaiExclude);
 
@@ -94,7 +93,6 @@ describe('handleLinkReward function', async function () {
     it('Should return true if referent is not a user', async function () {
       chai.expect(
         await handleLinkReward(
-          dbMock,
           rewardId,
           mockUserTelegramID,
           mockUserTelegramID1
@@ -103,12 +101,7 @@ describe('handleLinkReward function', async function () {
     });
 
     it('Should not send tokens if referent is not a user', async function () {
-      await handleLinkReward(
-        dbMock,
-        rewardId,
-        mockUserTelegramID,
-        mockUserTelegramID1
-      );
+      await handleLinkReward(rewardId, mockUserTelegramID, mockUserTelegramID1);
 
       chai.expect(
         axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl)
@@ -116,23 +109,13 @@ describe('handleLinkReward function', async function () {
     });
 
     it('Should not fill the reward database if referent is not a user', async function () {
-      await handleLinkReward(
-        dbMock,
-        rewardId,
-        mockUserTelegramID,
-        mockUserTelegramID1
-      );
+      await handleLinkReward(rewardId, mockUserTelegramID, mockUserTelegramID1);
 
       chai.expect(await collectionRewardsMock.find({}).toArray()).to.be.empty;
     });
 
     it('Should not call FlowXO if referent is not a user', async function () {
-      await handleLinkReward(
-        dbMock,
-        rewardId,
-        mockUserTelegramID,
-        mockUserTelegramID1
-      );
+      await handleLinkReward(rewardId, mockUserTelegramID, mockUserTelegramID1);
 
       chai.expect(
         axiosStub
@@ -165,7 +148,6 @@ describe('handleLinkReward function', async function () {
     it('Should return true if user already sponsored someone else in another reward process without eventId', async function () {
       chai.expect(
         await handleLinkReward(
-          dbMock,
           rewardId,
           mockUserTelegramID,
           mockUserTelegramID1
@@ -175,7 +157,6 @@ describe('handleLinkReward function', async function () {
 
     it('Should not send tokens if user already sponsored someone else in another reward process without eventId', async function () {
       const result = await handleLinkReward(
-        dbMock,
         rewardId,
         mockUserTelegramID,
         mockUserTelegramID1
@@ -188,7 +169,6 @@ describe('handleLinkReward function', async function () {
 
     it('Should not update the database if user already sponsored someone else in another reward process without eventId', async function () {
       const result = await handleLinkReward(
-        dbMock,
         rewardId,
         mockUserTelegramID,
         mockUserTelegramID1
@@ -214,7 +194,6 @@ describe('handleLinkReward function', async function () {
 
     it('Should not call FlowXO if user already sponsored someone else in another reward process without eventId', async function () {
       const result = await handleLinkReward(
-        dbMock,
         rewardId,
         mockUserTelegramID,
         mockUserTelegramID1
@@ -252,7 +231,6 @@ describe('handleLinkReward function', async function () {
     it('Should return true if user already sponsored someone else in another reward process with another eventId', async function () {
       chai.expect(
         await handleLinkReward(
-          dbMock,
           rewardId,
           mockUserTelegramID,
           mockUserTelegramID1
@@ -262,7 +240,6 @@ describe('handleLinkReward function', async function () {
 
     it('Should not send tokens if user already sponsored someone else in another reward process with another eventId', async function () {
       const result = await handleLinkReward(
-        dbMock,
         rewardId,
         mockUserTelegramID,
         mockUserTelegramID1
@@ -275,7 +252,6 @@ describe('handleLinkReward function', async function () {
 
     it('Should not update the database if user already sponsored someone else in another reward process with another eventId', async function () {
       const result = await handleLinkReward(
-        dbMock,
         rewardId,
         mockUserTelegramID,
         mockUserTelegramID1
@@ -302,7 +278,6 @@ describe('handleLinkReward function', async function () {
 
     it('Should not call FlowXO if user already sponsored someone else in another reward process with another eventId', async function () {
       const result = await handleLinkReward(
-        dbMock,
         rewardId,
         mockUserTelegramID,
         mockUserTelegramID1
@@ -341,7 +316,6 @@ describe('handleLinkReward function', async function () {
     it('Should return true if This eventId link reward is already a success', async function () {
       chai.expect(
         await handleLinkReward(
-          dbMock,
           rewardId,
           mockUserTelegramID,
           mockUserTelegramID1
@@ -351,7 +325,6 @@ describe('handleLinkReward function', async function () {
 
     it('Should not send tokens if This eventId link reward is already a success', async function () {
       const result = await handleLinkReward(
-        dbMock,
         rewardId,
         mockUserTelegramID,
         mockUserTelegramID1
@@ -364,7 +337,6 @@ describe('handleLinkReward function', async function () {
 
     it('Should not update the database if This eventId link reward is already a success', async function () {
       const result = await handleLinkReward(
-        dbMock,
         rewardId,
         mockUserTelegramID,
         mockUserTelegramID1
@@ -392,7 +364,6 @@ describe('handleLinkReward function', async function () {
 
     it('Should not call FlowXO if This eventId link reward is already a success', async function () {
       const result = await handleLinkReward(
-        dbMock,
         rewardId,
         mockUserTelegramID,
         mockUserTelegramID1
@@ -419,7 +390,6 @@ describe('handleLinkReward function', async function () {
 
     it('Should call the sendTokens function properly if the user is new', async function () {
       await handleLinkReward(
-        dbMock,
         rewardId,
         mockUserTelegramID,
         mockUserTelegramID1,
@@ -445,12 +415,7 @@ describe('handleLinkReward function', async function () {
     });
 
     it('Should insert a new element in the reward collection of the database if the user is new', async function () {
-      await handleLinkReward(
-        dbMock,
-        rewardId,
-        mockUserTelegramID,
-        mockUserTelegramID1
-      );
+      await handleLinkReward(rewardId, mockUserTelegramID, mockUserTelegramID1);
 
       const rewards = await collectionRewardsMock.find({}).toArray();
 
@@ -482,7 +447,6 @@ describe('handleLinkReward function', async function () {
       });
       chai.expect(
         await handleLinkReward(
-          dbMock,
           rewardId,
           mockUserTelegramID,
           mockUserTelegramID1
@@ -491,12 +455,7 @@ describe('handleLinkReward function', async function () {
     });
 
     it('Should call FlowXO webhook properly if the user is new', async function () {
-      await handleLinkReward(
-        dbMock,
-        rewardId,
-        mockUserTelegramID,
-        mockUserTelegramID1
-      );
+      await handleLinkReward(rewardId, mockUserTelegramID, mockUserTelegramID1);
 
       const FlowXOCallArgs = axiosStub
         .getCalls()
@@ -532,12 +491,7 @@ describe('handleLinkReward function', async function () {
     });
 
     chai.expect(
-      await handleLinkReward(
-        dbMock,
-        rewardId,
-        mockUserTelegramID,
-        mockUserTelegramID1
-      )
+      await handleLinkReward(rewardId, mockUserTelegramID, mockUserTelegramID1)
     ).to.be.true;
   });
 
@@ -553,7 +507,6 @@ describe('handleLinkReward function', async function () {
 
       chai.expect(
         await handleLinkReward(
-          dbMock,
           rewardId,
           mockUserTelegramID,
           mockUserTelegramID1
@@ -573,12 +526,7 @@ describe('handleLinkReward function', async function () {
         userName: mockUserName,
       });
 
-      await handleLinkReward(
-        dbMock,
-        rewardId,
-        mockUserTelegramID,
-        mockUserTelegramID1
-      );
+      await handleLinkReward(rewardId, mockUserTelegramID, mockUserTelegramID1);
       chai
         .expect(await collectionRewardsMock.find({}).toArray())
         .excluding(['_id', 'dateAdded'])
@@ -610,12 +558,7 @@ describe('handleLinkReward function', async function () {
         userTelegramID: mockUserTelegramID1,
       });
 
-      await handleLinkReward(
-        dbMock,
-        rewardId,
-        mockUserTelegramID,
-        mockUserTelegramID1
-      );
+      await handleLinkReward(rewardId, mockUserTelegramID, mockUserTelegramID1);
 
       chai.expect(
         axiosStub
@@ -642,7 +585,6 @@ describe('handleLinkReward function', async function () {
 
       chai.expect(
         await handleLinkReward(
-          dbMock,
           rewardId,
           mockUserTelegramID,
           mockUserTelegramID1
@@ -664,12 +606,7 @@ describe('handleLinkReward function', async function () {
         userName: mockUserName,
       });
 
-      await handleLinkReward(
-        dbMock,
-        rewardId,
-        mockUserTelegramID,
-        mockUserTelegramID1
-      );
+      await handleLinkReward(rewardId, mockUserTelegramID, mockUserTelegramID1);
       chai
         .expect(await collectionRewardsMock.find({}).toArray())
         .excluding(['_id', 'dateAdded'])
@@ -703,12 +640,7 @@ describe('handleLinkReward function', async function () {
         userTelegramID: mockUserTelegramID1,
       });
 
-      await handleLinkReward(
-        dbMock,
-        rewardId,
-        mockUserTelegramID,
-        mockUserTelegramID1
-      );
+      await handleLinkReward(rewardId, mockUserTelegramID, mockUserTelegramID1);
 
       chai.expect(
         axiosStub
@@ -739,7 +671,6 @@ describe('handleLinkReward function', async function () {
 
       it('Should return false if transaction hash is empty in tx PatchWallet endpoint', async function () {
         const result = await handleLinkReward(
-          dbMock,
           rewardId,
           mockUserTelegramID,
           mockUserTelegramID1
@@ -750,7 +681,6 @@ describe('handleLinkReward function', async function () {
 
       it('Should update reward database with a pending_hash status and userOpHash if transaction hash is empty in tx PatchWallet endpoint', async function () {
         const result = await handleLinkReward(
-          dbMock,
           rewardId,
           mockUserTelegramID,
           mockUserTelegramID1
@@ -780,7 +710,6 @@ describe('handleLinkReward function', async function () {
 
       it('Should not call FlowXO webhook if transaction hash is empty in tx PatchWallet endpoint', async function () {
         const result = await handleLinkReward(
-          dbMock,
           rewardId,
           mockUserTelegramID,
           mockUserTelegramID1
@@ -822,7 +751,6 @@ describe('handleLinkReward function', async function () {
 
       it('Should return true if transaction hash is present in PatchWallet status endpoint', async function () {
         const result = await handleLinkReward(
-          dbMock,
           rewardId,
           mockUserTelegramID,
           mockUserTelegramID1
@@ -833,7 +761,6 @@ describe('handleLinkReward function', async function () {
 
       it('Should not send tokens if transaction hash is present in PatchWallet status endpoint', async function () {
         const result = await handleLinkReward(
-          dbMock,
           rewardId,
           mockUserTelegramID,
           mockUserTelegramID1
@@ -846,7 +773,6 @@ describe('handleLinkReward function', async function () {
 
       it('Should update the database with a success status if transaction hash is present in PatchWallet status endpoint', async function () {
         const result = await handleLinkReward(
-          dbMock,
           rewardId,
           mockUserTelegramID,
           mockUserTelegramID1
@@ -876,7 +802,6 @@ describe('handleLinkReward function', async function () {
 
       it('Should call FlowXO webhook properly if transaction hash is present in PatchWallet status endpoint', async function () {
         const result = await handleLinkReward(
-          dbMock,
           rewardId,
           mockUserTelegramID,
           mockUserTelegramID1
@@ -941,7 +866,6 @@ describe('handleLinkReward function', async function () {
 
       it('Should return false if transaction hash is not present in PatchWallet status endpoint', async function () {
         const result = await handleLinkReward(
-          dbMock,
           rewardId,
           mockUserTelegramID,
           mockUserTelegramID1
@@ -952,7 +876,6 @@ describe('handleLinkReward function', async function () {
 
       it('Should not send tokens if transaction hash is not present in PatchWallet status endpoint', async function () {
         const result = await handleLinkReward(
-          dbMock,
           rewardId,
           mockUserTelegramID,
           mockUserTelegramID1
@@ -965,7 +888,6 @@ describe('handleLinkReward function', async function () {
 
       it('Should not update database if transaction hash is not present in PatchWallet status endpoint', async function () {
         const result = await handleLinkReward(
-          dbMock,
           rewardId,
           mockUserTelegramID,
           mockUserTelegramID1
@@ -995,7 +917,6 @@ describe('handleLinkReward function', async function () {
 
       it('Should not call FlowXO webhook if transaction hash is not present in PatchWallet status endpoint', async function () {
         const result = await handleLinkReward(
-          dbMock,
           rewardId,
           mockUserTelegramID,
           mockUserTelegramID1
@@ -1041,7 +962,6 @@ describe('handleLinkReward function', async function () {
 
       it('Should return false if Error in PatchWallet get status endpoint', async function () {
         const result = await handleLinkReward(
-          dbMock,
           rewardId,
           mockUserTelegramID,
           mockUserTelegramID1
@@ -1052,7 +972,6 @@ describe('handleLinkReward function', async function () {
 
       it('Should not send tokens if Error in PatchWallet get status endpoint', async function () {
         const result = await handleLinkReward(
-          dbMock,
           rewardId,
           mockUserTelegramID,
           mockUserTelegramID1
@@ -1065,7 +984,6 @@ describe('handleLinkReward function', async function () {
 
       it('Should not update database if Error in PatchWallet get status endpoint', async function () {
         const result = await handleLinkReward(
-          dbMock,
           rewardId,
           mockUserTelegramID,
           mockUserTelegramID1
@@ -1094,7 +1012,6 @@ describe('handleLinkReward function', async function () {
 
       it('Should not call FlowXO webhook if Error in PatchWallet get status endpoint', async function () {
         const result = await handleLinkReward(
-          dbMock,
           rewardId,
           mockUserTelegramID,
           mockUserTelegramID1
@@ -1135,7 +1052,6 @@ describe('handleLinkReward function', async function () {
 
       it('Should return true if transaction hash is pending_hash without userOpHash', async function () {
         const result = await handleLinkReward(
-          dbMock,
           rewardId,
           mockUserTelegramID,
           mockUserTelegramID1
@@ -1146,7 +1062,6 @@ describe('handleLinkReward function', async function () {
 
       it('Should not send tokens if transaction hash is pending_hash without userOpHash', async function () {
         const result = await handleLinkReward(
-          dbMock,
           rewardId,
           mockUserTelegramID,
           mockUserTelegramID1
@@ -1159,7 +1074,6 @@ describe('handleLinkReward function', async function () {
 
       it('Should update reward database with a success status if transaction hash is pending_hash without userOpHash', async function () {
         const result = await handleLinkReward(
-          dbMock,
           rewardId,
           mockUserTelegramID,
           mockUserTelegramID1
@@ -1189,7 +1103,6 @@ describe('handleLinkReward function', async function () {
 
       it('Should not call FlowXO webhook if transaction hash is empty in tx PatchWallet endpoint', async function () {
         const result = await handleLinkReward(
-          dbMock,
           rewardId,
           mockUserTelegramID,
           mockUserTelegramID1
@@ -1238,7 +1151,6 @@ describe('handleLinkReward function', async function () {
 
       it('Should return true after 10 min of trying to get status', async function () {
         const result = await handleLinkReward(
-          dbMock,
           rewardId,
           mockUserTelegramID,
           mockUserTelegramID1
@@ -1249,7 +1161,6 @@ describe('handleLinkReward function', async function () {
 
       it('Should not send tokens after 10 min of trying to get status', async function () {
         const result = await handleLinkReward(
-          dbMock,
           rewardId,
           mockUserTelegramID,
           mockUserTelegramID1
@@ -1262,7 +1173,6 @@ describe('handleLinkReward function', async function () {
 
       it('Should update reward database with a failure status after 10 min of trying to get status', async function () {
         const result = await handleLinkReward(
-          dbMock,
           rewardId,
           mockUserTelegramID,
           mockUserTelegramID1
@@ -1292,7 +1202,6 @@ describe('handleLinkReward function', async function () {
 
       it('Should not call FlowXO webhook after 10 min of trying to get status', async function () {
         const result = await handleLinkReward(
-          dbMock,
           rewardId,
           mockUserTelegramID,
           mockUserTelegramID1
