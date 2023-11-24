@@ -215,11 +215,8 @@ async function distributeReferralRewards() {
 
       if (existingReward) continue;
 
-      // Find information about the sender of the transaction
-      const senderUser = allUsers.find(
-        (user) =>
-          user.userTelegramID === transfer.senderTgId &&
-          transfer.senderTgId !== SOURCE_TG_ID
+      console.log(
+        `[${userCount}/${allUsers.length}] User ${firstValidTransfer.senderTgId} has no referral reward for sending tokens to ${user.userTelegramID}.`
       );
 
       const rewardPromise = (async () => {
