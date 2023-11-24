@@ -174,7 +174,8 @@ export async function createTransferTelegram(
   recipientTgId,
   amount,
   chainId,
-  tokenAddress
+  tokenAddress,
+  chainName
 ) {
   const transfer = new TransferTelegram(
     eventId,
@@ -182,7 +183,8 @@ export async function createTransferTelegram(
     recipientTgId,
     amount,
     chainId,
-    tokenAddress
+    tokenAddress,
+    chainName
   );
   return (await transfer.initializeTransferDatabase()) && transfer;
 }
@@ -197,7 +199,8 @@ export class TransferTelegram {
     recipientTgId,
     amount,
     chainId,
-    tokenAddress
+    tokenAddress,
+    chainName
   ) {
     this.eventId = eventId;
     this.senderInformation = senderInformation;
@@ -213,6 +216,7 @@ export class TransferTelegram {
     this.tokenAddress = tokenAddress
       ? tokenAddress
       : process.env.G1_POLYGON_ADDRESS;
+    this.chainName = chainName ? chainName : 'matic';
   }
 
   /**
@@ -422,7 +426,9 @@ export class TransferTelegram {
         this.senderInformation.userTelegramID,
         this.recipientWallet,
         this.amount,
-        await getPatchWalletAccessToken()
+        await getPatchWalletAccessToken(),
+        this.tokenAddress,
+        this.chainName
       );
     } catch (error) {
       // Log error if sending tokens fails

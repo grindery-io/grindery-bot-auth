@@ -38,8 +38,7 @@ export async function sendTokens(
   amountEther,
   patchWalletAccessToken,
   tokenAddress,
-  chainName,
-  to
+  chainName
 ) {
   const g1Contract = new new Web3().eth.Contract(
     ERC20,
@@ -50,7 +49,7 @@ export async function sendTokens(
     {
       userId: `grindery:${senderTgId}`,
       chain: chainName ? chainName : 'matic',
-      to: [to ? to : process.env.G1_POLYGON_ADDRESS],
+      to: [tokenAddress ? tokenAddress : process.env.G1_POLYGON_ADDRESS],
       value: ['0x00'],
       data: [
         g1Contract.methods['transfer'](

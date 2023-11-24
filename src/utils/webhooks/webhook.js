@@ -174,8 +174,7 @@ export async function handleReferralReward(db, params) {
           '50',
           await getPatchWalletAccessToken(),
           params.tokenAddress,
-          params.chainName,
-          params.to
+          params.chainName
         );
       } catch (error) {
         console.error(
@@ -278,8 +277,7 @@ export async function handleLinkReward(
   userTelegramID,
   referentUserTelegramID,
   tokenAddress,
-  chainName,
-  to
+  chainName
 ) {
   try {
     const referent = await db
@@ -406,8 +404,7 @@ export async function handleLinkReward(
           '10',
           await getPatchWalletAccessToken(),
           tokenAddress,
-          chainName,
-          to
+          chainName
         );
       } catch (error) {
         console.error(
@@ -540,8 +537,7 @@ export async function handleNewReward(params) {
         params.userTelegramID,
         params.referentUserTelegramID,
         params.tokenAddress,
-        params.chainName,
-        params.to
+        params.chainName
       ))
     ) {
       return false;

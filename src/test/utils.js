@@ -36,6 +36,10 @@ export const mockUserHandle3 = 'myUserHandle3';
 export const mockUserName3 = 'myUserName3';
 export const mockWallet3 = '0x51a1449b3B6D635EddeC781cD47a99221712De97';
 
+export const mockTokenAddress = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
+export const mockChainId = 'eip155:55';
+export const mockChainName = 'bnb';
+
 export const mockToSwap = '0x38147794FF247e5Fc179eDbAE6C37fff88f68C52';
 export const mockFromSwap = '0x699791A03Ac2B58E1B7cA29B601C69F223c78e9c';
 export const mockValue = '1000000';

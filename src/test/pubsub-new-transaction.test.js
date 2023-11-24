@@ -16,6 +16,9 @@ import {
   mockUserHandle,
   patchwalletTxStatusUrl,
   mockUserOpHash,
+  mockChainName,
+  mockTokenAddress,
+  mockChainId,
 } from './utils.js';
 import Sinon from 'sinon';
 import axios from 'axios';
@@ -118,8 +121,9 @@ describe('handleNewTransaction function', async function () {
         amount: '100',
         recipientTgId: mockUserTelegramID1,
         eventId: txId,
-        chainId: 'eip155:55',
-        tokenAddress: '0x12345678910',
+        chainId: mockChainId,
+        tokenAddress: mockTokenAddress,
+        chainName: mockChainName,
       });
 
       const transfers = await collectionTransfersMock.find({}).toArray();
@@ -130,9 +134,9 @@ describe('handleNewTransaction function', async function () {
         .to.deep.equal([
           {
             eventId: txId,
-            chainId: 'eip155:55',
+            chainId: mockChainId,
             tokenSymbol: 'g1',
-            tokenAddress: '0x12345678910',
+            tokenAddress: mockTokenAddress,
             senderTgId: mockUserTelegramID,
             senderWallet: mockWallet,
             senderName: mockUserName,

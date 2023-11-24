@@ -16,6 +16,8 @@ import {
   patchwalletTxStatusUrl,
   mockUserTelegramID1,
   patchwalletResolverUrl,
+  mockTokenAddress,
+  mockChainName,
 } from './utils.js';
 import Sinon from 'sinon';
 import axios from 'axios';
@@ -830,9 +832,8 @@ describe('handleIsolatedReward function', async function () {
         reason: 'isolated_reason_1',
         message: 'isolated message 1',
         amount: '100',
-        tokenAddress: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-        chainName: 'bnb',
-        to: '0bg0b86991c6218b36c1d19d4a2e9eb0ce3606eb10',
+        tokenAddress: mockTokenAddress,
+        chainName: mockChainName,
       });
       chai
         .expect(
@@ -841,8 +842,8 @@ describe('handleIsolatedReward function', async function () {
         )
         .to.deep.equal({
           userId: `grindery:${process.env.SOURCE_TG_ID}`,
-          chain: 'bnb',
-          to: ['0bg0b86991c6218b36c1d19d4a2e9eb0ce3606eb10'],
+          chain: mockChainName,
+          to: [mockTokenAddress],
           value: ['0x00'],
           data: [
             '0xa9059cbb00000000000000000000000095222290dd7278aa3ddd389cc1e1d165cc4bafe50000000000000000000000000000000000000000000000056bc75e2d63100000',

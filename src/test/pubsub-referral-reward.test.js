@@ -35,6 +35,8 @@ import {
   mockUserHandle3,
   mockUserName3,
   mockWallet3,
+  mockTokenAddress,
+  mockChainName,
 } from './utils.js';
 import { handleReferralReward } from '../utils/webhooks/webhook.js';
 import Sinon from 'sinon';
@@ -675,9 +677,8 @@ describe('handleReferralReward function', function () {
         userHandle: mockUserHandle,
         userName: mockUserName,
         patchwallet: mockWallet,
-        tokenAddress: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-        chainName: 'bnb',
-        to: '0be0b86991c6218b36c1d19d4a2e9eb0ce3606ea98',
+        tokenAddress: mockTokenAddress,
+        chainName: mockChainName,
       });
 
       const sendTokensCalls = axiosStub
@@ -687,8 +688,8 @@ describe('handleReferralReward function', function () {
       chai.expect(sendTokensCalls.length).to.equal(1);
       chai.expect(sendTokensCalls[0].args[1]).to.deep.equal({
         userId: `grindery:${process.env.SOURCE_TG_ID}`,
-        chain: 'bnb',
-        to: ['0be0b86991c6218b36c1d19d4a2e9eb0ce3606ea98'],
+        chain: mockChainName,
+        to: [mockTokenAddress],
         value: ['0x00'],
         data: [
           '0xa9059cbb000000000000000000000000594cfcaa67bc8789d17d39eb5f1dfc7dd95242cd000000000000000000000000000000000000000000000002b5e3af16b1880000',
