@@ -1,24 +1,31 @@
-import 'dotenv/config';
+import {
+  ALCHEMY_API_KEY,
+  ANKR_KEY,
+  GETBLOCK_API_KEY,
+  LAVANET_API_KEY,
+  CHAINSTACK_API_KEY,
+  CHAINSTACK_API_KEY_2,
+} from '../../secrets.js';
 
 const ANKR = (name) => [
-  `wss://rpc.ankr.com/${name}/ws/${process.env.ANKR_KEY || ''}`,
-  `https://rpc.ankr.com/${name}/${process.env.ANKR_KEY || ''}`,
+  `wss://rpc.ankr.com/${name}/ws/${ANKR_KEY || ''}`,
+  `https://rpc.ankr.com/${name}/${ANKR_KEY || ''}`,
 ];
 const ALCHEMY = (name) => [
-  `wss://${name}.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
-  `https://${name}.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
+  `wss://${name}.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
+  `https://${name}.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
 ];
 const GETBLOCK = (name, netType = 'mainnet') => [
-  `wss://${name}.getblock.io/${process.env.GETBLOCK_API_KEY}/${netType}/`,
-  `https://${name}.getblock.io/${process.env.GETBLOCK_API_KEY}/${netType}/`,
+  `wss://${name}.getblock.io/${GETBLOCK_API_KEY}/${netType}/`,
+  `https://${name}.getblock.io/${GETBLOCK_API_KEY}/${netType}/`,
 ];
 const LAVANET = (wsPath, httpsPath) => [
-  `wss://g.w.lavanet.xyz:443/gateway/${wsPath}/${process.env.LAVANET_API_KEY}`,
-  `https://g.w.lavanet.xyz:443/gateway/${httpsPath}/${process.env.LAVANET_API_KEY}`,
+  `wss://g.w.lavanet.xyz:443/gateway/${wsPath}/${LAVANET_API_KEY}`,
+  `https://g.w.lavanet.xyz:443/gateway/${httpsPath}/${LAVANET_API_KEY}`,
 ];
 const CHAINSTACK = (nodeId, key) => [
-  `wss://ws-${nodeId}.p2pify.com/${key || process.env.CHAINSTACK_API_KEY}`,
-  `https://${nodeId}.p2pify.com/${key || process.env.CHAINSTACK_API_KEY}`,
+  `wss://ws-${nodeId}.p2pify.com/${key || CHAINSTACK_API_KEY}`,
+  `https://${nodeId}.p2pify.com/${key || CHAINSTACK_API_KEY}`,
 ];
 
 export const CHAIN_MAPPING = {
@@ -42,7 +49,7 @@ export const CHAIN_MAPPING = {
   maticmum: ANKR('polygon_mumbai'),
   'eip155:5': ALCHEMY('eth-goerli'),
   'eip155:11155111': ANKR('eth_sepolia'),
-  'eip155:97': CHAINSTACK('nd-519-425-794', process.env.CHAINSTACK_API_KEY_2),
+  'eip155:97': CHAINSTACK('nd-519-425-794', CHAINSTACK_API_KEY_2),
   'eip155:4002': ANKR('fantom_testnet'),
   'eip155:1442': ANKR('polygon_zkevm_testnet'),
   'eip155:338': CHAINSTACK('nd-326-373-985'),

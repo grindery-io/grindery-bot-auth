@@ -20,10 +20,15 @@ import {
 import { handleSignUpReward } from '../utils/webhooks/signup-reward.js';
 import Sinon from 'sinon';
 import axios from 'axios';
-import 'dotenv/config';
+
 import chaiExclude from 'chai-exclude';
 import { v4 as uuidv4 } from 'uuid';
 import { TRANSACTION_STATUS } from '../utils/constants.js';
+import {
+  FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK,
+  G1_POLYGON_ADDRESS,
+  SOURCE_TG_ID,
+} from '../../secrets.js';
 
 chai.use(chaiExclude);
 
@@ -63,7 +68,7 @@ describe('handleSignUpReward function', async function () {
           });
         }
 
-        if (url == process.env.FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK) {
+        if (url == FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK) {
           return Promise.resolve({
             result: 'success',
           });
@@ -150,9 +155,7 @@ describe('handleSignUpReward function', async function () {
       chai.expect(
         axiosStub
           .getCalls()
-          .find(
-            (e) => e.firstArg === process.env.FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK
-          )
+          .find((e) => e.firstArg === FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK)
       ).to.be.undefined;
     });
   });
@@ -231,9 +234,7 @@ describe('handleSignUpReward function', async function () {
       chai.expect(
         axiosStub
           .getCalls()
-          .find(
-            (e) => e.firstArg === process.env.FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK
-          )
+          .find((e) => e.firstArg === FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK)
       ).to.be.undefined;
     });
   });
@@ -310,9 +311,7 @@ describe('handleSignUpReward function', async function () {
       chai.expect(
         axiosStub
           .getCalls()
-          .find(
-            (e) => e.firstArg === process.env.FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK
-          )
+          .find((e) => e.firstArg === FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK)
       ).to.be.undefined;
     });
   });
@@ -364,9 +363,9 @@ describe('handleSignUpReward function', async function () {
             .args[1]
         )
         .to.deep.equal({
-          userId: `grindery:${process.env.SOURCE_TG_ID}`,
+          userId: `grindery:${SOURCE_TG_ID}`,
           chain: 'matic',
-          to: [process.env.G1_POLYGON_ADDRESS],
+          to: [G1_POLYGON_ADDRESS],
           value: ['0x00'],
           data: [
             '0xa9059cbb00000000000000000000000095222290dd7278aa3ddd389cc1e1d165cc4bafe50000000000000000000000000000000000000000000000056bc75e2d63100000',
@@ -424,9 +423,7 @@ describe('handleSignUpReward function', async function () {
 
       const FlowXOCallArgs = axiosStub
         .getCalls()
-        .find(
-          (e) => e.firstArg === process.env.FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK
-        ).args[1];
+        .find((e) => e.firstArg === FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK).args[1];
 
       chai.expect(FlowXOCallArgs).excluding(['dateAdded']).to.deep.equal({
         userTelegramID: mockUserTelegramID,
@@ -486,9 +483,9 @@ describe('handleSignUpReward function', async function () {
             .args[1]
         )
         .to.deep.equal({
-          userId: `grindery:${process.env.SOURCE_TG_ID}`,
+          userId: `grindery:${SOURCE_TG_ID}`,
           chain: 'matic',
-          to: [process.env.G1_POLYGON_ADDRESS],
+          to: [G1_POLYGON_ADDRESS],
           value: ['0x00'],
           data: [
             '0xa9059cbb00000000000000000000000095222290dd7278aa3ddd389cc1e1d165cc4bafe50000000000000000000000000000000000000000000000056bc75e2d63100000',
@@ -547,9 +544,7 @@ describe('handleSignUpReward function', async function () {
 
       const FlowXOCallArgs = axiosStub
         .getCalls()
-        .find(
-          (e) => e.firstArg === process.env.FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK
-        ).args[1];
+        .find((e) => e.firstArg === FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK).args[1];
 
       chai.expect(FlowXOCallArgs).excluding(['dateAdded']).to.deep.equal({
         userTelegramID: mockUserTelegramID,
@@ -645,9 +640,7 @@ describe('handleSignUpReward function', async function () {
 
       const FlowXOCallArgs = axiosStub
         .getCalls()
-        .find(
-          (e) => e.firstArg === process.env.FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK
-        ).args[1];
+        .find((e) => e.firstArg === FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK).args[1];
 
       chai.expect(FlowXOCallArgs).excluding(['dateAdded']).to.deep.equal({
         userTelegramID: mockUserTelegramID,
@@ -695,7 +688,7 @@ describe('handleSignUpReward function', async function () {
 
   it('Should return true if there is an error in FlowXO', async function () {
     axiosStub
-      .withArgs(process.env.FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK)
+      .withArgs(FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK)
       .rejects(new Error('Service not available'));
 
     chai.expect(
@@ -780,9 +773,7 @@ describe('handleSignUpReward function', async function () {
       chai.expect(
         axiosStub
           .getCalls()
-          .find(
-            (e) => e.firstArg === process.env.FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK
-          )
+          .find((e) => e.firstArg === FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK)
       ).to.be.undefined;
     });
   });
@@ -852,9 +843,7 @@ describe('handleSignUpReward function', async function () {
       chai.expect(
         axiosStub
           .getCalls()
-          .find(
-            (e) => e.firstArg === process.env.FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK
-          )
+          .find((e) => e.firstArg === FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK)
       ).to.be.undefined;
     });
   });
@@ -927,9 +916,7 @@ describe('handleSignUpReward function', async function () {
         chai.expect(
           axiosStub
             .getCalls()
-            .find(
-              (e) => e.firstArg === process.env.FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK
-            )
+            .find((e) => e.firstArg === FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK)
         ).to.be.undefined;
       });
     });
@@ -1022,9 +1009,7 @@ describe('handleSignUpReward function', async function () {
 
         const FlowXOCallArgs = axiosStub
           .getCalls()
-          .find(
-            (e) => e.firstArg === process.env.FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK
-          ).args[1];
+          .find((e) => e.firstArg === FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK).args[1];
 
         chai.expect(FlowXOCallArgs).excluding(['dateAdded']).to.deep.equal({
           userTelegramID: mockUserTelegramID,
@@ -1141,9 +1126,7 @@ describe('handleSignUpReward function', async function () {
         chai.expect(
           axiosStub
             .getCalls()
-            .find(
-              (e) => e.firstArg === process.env.FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK
-            )
+            .find((e) => e.firstArg === FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK)
         ).to.be.undefined;
       });
     });
@@ -1240,9 +1223,7 @@ describe('handleSignUpReward function', async function () {
         chai.expect(
           axiosStub
             .getCalls()
-            .find(
-              (e) => e.firstArg === process.env.FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK
-            )
+            .find((e) => e.firstArg === FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK)
         ).to.be.undefined;
       });
     });
@@ -1335,9 +1316,7 @@ describe('handleSignUpReward function', async function () {
         chai.expect(
           axiosStub
             .getCalls()
-            .find(
-              (e) => e.firstArg === process.env.FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK
-            )
+            .find((e) => e.firstArg === FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK)
         ).to.be.undefined;
       });
     });
@@ -1439,9 +1418,7 @@ describe('handleSignUpReward function', async function () {
         chai.expect(
           axiosStub
             .getCalls()
-            .find(
-              (e) => e.firstArg === process.env.FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK
-            )
+            .find((e) => e.firstArg === FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK)
         ).to.be.undefined;
       });
     });

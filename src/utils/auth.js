@@ -1,6 +1,7 @@
 import axios from 'axios';
 import jwt_decode from 'jwt-decode';
 import { webcrypto } from 'crypto';
+import { API_KEY, BOT_TOKEN } from '../../secrets.js';
 
 export const checkToken = async (token, workspaceKey) => {
   try {
@@ -59,14 +60,14 @@ export const isRequired = async (req, res, next) => {
   next();
 };
 
-export const authenticateApiKey = (req, res, next) => {
+export const authenticateApiKey = async (req, res, next) => {
   const apiKey = req.headers['authorization'];
   if (!apiKey) {
     return res.status(401).send({
       msg: 'Missing API key in headers',
     });
   }
-  if (apiKey !== `Bearer ${process.env.API_KEY}`) {
+  if (apiKey !== `Bearer ${API_KEY}`) {
     return res.status(401).send({
       msg: 'Invalid API key',
     });
@@ -75,7 +76,7 @@ export const authenticateApiKey = (req, res, next) => {
 };
 
 export const telegramHashIsValid = async (req, res, next) => {
-  if (!process.env.BOT_TOKEN) {
+  if (!BOT_TOKEN) {
     return res.status(500).json({ error: 'Internal server error' });
   }
   const authorization = req.headers['authorization'];
@@ -97,7 +98,7 @@ export const telegramHashIsValid = async (req, res, next) => {
   const secret = await webcrypto.subtle.sign(
     'HMAC',
     secretKey,
-    encoder.encode(process.env.BOT_TOKEN)
+    encoder.encode(BOT_TOKEN)
   );
   const signatureKey = await webcrypto.subtle.importKey(
     'raw',

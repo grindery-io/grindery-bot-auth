@@ -17,6 +17,7 @@
     "@google-cloud/bigquery": "^7.3.0",
     "@google-cloud/monitoring": "^4.0.0",
     "@google-cloud/pubsub": "^4.0.5",
+    "@google-cloud/secret-manager": "^5.0.1",
     "@google-cloud/storage": "^7.2.0",
     "@types/sinon": "^10.0.17",
     "airtable": "^0.12.2",

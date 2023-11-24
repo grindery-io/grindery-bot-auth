@@ -1,5 +1,4 @@
 import express from 'express';
-import 'dotenv/config';
 import { authenticateApiKey } from '../utils/auth.js';
 import { Database } from '../db/conn.js';
 import { TRANSFERS_COLLECTION } from '../utils/constants.js';

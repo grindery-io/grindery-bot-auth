@@ -5,6 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import './loadEnvironment.js';
 import router from './router.js';
+import { PORT } from '../secrets.js';
 import './scripts/cronjob.js';
 
 const { json, urlencoded } = pkg;
@@ -111,7 +112,7 @@ app.get('/', (req, res) => {
     .send("<script>location.href = '/docs'</script>");
 });
 
-const port = process.env.PORT || 3000;
+const port = PORT || 3000;
 
 const server = app.listen(port, function () {
   console.log(`Bot auth API listening on port ${port}`);

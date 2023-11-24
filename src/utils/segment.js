@@ -1,5 +1,5 @@
-import 'dotenv/config';
 import axios from 'axios';
+import { G1_POLYGON_ADDRESS, SEGMENT_KEY } from '../../secrets.js';
 
 /**
  * Sends user identity information to Segment.
@@ -22,7 +22,7 @@ export async function addIdentitySegment(user) {
     {
       timeout: 100000,
       headers: {
-        Authorization: `Bearer ${process.env.SEGMENT_KEY}`,
+        Authorization: `Bearer ${SEGMENT_KEY}`,
       },
     }
   );
@@ -42,7 +42,7 @@ export async function addTrackSegment(params) {
       properties: {
         chainId: 'eip155:137',
         tokenSymbol: 'g1',
-        tokenAddress: process.env.G1_POLYGON_ADDRESS,
+        tokenAddress: G1_POLYGON_ADDRESS,
         senderTgId: params.senderTgId,
         senderWallet: params.senderWallet,
         senderHandle: params.senderHandle,
@@ -58,7 +58,7 @@ export async function addTrackSegment(params) {
     {
       timeout: 100000,
       headers: {
-        Authorization: `Bearer ${process.env.SEGMENT_KEY}`,
+        Authorization: `Bearer ${SEGMENT_KEY}`,
       },
     }
   );
@@ -98,7 +98,7 @@ export async function addTrackSwapSegment(params) {
     {
       timeout: 100000,
       headers: {
-        Authorization: `Bearer ${process.env.SEGMENT_KEY}`,
+        Authorization: `Bearer ${SEGMENT_KEY}`,
       },
     }
   );

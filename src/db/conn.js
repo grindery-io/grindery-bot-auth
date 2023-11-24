@@ -1,10 +1,9 @@
 import { MongoClient } from 'mongodb';
 import * as dotenv from 'dotenv';
 import { MongoMemoryServer } from 'mongodb-memory-server';
+import { ATLAS_URI } from '../../secrets.js';
 
-dotenv.config();
-
-const connectionString = process.env.ATLAS_URI || '';
+const connectionString = ATLAS_URI || '';
 const client = new MongoClient(connectionString);
 
 export class Database {

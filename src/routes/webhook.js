@@ -7,6 +7,14 @@ import { MetricServiceClient } from '@google-cloud/monitoring';
 import { handleIsolatedReward } from '../utils/webhooks/isolated-reward.js';
 import { handleSwap } from '../utils/webhooks/swap.js';
 import { handleNewTransaction } from '../utils/webhooks/transaction.js';
+import {
+  PROJECT_ID,
+  PUBSUB_CONCURRENCY,
+  PUBSUB_MAX_ACK_DEADLINE,
+  PUBSUB_MIN_ACK_DEADLINE,
+  PUBSUB_SUBSCRIPTION_NAME,
+  PUBSUB_TOPIC_NAME,
+} from '../../secrets.js';
 
 /**
  * This is a generic and extendable implementation of a webhook endpoint and pub/sub messages queue.
@@ -20,8 +28,8 @@ import { handleNewTransaction } from '../utils/webhooks/transaction.js';
 const pubSubClient = new PubSub();
 
 // Get topic and subscription names from env
-const topicName = process.env.PUBSUB_TOPIC_NAME;
-const subscriptionName = process.env.PUBSUB_SUBSCRIPTION_NAME;
+const topicName = PUBSUB_TOPIC_NAME;
+const subscriptionName = PUBSUB_SUBSCRIPTION_NAME;
 
 const router = express.Router();
 
@@ -30,8 +38,8 @@ router.get('/unacked-messages', authenticateApiKey, async (req, res) => {
     const client = new MetricServiceClient();
 
     const timeSeries = await client.listTimeSeries({
-      name: client.projectPath(process.env.PROJECT_ID),
-      filter: `metric.type="pubsub.googleapis.com/subscription/num_unacked_messages_by_region" AND resource.labels.subscription_id="${process.env.PUBSUB_SUBSCRIPTION_NAME}"`,
+      name: client.projectPath(PROJECT_ID),
+      filter: `metric.type="pubsub.googleapis.com/subscription/num_unacked_messages_by_region" AND resource.labels.subscription_id="${PUBSUB_SUBSCRIPTION_NAME}"`,
       interval: {
         // Limit results to the last 20 minutes
         startTime: {
@@ -158,13 +166,13 @@ const listenForMessages = () => {
   // get subscription
   const subscription = pubSubClient.subscription(subscriptionName, {
     minAckDeadline: new Duration(
-      parseInt(process.env.PUBSUB_MIN_ACK_DEADLINE, 10) || 60 * 1000
+      parseInt(PUBSUB_MIN_ACK_DEADLINE, 10) || 60 * 1000
     ),
     maxAckDeadline: new Duration(
-      parseInt(process.env.PUBSUB_MAX_ACK_DEADLINE, 10) || 1200 * 1000
+      parseInt(PUBSUB_MAX_ACK_DEADLINE, 10) || 1200 * 1000
     ),
     flowControl: {
-      maxMessages: parseInt(process.env.PUBSUB_CONCURRENCY, 10) || 50,
+      maxMessages: parseInt(PUBSUB_CONCURRENCY, 10) || 50,
     },
   });
 

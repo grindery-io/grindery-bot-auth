@@ -1,15 +1,15 @@
-import 'dotenv/config';
 import axios from 'axios';
 import Web3 from 'web3';
 import ERC20 from '../routes/abi/ERC20.json' assert { type: 'json' };
+import { CLIENT_ID, CLIENT_SECRET, G1_POLYGON_ADDRESS } from '../../secrets.js';
 
 export async function getPatchWalletAccessToken() {
   return (
     await axios.post(
       'https://paymagicapi.com/v1/auth',
       {
-        client_id: process.env.CLIENT_ID,
-        client_secret: process.env.CLIENT_SECRET,
+        client_id: CLIENT_ID,
+        client_secret: CLIENT_SECRET,
       },
       {
         timeout: 100000,

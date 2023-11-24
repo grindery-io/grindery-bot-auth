@@ -8,6 +8,7 @@ import {
   USERS_COLLECTION,
 } from '../utils/constants.js';
 import { createObjectCsvWriter as createCsvWriter } from 'csv-writer';
+import { SOURCE_TG_ID, SOURCE_WALLET_ADDRESS } from '../../secrets.js';
 
 // Example usage of the functions:
 // removeDuplicateTransfers();
@@ -204,7 +205,7 @@ async function removeRewardFromTransfers() {
       // and sender is SOURCE_TG_ID
       if (
         rewardHashes.includes(transfer.transactionHash) &&
-        transfer.senderTgId == process.env.SOURCE_TG_ID
+        transfer.senderTgId == SOURCE_TG_ID
       ) {
         // Delete the transfer
         await collectionTransfers.deleteOne({
@@ -236,7 +237,7 @@ async function checkMissingTransfers(fileName) {
   const db = await Database.getInstance();
   const collection = db.collection(TRANSFERS_COLLECTION);
   const hashesInCsv = new Set();
-  const excludeAddress = process.env.SOURCE_WALLET_ADDRESS;
+  const excludeAddress = SOURCE_WALLET_ADDRESS;
 
   fs.createReadStream(fileName)
     .pipe(csv())
@@ -587,8 +588,7 @@ async function importMissingTransferFromCSV(fileName) {
     if (
       blockTimestamp >= startDate &&
       blockTimestamp <= endDate &&
-      web3.utils.toChecksumAddress(row.from_address) !==
-        process.env.SOURCE_WALLET_ADDRESS
+      web3.utils.toChecksumAddress(row.from_address) !== SOURCE_WALLET_ADDRESS
     ) {
       const key = `${row.from_address}-${row.to_address}-${row.value}-${row.transaction_hash}-${row.block_timestamp}`;
       groups.set(key, (groups.get(key) || 0) + 1);
@@ -666,7 +666,7 @@ async function importMissingTransferFromCSV(fileName) {
                 TxId: transactionHash.substring(1, 8),
                 chainId: 'eip155:137',
                 tokenSymbol: 'g1',
-                tokenAddress: process.env.SOURCE_WALLET_ADDRESS,
+                tokenAddress: SOURCE_WALLET_ADDRESS,
                 senderTgId: senderTgId ? senderTgId.toString() : undefined,
                 senderWallet: web3.utils.toChecksumAddress(senderWallet),
                 senderName: senderName,
