@@ -54,7 +54,7 @@ export async function sendTokens(
       data: [
         contract.methods['transfer'](
           recipientwallet,
-          amountFormatted,
+          amountFormatted
         ).encodeABI(),
       ],
       auth: '',

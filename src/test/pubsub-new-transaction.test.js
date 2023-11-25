@@ -128,6 +128,7 @@ describe('handleNewTransaction function', async function () {
         chainId: mockChainId,
         tokenAddress: mockTokenAddress,
         chainName: mockChainName,
+        tokenSymbol: 'usd',
       });
 
       const transfers = await collectionTransfersMock.find({}).toArray();
@@ -139,7 +140,7 @@ describe('handleNewTransaction function', async function () {
           {
             eventId: txId,
             chainId: mockChainId,
-            tokenSymbol: 'g1',
+            tokenSymbol: 'usd',
             tokenAddress: mockTokenAddress,
             senderTgId: mockUserTelegramID,
             senderWallet: mockWallet,
@@ -197,6 +198,7 @@ describe('handleNewTransaction function', async function () {
         amount: '100',
         recipientTgId: mockUserTelegramID1,
         eventId: txId,
+        tokenSymbol: 'usd',
       });
 
       const FlowXOCallArgs = axiosStub
@@ -206,7 +208,7 @@ describe('handleNewTransaction function', async function () {
       chai.expect(FlowXOCallArgs).excluding(['dateAdded']).to.deep.equal({
         senderResponsePath: mockResponsePath,
         chainId: 'eip155:137',
-        tokenSymbol: 'g1',
+        tokenSymbol: 'usd',
         tokenAddress: G1_POLYGON_ADDRESS,
         senderTgId: mockUserTelegramID,
         senderWallet: mockWallet,

@@ -178,7 +178,8 @@ export async function createTransferTelegram(
   amount,
   chainId,
   tokenAddress,
-  chainName
+  chainName,
+  tokenSymbol
 ) {
   const transfer = new TransferTelegram(
     eventId,
@@ -187,7 +188,8 @@ export async function createTransferTelegram(
     amount,
     chainId,
     tokenAddress,
-    chainName
+    chainName,
+    tokenSymbol
   );
   return (await transfer.initializeTransferDatabase()) && transfer;
 }
@@ -203,7 +205,8 @@ export class TransferTelegram {
     amount,
     chainId,
     tokenAddress,
-    chainName
+    chainName,
+    tokenSymbol
   ) {
     this.eventId = eventId;
     this.senderInformation = senderInformation;
@@ -218,6 +221,7 @@ export class TransferTelegram {
     this.chainId = chainId ? chainId : 'eip155:137';
     this.tokenAddress = tokenAddress ? tokenAddress : G1_POLYGON_ADDRESS;
     this.chainName = chainName ? chainName : 'matic';
+    this.tokenSymbol = tokenSymbol ? tokenSymbol : 'g1';
   }
 
   /**
@@ -269,7 +273,7 @@ export class TransferTelegram {
         $set: {
           eventId: this.eventId,
           chainId: this.chainId,
-          tokenSymbol: 'g1',
+          tokenSymbol: this.tokenSymbol,
           tokenAddress: this.tokenAddress,
           senderTgId: this.senderInformation.userTelegramID,
           senderWallet: this.senderInformation.patchwallet,
@@ -355,7 +359,7 @@ export class TransferTelegram {
     await axios.post(FLOWXO_NEW_TRANSACTION_WEBHOOK, {
       senderResponsePath: this.senderInformation.responsePath,
       chainId: this.chainId,
-      tokenSymbol: 'g1',
+      tokenSymbol: this.tokenSymbol,
       tokenAddress: this.tokenAddress,
       senderTgId: this.senderInformation.userTelegramID,
       senderWallet: this.senderInformation.patchwallet,

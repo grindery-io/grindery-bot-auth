@@ -38,8 +38,10 @@ export async function handleNewTransaction(params) {
     params.amount,
     params.chainId,
     params.tokenAddress,
-    params.chainName
+    params.chainName,
+    params.tokenSymbol
   );
+
   if (!transfer) return false;
   if (transfer.isSuccess() || transfer.isFailure()) return true;
 
