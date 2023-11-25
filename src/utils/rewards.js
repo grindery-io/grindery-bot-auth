@@ -13,6 +13,7 @@ import {
 } from './patchwallet.js';
 import axios from 'axios';
 import {
+  FLOWXO_NEW_ISOLATED_REWARD_WEBHOOK,
   FLOWXO_NEW_LINK_REWARD_WEBHOOK,
   FLOWXO_NEW_REFERRAL_REWARD_WEBHOOK,
   FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK,
@@ -82,8 +83,7 @@ export class SignUpRewardTelegram {
     userName,
     patchwallet,
     tokenAddress,
-    chainName,
-    to
+    chainName
   ) {
     this.eventId = eventId;
     this.userTelegramID = userTelegramID;
@@ -958,6 +958,310 @@ export class LinkRewardTelegram {
       // Log error if sending tokens fails
       console.error(
         `[${this.eventId}] link reward for ${this.referentUserTelegramID} - Error processing PatchWallet token sending: ${error}`
+      );
+
+      return false;
+    }
+  }
+}
+
+/**
+ * Creates an isolated reward for Telegram users.
+ * @param {string} eventId - The unique identifier for the event transaction.
+ * @param {string} userTelegramID - The Telegram user ID associated with the reward.
+ * @param {string} reason - The reason for the reward.
+ * @param {number} amount - The amount involved in the reward.
+ * @param {string} message - A message associated with the reward.
+ * @param {string} responsePath - The response path for the reward.
+ * @param {string} userHandle - The user handle associated with the reward.
+ * @param {string} userName - The name of the user receiving the reward.
+ * @param {string} patchwallet - The patch wallet information.
+ * @param {string} tokenAddress - The address of the token used in the reward.
+ * @param {string} chainName - The name of the blockchain network.
+ * @returns {Promise<IsolatedRewardTelegram|boolean>} - Returns an instance of IsolatedRewardTelegram if successful, otherwise false.
+ */
+export async function createIsolatedRewardTelegram(
+  eventId,
+  userTelegramID,
+  reason,
+  amount,
+  message,
+  responsePath,
+  userHandle,
+  userName,
+  patchwallet,
+  tokenAddress,
+  chainName
+) {
+  const reward = new IsolatedRewardTelegram(
+    eventId,
+    userTelegramID,
+    reason,
+    amount,
+    message,
+    responsePath,
+    userHandle,
+    userName,
+    patchwallet,
+    tokenAddress,
+    chainName
+  );
+
+  if (!(await reward.initializeRewardDatabase())) return false;
+
+  return reward;
+}
+
+export class IsolatedRewardTelegram {
+  /**
+   * Constructs a new instance of an EventTransaction.
+   * @param {string} eventId - The unique identifier for the event transaction.
+   * @param {string} userTelegramID - The Telegram user ID associated with the transaction.
+   * @param {string} reason - The reason for the transaction.
+   * @param {number} amount - The amount involved in the transaction.
+   * @param {string} message - A message associated with the transaction.
+   * @param {string} responsePath - The response path for the transaction.
+   * @param {string} userHandle - The user handle associated with the transaction.
+   * @param {string} userName - The name of the user initiating the transaction.
+   * @param {string} patchwallet - The patch wallet information.
+   * @param {string} tokenAddress - The address of the token used in the transaction (default: G1_POLYGON_ADDRESS).
+   * @param {string} chainName - The name of the blockchain network (default: 'matic').
+   */
+  constructor(
+    eventId,
+    userTelegramID,
+    reason,
+    amount,
+    message,
+    responsePath,
+    userHandle,
+    userName,
+    patchwallet,
+    tokenAddress,
+    chainName
+  ) {
+    this.eventId = eventId;
+    this.userTelegramID = userTelegramID;
+    this.responsePath = responsePath;
+    this.userHandle = userHandle;
+    this.userName = userName;
+    this.patchwallet = patchwallet;
+
+    this.reason = reason;
+    this.amount = amount;
+    this.message = message;
+
+    this.isInDatabase = false;
+    this.tx = undefined;
+    this.status = undefined;
+    this.txHash = undefined;
+    this.userOpHash = undefined;
+
+    this.tokenAddress = tokenAddress ? tokenAddress : G1_POLYGON_ADDRESS;
+    this.chainName = chainName ? chainName : 'matic';
+  }
+
+  /**
+   * Initializes the isolated reward object by connecting to the database and retrieving relevant information.
+   * @returns {Promise<boolean>} - True if initialization is successful, false otherwise.
+   */
+  async initializeRewardDatabase() {
+    this.db = await Database.getInstance();
+    this.patchwallet =
+      this.patchwallet ??
+      (await getPatchWalletAddressFromTgId(this.userTelegramID));
+    this.tx = await this.getRewardFromDatabase();
+
+    if (await this.getOtherRewardFromDatabase()) return false;
+
+    if (this.tx) {
+      this.isInDatabase = true;
+      this.status = this.tx.status;
+      this.userOpHash = this.tx.userOpHash;
+
+      if (this.isSuccess()) return false;
+    } else {
+      await this.updateInDatabase(TRANSACTION_STATUS.PENDING, new Date());
+    }
+
+    return true;
+  }
+
+  /**
+   * Retrieves the status of the PatchWallet transaction.
+   * @returns {Promise<boolean>} - True if the transaction status is retrieved successfully, false otherwise.
+   */
+  async getRewardFromDatabase() {
+    return await this.db.collection(REWARDS_COLLECTION).findOne({
+      userTelegramID: this.userTelegramID,
+      eventId: this.eventId,
+      reason: this.reason,
+    });
+  }
+
+  /**
+   * Retrieves other reward information from the database for the same user but different event.
+   * @returns {Promise<object|null>} - The reward information or null if not found.
+   */
+  async getOtherRewardFromDatabase() {
+    return await this.db.collection(REWARDS_COLLECTION).findOne({
+      userTelegramID: this.userTelegramID,
+      eventId: { $ne: this.eventId },
+      reason: this.reason,
+    });
+  }
+
+  /**
+   * Updates the reward information in the database.
+   * @param {string} status - The transaction status.
+   * @param {Date|null} date - The date of the transaction.
+   */
+  async updateInDatabase(status, date) {
+    await this.db.collection(REWARDS_COLLECTION).updateOne(
+      {
+        eventId: this.eventId,
+        reason: this.reason,
+        userTelegramID: this.userTelegramID,
+      },
+      {
+        $set: {
+          eventId: this.eventId,
+          userTelegramID: this.userTelegramID,
+          responsePath: this.responsePath,
+          userHandle: this.userHandle,
+          userName: this.userName,
+          reason: this.reason,
+          walletAddress: this.patchwallet,
+          amount: this.amount,
+          message: this.message,
+          ...(date !== null ? { dateAdded: date } : {}),
+          transactionHash: this.txHash,
+          userOpHash: this.userOpHash,
+          status: status,
+        },
+      },
+      { upsert: true }
+    );
+    console.log(
+      `[${this.eventId}] sign up reward for ${this.userTelegramID} in MongoDB as ${status} with transaction hash : ${this.txHash}.`
+    );
+  }
+
+  /**
+   * Checks if the treatment duration has exceeded the limit.
+   * @returns {Promise<boolean>} - True if the treatment duration has exceeded, false otherwise.
+   */
+  async isTreatmentDurationExceeded() {
+    return (
+      (this.tx.dateAdded < new Date(new Date() - 10 * 60 * 1000) &&
+        (console.log(
+          `[${this.eventId}] was stopped due to too long treatment duration (> 10 min).`
+        ),
+        await this.updateInDatabase(TRANSACTION_STATUS.FAILURE, new Date()),
+        true)) ||
+      false
+    );
+  }
+
+  /**
+   * Updates the transaction hash.
+   * @param {string} txHash - The transaction hash to be updated.
+   * @returns {string} - The updated transaction hash.
+   */
+  updateTxHash(txHash) {
+    return (this.txHash = txHash);
+  }
+
+  /**
+   * Updates the user operation hash.
+   * @param {string} userOpHash - The user operation hash to be updated.
+   * @returns {string} - The updated user operation hash.
+   */
+  updateUserOpHash(userOpHash) {
+    return (this.userOpHash = userOpHash);
+  }
+
+  /**
+   * Checks if the transaction is successful.
+   * @returns {boolean} - True if the transaction is successful, false otherwise.
+   */
+  isSuccess() {
+    return this.status === TRANSACTION_STATUS.SUCCESS;
+  }
+
+  /**
+   * Checks if the transaction has failed.
+   * @returns {boolean} - True if the transaction has failed, false otherwise.
+   */
+  isFailure() {
+    return this.status === TRANSACTION_STATUS.FAILURE;
+  }
+
+  /**
+   * Checks if the transaction is in the pending hash state.
+   * @returns {boolean} - True if the transaction is in the pending hash state, false otherwise.
+   */
+  isPendingHash() {
+    return this.status === TRANSACTION_STATUS.PENDING_HASH;
+  }
+
+  /**
+   * Retrieves the status of the PatchWallet transaction.
+   * @returns {Promise<boolean>} - True if the transaction status is retrieved successfully, false otherwise.
+   */
+  async getStatus() {
+    try {
+      // Retrieve the status of the PatchWallet transaction
+      return await getTxStatus(this.userOpHash);
+    } catch (error) {
+      // Log error if retrieving transaction status fails
+      console.error(
+        `[${this.eventId}] Error processing PatchWallet transaction status: ${error}`
+      );
+      // Return true if the error status is 470, marking the transaction as failed
+      return false;
+    }
+  }
+
+  /**
+   * Saves transaction information to FlowXO.
+   * @returns {Promise<object|undefined>} - The result of sending the transaction to FlowXO.
+   */
+  async saveToFlowXO() {
+    // Send transaction information to FlowXO
+    await axios.post(FLOWXO_NEW_ISOLATED_REWARD_WEBHOOK, {
+      userTelegramID: this.userTelegramID,
+      responsePath: this.responsePath,
+      walletAddress: this.patchwallet,
+      reason: this.reason,
+      userHandle: this.userHandle,
+      userName: this.userName,
+      amount: this.amount,
+      message: this.message,
+      transactionHash: this.txHash,
+      dateAdded: new Date(),
+    });
+  }
+
+  /**
+   * Sends tokens using PatchWallet.
+   * @returns {Promise<boolean>} - True if the tokens are sent successfully, false otherwise.
+   */
+  async sendTx() {
+    try {
+      // Send tokens using PatchWallet
+      return await sendTokens(
+        SOURCE_TG_ID,
+        this.patchwallet,
+        this.amount,
+        await getPatchWalletAccessToken(),
+        this.tokenAddress,
+        this.chainName
+      );
+    } catch (error) {
+      // Log error if sending tokens fails
+      console.error(
+        `[${this.eventId}] sign up reward for ${this.userTelegramID} - Error processing PatchWallet token sending: ${error}`
       );
 
       return false;

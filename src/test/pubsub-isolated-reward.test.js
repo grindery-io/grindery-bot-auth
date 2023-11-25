@@ -618,6 +618,7 @@ describe('handleIsolatedReward function', async function () {
             message: 'isolated message 1',
             transactionHash: mockTransactionHash,
             status: TRANSACTION_STATUS.SUCCESS,
+            userOpHash: null,
           },
         ]);
     });
@@ -745,6 +746,7 @@ describe('handleIsolatedReward function', async function () {
             message: 'isolated message 1',
             transactionHash: mockTransactionHash,
             status: TRANSACTION_STATUS.SUCCESS,
+            userOpHash: null,
           },
         ]);
 
@@ -880,6 +882,7 @@ describe('handleIsolatedReward function', async function () {
             message: 'isolated message 1',
             transactionHash: mockTransactionHash,
             status: TRANSACTION_STATUS.SUCCESS,
+            userOpHash: null,
           },
         ]);
     });
@@ -1004,6 +1007,8 @@ describe('handleIsolatedReward function', async function () {
             message: 'isolated message 1',
             dateAdded: new Date(),
             status: TRANSACTION_STATUS.PENDING,
+            transactionHash: null,
+            userOpHash: null,
           },
         ]);
     });
@@ -1084,6 +1089,8 @@ describe('handleIsolatedReward function', async function () {
             amount: '34',
             message: 'isolated message 1',
             status: TRANSACTION_STATUS.PENDING,
+            transactionHash: null,
+            userOpHash: null,
           },
         ]);
     });
@@ -1161,6 +1168,7 @@ describe('handleIsolatedReward function', async function () {
               message: 'isolated message 1',
               status: TRANSACTION_STATUS.PENDING_HASH,
               userOpHash: mockUserOpHash,
+              transactionHash: null,
             },
           ]);
       });
@@ -1384,6 +1392,7 @@ describe('handleIsolatedReward function', async function () {
               message: 'isolated message 1',
               status: TRANSACTION_STATUS.PENDING_HASH,
               userOpHash: mockUserOpHash,
+              transactionHash: null,
             },
           ]);
       });
@@ -1585,6 +1594,8 @@ describe('handleIsolatedReward function', async function () {
               amount: '34',
               message: 'isolated message 1',
               status: TRANSACTION_STATUS.SUCCESS,
+              transactionHash: null,
+              userOpHash: null,
             },
           ]);
       });
@@ -1692,6 +1703,7 @@ describe('handleIsolatedReward function', async function () {
               message: 'isolated message 1',
               userOpHash: mockUserOpHash,
               status: TRANSACTION_STATUS.FAILURE,
+              transactionHash: null,
             },
           ]);
       });
