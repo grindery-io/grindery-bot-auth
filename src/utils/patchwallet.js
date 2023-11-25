@@ -35,12 +35,12 @@ export async function getPatchWalletAddressFromTgId(tgId) {
 export async function sendTokens(
   senderTgId,
   recipientwallet,
-  amountEther,
+  amountFormatted,
   patchWalletAccessToken,
   tokenAddress,
   chainName
 ) {
-  const g1Contract = new new Web3().eth.Contract(
+  const contract = new new Web3().eth.Contract(
     ERC20,
     tokenAddress ? tokenAddress : G1_POLYGON_ADDRESS
   );
@@ -52,9 +52,9 @@ export async function sendTokens(
       to: [tokenAddress ? tokenAddress : G1_POLYGON_ADDRESS],
       value: ['0x00'],
       data: [
-        g1Contract.methods['transfer'](
+        contract.methods['transfer'](
           recipientwallet,
-          Web3.utils.toWei(amountEther)
+          amountFormatted,
         ).encodeABI(),
       ],
       auth: '',
