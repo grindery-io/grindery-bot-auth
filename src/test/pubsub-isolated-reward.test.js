@@ -260,6 +260,34 @@ describe('handleIsolatedReward function', async function () {
           auth: '',
         });
     });
+
+    it('Should call the sendTokens function properly if patchwallet is not in the arguments and the user doesnt exist in database yet for Native transfer', async function () {
+      const result = await handleIsolatedReward({
+        eventId: rewardId,
+        userTelegramID: mockUserTelegramID,
+        responsePath: mockResponsePath,
+        userHandle: mockUserHandle,
+        userName: mockUserName,
+        reason: 'isolated_reason_1',
+        message: 'isolated message 1',
+        amount: '100',
+        isERC20Transfer: false,
+      });
+
+      chai
+        .expect(
+          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl)
+            .args[1]
+        )
+        .to.deep.equal({
+          userId: `grindery:${SOURCE_TG_ID}`,
+          chain: 'matic',
+          to: [G1_POLYGON_ADDRESS],
+          value: ['100'],
+          data: ['0x00'],
+          auth: '',
+        });
+    });
   });
 
   describe('Isolated reward already exists with same eventId and is a success', async function () {

@@ -595,6 +595,34 @@ describe('handleSignUpReward function', async function () {
         });
     });
 
+    it('Should call the sendTokens function properly for Native token transfers', async function () {
+      await handleSignUpReward({
+        eventId: rewardId,
+        userTelegramID: mockUserTelegramID,
+        responsePath: mockResponsePath,
+        userHandle: mockUserHandle,
+        userName: mockUserName,
+        patchwallet: mockWallet,
+        tokenAddress: mockTokenAddress,
+        chainName: mockChainName,
+        isERC20Transfer: false,
+      });
+
+      chai
+        .expect(
+          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl)
+            .args[1]
+        )
+        .to.deep.equal({
+          userId: `grindery:${SOURCE_TG_ID}`,
+          chain: mockChainName,
+          to: [mockTokenAddress],
+          value: ['100'],
+          data: ['0x00'],
+          auth: '',
+        });
+    });
+
     it('Should insert a new element in the reward collection of the database if the user is new', async function () {
       await handleSignUpReward({
         eventId: rewardId,

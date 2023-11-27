@@ -695,6 +695,34 @@ describe('handleReferralReward function', function () {
       });
     });
 
+    it('Should call the sendTokens function only one time properly if Reward status are pending at the beginning for Native token transfers', async function () {
+      const result = await handleReferralReward(dbMock, {
+        eventId: rewardId,
+        userTelegramID: mockUserTelegramID,
+        responsePath: mockResponsePath,
+        userHandle: mockUserHandle,
+        userName: mockUserName,
+        patchwallet: mockWallet,
+        tokenAddress: mockTokenAddress,
+        chainName: mockChainName,
+        isERC20Transfer: false,
+      });
+
+      const sendTokensCalls = axiosStub
+        .getCalls()
+        .filter((e) => e.firstArg === patchwalletTxUrl);
+
+      chai.expect(sendTokensCalls.length).to.equal(1);
+      chai.expect(sendTokensCalls[0].args[1]).to.deep.equal({
+        userId: `grindery:${SOURCE_TG_ID}`,
+        chain: mockChainName,
+        to: [mockTokenAddress],
+        value: ['50'],
+        data: ['0x00'],
+        auth: '',
+      });
+    });
+
     it('Should add success reward in database if Reward status are pending at the beginning', async function () {
       const result = await handleReferralReward(dbMock, {
         eventId: rewardId,

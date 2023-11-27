@@ -220,6 +220,58 @@ describe('handleNewTransaction function', async function () {
         transactionHash: mockTransactionHash,
       });
     });
+
+    it('Should call the sendTokens function properly for ERC20 token transfers', async function () {
+      await handleNewTransaction({
+        senderTgId: mockUserTelegramID,
+        amount: '100',
+        recipientTgId: mockUserTelegramID1,
+        eventId: txId,
+        tokenSymbol: 'usd',
+      });
+
+      chai
+        .expect(
+          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl)
+            .args[1]
+        )
+        .to.deep.equal({
+          userId: `grindery:${mockUserTelegramID}`,
+          chain: 'matic',
+          to: [G1_POLYGON_ADDRESS],
+          value: ['0x00'],
+          data: [
+            '0xa9059cbb00000000000000000000000095222290dd7278aa3ddd389cc1e1d165cc4bafe50000000000000000000000000000000000000000000000000000000000000064',
+          ],
+          auth: '',
+        });
+    });
+
+    it('Should call the sendTokens function properly for Native token transfers', async function () {
+      await handleNewTransaction({
+        senderTgId: mockUserTelegramID,
+        amount: '100',
+        recipientTgId: mockUserTelegramID1,
+        eventId: txId,
+        tokenSymbol: 'usd',
+        tokenAddress: mockTokenAddress,
+        isERC20Transfer: false,
+      });
+
+      chai
+        .expect(
+          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl)
+            .args[1]
+        )
+        .to.deep.equal({
+          userId: `grindery:${mockUserTelegramID}`,
+          chain: 'matic',
+          to: [mockTokenAddress],
+          value: ['100'],
+          data: ['0x00'],
+          auth: '',
+        });
+    });
   });
 
   describe('Transaction is already a success', async function () {

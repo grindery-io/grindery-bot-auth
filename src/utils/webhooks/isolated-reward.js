@@ -143,7 +143,8 @@ export async function handleIsolatedReward(params) {
           params.amount,
           await getPatchWalletAccessToken(),
           params.tokenAddress,
-          params.chainName
+          params.chainName,
+          params.isERC20Transfer
         );
       } catch (error) {
         console.error(

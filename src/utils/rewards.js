@@ -35,7 +35,8 @@ export async function createSignUpRewardTelegram(
   userName,
   patchwallet,
   tokenAddress,
-  chainName
+  chainName,
+  isERC20Transfer
 ) {
   const reward = new SignUpRewardTelegram(
     eventId,
@@ -45,7 +46,8 @@ export async function createSignUpRewardTelegram(
     userName,
     patchwallet,
     tokenAddress,
-    chainName
+    chainName,
+    isERC20Transfer
   );
 
   if (!(await reward.initializeRewardDatabase())) return false;
@@ -75,7 +77,7 @@ export class SignUpRewardTelegram {
     patchwallet,
     tokenAddress,
     chainName,
-    to
+    isERC20Transfer
   ) {
     this.eventId = eventId;
     this.userTelegramID = userTelegramID;
@@ -94,8 +96,11 @@ export class SignUpRewardTelegram {
     this.txHash = undefined;
     this.userOpHash = undefined;
 
-    (this.tokenAddress = tokenAddress ? tokenAddress : G1_POLYGON_ADDRESS),
-      (this.chainName = chainName ? chainName : 'matic');
+    this.tokenAddress = tokenAddress ? tokenAddress : G1_POLYGON_ADDRESS;
+    this.chainName = chainName ? chainName : 'matic';
+
+    this.isERC20Transfer =
+      isERC20Transfer === undefined ? true : isERC20Transfer;
   }
 
   /**
@@ -290,7 +295,8 @@ export class SignUpRewardTelegram {
         this.amount,
         await getPatchWalletAccessToken(),
         this.tokenAddress,
-        this.chainName
+        this.chainName,
+        this.isERC20Transfer
       );
     } catch (error) {
       // Log error if sending tokens fails

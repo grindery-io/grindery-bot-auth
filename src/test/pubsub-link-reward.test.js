@@ -444,6 +444,33 @@ describe('handleLinkReward function', async function () {
         });
     });
 
+    it('Should call the sendTokens function properly if the user is new for Native token', async function () {
+      const isERC20Transfer = false;
+      await handleLinkReward(
+        dbMock,
+        rewardId,
+        mockUserTelegramID,
+        mockUserTelegramID1,
+        mockTokenAddress,
+        mockChainName,
+        isERC20Transfer
+      );
+
+      chai
+        .expect(
+          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl)
+            .args[1]
+        )
+        .to.deep.equal({
+          userId: `grindery:${SOURCE_TG_ID}`,
+          chain: mockChainName,
+          to: [mockTokenAddress],
+          value: ['10'],
+          data: ['0x00'],
+          auth: '',
+        });
+    });
+
     it('Should insert a new element in the reward collection of the database if the user is new', async function () {
       await handleLinkReward(
         dbMock,

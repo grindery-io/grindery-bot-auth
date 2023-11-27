@@ -179,7 +179,8 @@ export async function createTransferTelegram(
   chainId,
   tokenAddress,
   chainName,
-  tokenSymbol
+  tokenSymbol,
+  isERC20Transfer
 ) {
   const transfer = new TransferTelegram(
     eventId,
@@ -189,7 +190,8 @@ export async function createTransferTelegram(
     chainId,
     tokenAddress,
     chainName,
-    tokenSymbol
+    tokenSymbol,
+    isERC20Transfer
   );
   return (await transfer.initializeTransferDatabase()) && transfer;
 }
@@ -206,7 +208,8 @@ export class TransferTelegram {
     chainId,
     tokenAddress,
     chainName,
-    tokenSymbol
+    tokenSymbol,
+    isERC20Transfer
   ) {
     this.eventId = eventId;
     this.senderInformation = senderInformation;
@@ -222,6 +225,8 @@ export class TransferTelegram {
     this.tokenAddress = tokenAddress ? tokenAddress : G1_POLYGON_ADDRESS;
     this.chainName = chainName ? chainName : 'matic';
     this.tokenSymbol = tokenSymbol ? tokenSymbol : 'G1';
+    this.isERC20Transfer =
+      isERC20Transfer === undefined ? true : isERC20Transfer;
   }
 
   /**
@@ -347,6 +352,7 @@ export class TransferTelegram {
       transactionHash: this.txHash,
       dateAdded: new Date(),
       eventId: this.eventId,
+      tokenSymbol: this.tokenSymbol,
     });
   }
 
@@ -433,7 +439,8 @@ export class TransferTelegram {
         this.amount,
         await getPatchWalletAccessToken(),
         this.tokenAddress,
-        this.chainName
+        this.chainName,
+        this.isERC20Transfer
       );
     } catch (error) {
       // Log error if sending tokens fails

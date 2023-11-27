@@ -38,25 +38,36 @@ export async function sendTokens(
   amountFormatted,
   patchWalletAccessToken,
   tokenAddress,
-  chainName
+  chainName,
+  isERC20Transfer
 ) {
-  const contract = new new Web3().eth.Contract(
-    ERC20,
-    tokenAddress ? tokenAddress : G1_POLYGON_ADDRESS
-  );
+  let data;
+  let value;
+  if (isERC20Transfer === undefined ? true : isERC20Transfer) {
+    const contract = new new Web3().eth.Contract(
+      ERC20,
+      tokenAddress ? tokenAddress : G1_POLYGON_ADDRESS
+    );
+    data = [
+      contract.methods['transfer'](
+        recipientwallet,
+        amountFormatted
+      ).encodeABI(),
+    ];
+    value = ['0x00'];
+  } else {
+    data = ['0x00'];
+    value = [amountFormatted];
+  }
+
   return await axios.post(
     'https://paymagicapi.com/v1/kernel/tx',
     {
       userId: `grindery:${senderTgId}`,
       chain: chainName ? chainName : 'matic',
       to: [tokenAddress ? tokenAddress : G1_POLYGON_ADDRESS],
-      value: ['0x00'],
-      data: [
-        contract.methods['transfer'](
-          recipientwallet,
-          amountFormatted
-        ).encodeABI(),
-      ],
+      value: value,
+      data: data,
       auth: '',
     },
     {

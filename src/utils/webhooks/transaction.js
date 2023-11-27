@@ -39,7 +39,8 @@ export async function handleNewTransaction(params) {
     params.chainId,
     params.tokenAddress,
     params.chainName,
-    params.tokenSymbol
+    params.tokenSymbol,
+    params.isERC20Transfer
   );
 
   if (!transfer) return false;
