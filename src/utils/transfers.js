@@ -347,6 +347,7 @@ export class TransferTelegram {
       transactionHash: this.txHash,
       dateAdded: new Date(),
       eventId: this.eventId,
+      tokenSymbol: this.tokenSymbol,
     });
   }
 
