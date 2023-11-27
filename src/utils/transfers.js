@@ -221,7 +221,7 @@ export class TransferTelegram {
     this.chainId = chainId ? chainId : 'eip155:137';
     this.tokenAddress = tokenAddress ? tokenAddress : G1_POLYGON_ADDRESS;
     this.chainName = chainName ? chainName : 'matic';
-    this.tokenSymbol = tokenSymbol ? tokenSymbol : 'g1';
+    this.tokenSymbol = tokenSymbol ? tokenSymbol : 'G1';
   }
 
   /**

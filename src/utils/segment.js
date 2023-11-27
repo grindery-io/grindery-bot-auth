@@ -41,7 +41,7 @@ export async function addTrackSegment(params) {
       event: 'Transfer',
       properties: {
         chainId: 'eip155:137',
-        tokenSymbol: 'g1',
+        tokenSymbol: params.tokenSymbol,
         tokenAddress: G1_POLYGON_ADDRESS,
         senderTgId: params.senderTgId,
         senderWallet: params.senderWallet,
