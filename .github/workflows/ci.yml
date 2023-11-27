@@ -18,6 +18,8 @@ jobs:
           node-version: 16
           cache: 'npm'
       - run: npm ci
+      - run: npm run lint
+      - run: npm run prettier:check
       - run: npm test
         env:
           G1_POLYGON_ADDRESS: ${{ secrets.G1_POLYGON_ADDRESS }}
@@ -28,5 +30,4 @@ jobs:
           FLOWXO_NEW_REFERRAL_REWARD_WEBHOOK: ${{ secrets.FLOWXO_NEW_REFERRAL_REWARD_WEBHOOK }}
           FLOWXO_NEW_TRANSACTION_WEBHOOK: ${{ secrets.FLOWXO_NEW_TRANSACTION_WEBHOOK }}
           FLOWXO_NEW_LINK_REWARD_WEBHOOK: ${{ secrets.FLOWXO_NEW_LINK_REWARD_WEBHOOK }}
-          ATLAS_URI: ${{ secrets.ATLAS_URI }}
           NOT_GOOGLE_SECRET: ${{ secrets.NOT_GOOGLE_SECRET }}

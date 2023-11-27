@@ -6,8 +6,8 @@ spec:
   template:
     spec:
       containers:
-      - name: APP_NAME
-        resources:
-          requests:
-            cpu: 1000m
-            memory: "1000Mi"
+        - name: APP_NAME
+          resources:
+            requests:
+              cpu: 1000m
+              memory: '1000Mi'
