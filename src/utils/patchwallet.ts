@@ -1,5 +1,4 @@
 import axios from 'axios';
-import Web3 from 'web3';
 import {
   G1_POLYGON_ADDRESS,
   getClientId,
@@ -7,6 +6,7 @@ import {
 } from '../../secrets';
 import { getContract } from './web3';
 import BigNumber from 'bignumber.js';
+import { nativeTokenAddresses } from './constants';
 
 export async function getPatchWalletAccessToken() {
   return (
@@ -50,24 +50,29 @@ export async function sendTokens(
   let value: string[];
   let address: string;
 
-  try {
-    const contract = getContract(chainId, tokenAddress);
-    const decimals = await contract.methods.decimals().call();
+  const isNativeToken = nativeTokenAddresses.includes(tokenAddress);
 
+  const contract = getContract(chainId, tokenAddress);
+  const decimals = await contract.methods.decimals().call();
+  const amountFormatted = BigNumber(amountEther)
+    .div(BigNumber(10).pow(BigNumber(decimals)))
+    .toString();
+
+  if (isNativeToken) {
+    // Native token logic
+    data = ['0x00'];
+    value = [amountFormatted];
+    address = recipientwallet;
+  } else {
+    // ERC20 token logic
     data = [
       contract.methods['transfer'](
         recipientwallet,
-        BigNumber(amountEther)
-          .div(BigNumber(10).pow(BigNumber(decimals)))
-          .toString(),
+        amountFormatted,
       ).encodeABI(),
     ];
     value = ['0x00'];
     address = tokenAddress;
-  } catch (error) {
-    data = ['0x00'];
-    value = [Web3.utils.toWei(amountEther).toString()];
-    address = recipientwallet;
   }
 
   return await axios.post(

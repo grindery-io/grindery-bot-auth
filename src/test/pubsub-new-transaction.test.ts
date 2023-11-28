@@ -22,9 +22,8 @@ import {
 } from './utils';
 import Sinon from 'sinon';
 import axios from 'axios';
-import Web3 from 'web3';
 import chaiExclude from 'chai-exclude';
-import { TRANSACTION_STATUS } from '../utils/constants';
+import { TRANSACTION_STATUS, nativeTokenAddresses } from '../utils/constants';
 import { v4 as uuidv4 } from 'uuid';
 import { handleNewTransaction } from '../utils/webhooks/transaction';
 import {
@@ -32,6 +31,7 @@ import {
   G1_POLYGON_ADDRESS,
 } from '../../secrets';
 import * as web3 from '../utils/web3';
+import BigNumber from 'bignumber.js';
 
 chai.use(chaiExclude);
 
@@ -115,13 +115,6 @@ describe('handleNewTransaction function', async function () {
     getContract = () => {
       return contractStub;
     };
-
-    if (
-      this.currentTest.title ===
-      'Should call the sendTokens function properly for Native token transfer'
-    ) {
-      getContract = sandbox.stub().throws(new Error('Contract Error'));
-    }
 
     sandbox.stub(web3, 'getContract').callsFake(getContract);
 
@@ -222,7 +215,7 @@ describe('handleNewTransaction function', async function () {
         amount: '100',
         recipientTgId: mockUserTelegramID1,
         eventId: txId,
-        tokenAddress: '0x00',
+        tokenAddress: nativeTokenAddresses[0],
       });
 
       chai
@@ -234,7 +227,11 @@ describe('handleNewTransaction function', async function () {
           userId: `grindery:${mockUserTelegramID}`,
           chain: 'matic',
           to: [mockWallet],
-          value: [Web3.utils.toWei('100').toString()],
+          value: [
+            BigNumber(100)
+              .div(BigNumber(10).pow(BigNumber(18)))
+              .toString(),
+          ],
           data: ['0x00'],
           auth: '',
         });
