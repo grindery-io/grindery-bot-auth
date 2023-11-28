@@ -31,7 +31,6 @@ import {
   G1_POLYGON_ADDRESS,
 } from '../../secrets';
 import * as web3 from '../utils/web3';
-import BigNumber from 'bignumber.js';
 
 chai.use(chaiExclude);
 
@@ -227,11 +226,7 @@ describe('handleNewTransaction function', async function () {
           userId: `grindery:${mockUserTelegramID}`,
           chain: 'matic',
           to: [mockWallet],
-          value: [
-            BigNumber(100)
-              .div(BigNumber(10).pow(BigNumber(18)))
-              .toString(),
-          ],
+          value: [web3.scaleDecimals('100', 18)],
           data: ['0x00'],
           auth: '',
         });

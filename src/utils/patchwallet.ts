@@ -4,8 +4,7 @@ import {
   getClientId,
   getClientSecret,
 } from '../../secrets';
-import { getContract } from './web3';
-import BigNumber from 'bignumber.js';
+import { getContract, scaleDecimals } from './web3';
 import { nativeTokenAddresses } from './constants';
 
 export async function getPatchWalletAccessToken() {
@@ -54,10 +53,8 @@ export async function sendTokens(
 
   const contract = getContract(chainId, tokenAddress);
   const decimals = await contract.methods.decimals().call();
-  const amountFormatted = BigNumber(amountEther)
-    .div(BigNumber(10).pow(BigNumber(decimals)))
-    .toString();
-
+  const amountFormatted = scaleDecimals(amountEther, decimals);
+  console.log('amountFormatted ', amountFormatted);
   if (isNativeToken) {
     // Native token logic
     data = ['0x00'];
