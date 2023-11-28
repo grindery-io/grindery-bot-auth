@@ -15,9 +15,11 @@ router.post('/attributes', authenticateApiKey, async (req, res) => {
       });
     }
 
-    const isValid = req.body.every(update => {
+    const isValid = req.body.every((update) => {
       const { userTelegramID, attributeNames } = update;
-      return Array.isArray(attributeNames) && typeof userTelegramID === 'string';
+      return (
+        Array.isArray(attributeNames) && typeof userTelegramID === 'string'
+      );
     });
 
     if (!isValid) {
@@ -26,7 +28,7 @@ router.post('/attributes', authenticateApiKey, async (req, res) => {
       });
     }
 
-    const bulkOperations = req.body.map(update => ({
+    const bulkOperations = req.body.map((update) => ({
       updateOne: {
         filter: { userTelegramID: update.userTelegramID },
         update: { $set: { attributes: update.attributeNames } },
@@ -34,7 +36,9 @@ router.post('/attributes', authenticateApiKey, async (req, res) => {
       },
     }));
 
-    const result = await db.collection(USERS_COLLECTION).bulkWrite(bulkOperations);
+    const result = await db
+      .collection(USERS_COLLECTION)
+      .bulkWrite(bulkOperations);
 
     return res.status(200).send({
       msg: 'Updates successful',
