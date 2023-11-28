@@ -30,6 +30,7 @@ import {
   G1_POLYGON_ADDRESS,
   SOURCE_TG_ID,
 } from '../../secrets';
+import * as web3 from '../utils/web3';
 
 chai.use(chaiExclude);
 
@@ -38,6 +39,8 @@ describe('handleIsolatedReward function', async function () {
   let axiosStub;
   let rewardId;
   let collectionRewardsMock;
+  let contractStub;
+  let getERC20Contract;
 
   beforeEach(async function () {
     collectionRewardsMock = await getCollectionRewardsMock();
@@ -85,6 +88,27 @@ describe('handleIsolatedReward function', async function () {
       }
       throw new Error('Unexpected URL encountered');
     });
+
+    contractStub = {
+      methods: {
+        decimals: sandbox.stub().resolves('18'),
+        transfer: sandbox.stub().returns({
+          encodeABI: sandbox
+            .stub()
+            .returns(
+              '0xa9059cbb00000000000000000000000095222290dd7278aa3ddd389cc1e1d165cc4bafe50000000000000000000000000000000000000000000000056bc75e2d63100000',
+            ),
+        }),
+      },
+    };
+    contractStub.methods.decimals = sandbox.stub().returns({
+      call: sandbox.stub().resolves('18'),
+    });
+    getERC20Contract = () => {
+      return contractStub;
+    };
+    sandbox.stub(web3, 'getERC20Contract').callsFake(getERC20Contract);
+
     rewardId = uuidv4();
   });
 

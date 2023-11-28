@@ -31,6 +31,7 @@ import {
   FLOWXO_NEW_TRANSACTION_WEBHOOK,
   G1_POLYGON_ADDRESS,
 } from '../../secrets';
+import * as web3 from '../utils/web3';
 
 chai.use(chaiExclude);
 
@@ -40,6 +41,8 @@ describe('handleNewTransaction function', async function () {
   let txId;
   let collectionUsersMock;
   let collectionTransfersMock;
+  let contractStub;
+  let getERC20Contract;
 
   beforeEach(async function () {
     collectionUsersMock = await getCollectionUsersMock();
@@ -93,6 +96,34 @@ describe('handleNewTransaction function', async function () {
       }
       throw new Error('Unexpected URL encountered');
     });
+
+    contractStub = {
+      methods: {
+        decimals: sandbox.stub().resolves('18'),
+        transfer: sandbox.stub().returns({
+          encodeABI: sandbox
+            .stub()
+            .returns(
+              '0xa9059cbb00000000000000000000000095222290dd7278aa3ddd389cc1e1d165cc4bafe50000000000000000000000000000000000000000000000000000000000000064',
+            ),
+        }),
+      },
+    };
+    contractStub.methods.decimals = sandbox.stub().returns({
+      call: sandbox.stub().resolves('18'),
+    });
+    getERC20Contract = () => {
+      return contractStub;
+    };
+
+    if (
+      this.currentTest.title ===
+      'Should call the sendTokens function properly for Native token transfer'
+    ) {
+      getERC20Contract = sandbox.stub().throws(new Error('Contract Error'));
+    }
+
+    sandbox.stub(web3, 'getERC20Contract').callsFake(getERC20Contract);
 
     txId = uuidv4();
   });
@@ -179,7 +210,7 @@ describe('handleNewTransaction function', async function () {
           to: [G1_POLYGON_ADDRESS],
           value: ['0x00'],
           data: [
-            '0xa9059cbb00000000000000000000000095222290dd7278aa3ddd389cc1e1d165cc4bafe50000000000000000000000000000000000000000000000056bc75e2d63100000',
+            '0xa9059cbb00000000000000000000000095222290dd7278aa3ddd389cc1e1d165cc4bafe50000000000000000000000000000000000000000000000000000000000000064',
           ],
           auth: '',
         });

@@ -19,6 +19,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { signup_utils } from '../utils/webhooks/signup-reward';
 import { referral_utils } from '../utils/webhooks/referral-reward';
 import { link_reward_utils } from '../utils/webhooks/link-reward';
+import * as web3 from '../utils/web3';
 
 chai.use(chaiExclude);
 
@@ -27,6 +28,8 @@ describe('handleReferralReward function', function () {
   let axiosStub;
   let eventId;
   let collectionUsersMock;
+  let contractStub;
+  let getERC20Contract;
 
   beforeEach(async function () {
     collectionUsersMock = await getCollectionUsersMock();
@@ -64,6 +67,27 @@ describe('handleReferralReward function', function () {
       .callsFake(async function () {
         return true;
       });
+
+    contractStub = {
+      methods: {
+        decimals: sandbox.stub().resolves('18'),
+        transfer: sandbox.stub().returns({
+          encodeABI: sandbox
+            .stub()
+            .returns(
+              '0xa9059cbb00000000000000000000000095222290dd7278aa3ddd389cc1e1d165cc4bafe50000000000000000000000000000000000000000000000000000000000000064',
+            ),
+        }),
+      },
+    };
+    contractStub.methods.decimals = sandbox.stub().returns({
+      call: sandbox.stub().resolves('18'),
+    });
+    getERC20Contract = () => {
+      return contractStub;
+    };
+    sandbox.stub(web3, 'getERC20Contract').callsFake(getERC20Contract);
+
     eventId = uuidv4();
   });
 

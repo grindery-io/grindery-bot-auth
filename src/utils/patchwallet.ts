@@ -1,12 +1,12 @@
 import axios from 'axios';
 import Web3 from 'web3';
-import ERC20 from '../routes/abi/ERC20.json';
 import {
   G1_POLYGON_ADDRESS,
   getClientId,
   getClientSecret,
 } from '../../secrets';
-import { CHAIN_MAPPING } from './chains';
+import { getERC20Contract } from './web3';
+import BigNumber from 'bignumber.js';
 
 export async function getPatchWalletAccessToken() {
   return (
@@ -51,14 +51,14 @@ export async function sendTokens(
   let address: string;
 
   try {
-    const contract = new new Web3(CHAIN_MAPPING[chainId][1]).eth.Contract(
-      ERC20 as any,
-      tokenAddress,
-    );
+    const contract = getERC20Contract(chainId, tokenAddress);
+    const decimals = await contract.methods.decimals().call();
     data = [
       contract.methods['transfer'](
         recipientwallet,
-        Web3.utils.toWei(amountEther),
+        BigNumber(amountEther)
+          .div(BigNumber(10).pow(BigNumber(decimals)))
+          .toString(),
       ).encodeABI(),
     ];
     value = ['0x00'];

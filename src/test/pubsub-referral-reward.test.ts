@@ -48,6 +48,7 @@ import {
   SOURCE_TG_ID,
 } from '../../secrets';
 import { handleReferralReward } from '../utils/webhooks/referral-reward';
+import * as web3 from '../utils/web3';
 
 chai.use(chaiExclude);
 
@@ -58,6 +59,8 @@ describe('handleReferralReward function', function () {
   let collectionTransfersMock;
   let collectionUsersMock;
   let collectionRewardsMock;
+  let contractStub;
+  let getERC20Contract;
 
   beforeEach(async function () {
     collectionTransfersMock = await getCollectionTransfersMock();
@@ -107,6 +110,27 @@ describe('handleReferralReward function', function () {
 
       throw new Error('Unexpected URL encountered');
     });
+
+    contractStub = {
+      methods: {
+        decimals: sandbox.stub().resolves('18'),
+        transfer: sandbox.stub().returns({
+          encodeABI: sandbox
+            .stub()
+            .returns(
+              '0xa9059cbb000000000000000000000000594cfcaa67bc8789d17d39eb5f1dfc7dd95242cd000000000000000000000000000000000000000000000002b5e3af16b1880000',
+            ),
+        }),
+      },
+    };
+    contractStub.methods.decimals = sandbox.stub().returns({
+      call: sandbox.stub().resolves('18'),
+    });
+    getERC20Contract = () => {
+      return contractStub;
+    };
+    sandbox.stub(web3, 'getERC20Contract').callsFake(getERC20Contract);
+
     rewardId = uuidv4();
   });
 
