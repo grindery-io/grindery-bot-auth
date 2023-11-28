@@ -40,7 +40,7 @@ describe('handleIsolatedReward function', async function () {
   let rewardId;
   let collectionRewardsMock;
   let contractStub;
-  let getERC20Contract;
+  let getContract;
 
   beforeEach(async function () {
     collectionRewardsMock = await getCollectionRewardsMock();
@@ -104,10 +104,10 @@ describe('handleIsolatedReward function', async function () {
     contractStub.methods.decimals = sandbox.stub().returns({
       call: sandbox.stub().resolves('18'),
     });
-    getERC20Contract = () => {
+    getContract = () => {
       return contractStub;
     };
-    sandbox.stub(web3, 'getERC20Contract').callsFake(getERC20Contract);
+    sandbox.stub(web3, 'getContract').callsFake(getContract);
 
     rewardId = uuidv4();
   });

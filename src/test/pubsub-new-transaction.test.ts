@@ -42,7 +42,7 @@ describe('handleNewTransaction function', async function () {
   let collectionUsersMock;
   let collectionTransfersMock;
   let contractStub;
-  let getERC20Contract;
+  let getContract;
 
   beforeEach(async function () {
     collectionUsersMock = await getCollectionUsersMock();
@@ -112,7 +112,7 @@ describe('handleNewTransaction function', async function () {
     contractStub.methods.decimals = sandbox.stub().returns({
       call: sandbox.stub().resolves('18'),
     });
-    getERC20Contract = () => {
+    getContract = () => {
       return contractStub;
     };
 
@@ -120,10 +120,10 @@ describe('handleNewTransaction function', async function () {
       this.currentTest.title ===
       'Should call the sendTokens function properly for Native token transfer'
     ) {
-      getERC20Contract = sandbox.stub().throws(new Error('Contract Error'));
+      getContract = sandbox.stub().throws(new Error('Contract Error'));
     }
 
-    sandbox.stub(web3, 'getERC20Contract').callsFake(getERC20Contract);
+    sandbox.stub(web3, 'getContract').callsFake(getContract);
 
     txId = uuidv4();
   });

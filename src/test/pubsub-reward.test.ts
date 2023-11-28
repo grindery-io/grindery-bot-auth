@@ -29,7 +29,7 @@ describe('handleReferralReward function', function () {
   let eventId;
   let collectionUsersMock;
   let contractStub;
-  let getERC20Contract;
+  let getContract;
 
   beforeEach(async function () {
     collectionUsersMock = await getCollectionUsersMock();
@@ -83,10 +83,10 @@ describe('handleReferralReward function', function () {
     contractStub.methods.decimals = sandbox.stub().returns({
       call: sandbox.stub().resolves('18'),
     });
-    getERC20Contract = () => {
+    getContract = () => {
       return contractStub;
     };
-    sandbox.stub(web3, 'getERC20Contract').callsFake(getERC20Contract);
+    sandbox.stub(web3, 'getContract').callsFake(getContract);
 
     eventId = uuidv4();
   });

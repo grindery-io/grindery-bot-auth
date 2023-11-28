@@ -37,7 +37,7 @@ describe('handleLinkReward function', async function () {
   let collectionUsersMock;
   let collectionRewardsMock;
   let contractStub;
-  let getERC20Contract;
+  let getContract;
 
   beforeEach(async function () {
     collectionUsersMock = await getCollectionUsersMock();
@@ -102,10 +102,10 @@ describe('handleLinkReward function', async function () {
     contractStub.methods.decimals = sandbox.stub().returns({
       call: sandbox.stub().resolves('18'),
     });
-    getERC20Contract = () => {
+    getContract = () => {
       return contractStub;
     };
-    sandbox.stub(web3, 'getERC20Contract').callsFake(getERC20Contract);
+    sandbox.stub(web3, 'getContract').callsFake(getContract);
 
     rewardId = uuidv4();
   });

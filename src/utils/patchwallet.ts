@@ -5,7 +5,7 @@ import {
   getClientId,
   getClientSecret,
 } from '../../secrets';
-import { getERC20Contract } from './web3';
+import { getContract } from './web3';
 import BigNumber from 'bignumber.js';
 
 export async function getPatchWalletAccessToken() {
@@ -51,8 +51,9 @@ export async function sendTokens(
   let address: string;
 
   try {
-    const contract = getERC20Contract(chainId, tokenAddress);
+    const contract = getContract(chainId, tokenAddress);
     const decimals = await contract.methods.decimals().call();
+
     data = [
       contract.methods['transfer'](
         recipientwallet,
