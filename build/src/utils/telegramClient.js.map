@@ -1,1 +1,0 @@
-{"version":3,"file":"telegramClient.js","sourceRoot":"","sources":["../../../src/utils/telegramClient.ts"],"names":[],"mappings":";;AAAA,uCAA0C;AAC1C,2CAAmE;AAGnE,MAAM,QAAQ,GAAG,CAAC,OAAyB,EAAkB,EAAE;IAC7D,OAAO,IAAI,yBAAc,CACvB,OAAO,EACP,MAAM,CAAC,yBAAe,CAAC,EACvB,2BAAiB,EACjB;QACE,iBAAiB,EAAE,CAAC;KACrB,CACF,CAAC;AACJ,CAAC,CAAC;AAEF,kBAAe,QAAQ,CAAC"}
