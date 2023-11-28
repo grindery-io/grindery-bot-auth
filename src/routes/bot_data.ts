@@ -114,34 +114,6 @@ router.post('/balance', async (req, res) => {
   }
 });
 
-router.post('/balance', async (req, res) => {
-  try {
-    const web3 = new Web3(CHAIN_MAPPING[req.body.chainId][1]);
-    const contract = new web3.eth.Contract(
-      ERC20 as any,
-      req.body.contractAddress,
-    );
-
-    const balance = await contract.methods
-      .balanceOf(req.body.userAddress)
-      .call();
-
-    res.status(200).json({
-      balanceWei: balance,
-      balanceEther: BigNumber(balance)
-        .div(
-          BigNumber(10).pow(
-            BigNumber(await contract.methods.decimals().call()),
-          ),
-        )
-        .toString(),
-    });
-  } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
 router.post('/patchwallet', async (req, res) => {
   try {
     // Check for the presence of all required fields in the request body
