@@ -10,48 +10,11 @@ import {
 } from '../utils/transfers';
 import {
   REWARDS_COLLECTION,
-  TRANSACTION_STATUS,
   TRANSFERS_COLLECTION,
   USERS_COLLECTION,
 } from '../utils/constants';
-import Web3 from 'web3';
 
 const router = express.Router();
-
-router.post('/reward', authenticateApiKey, async (req, res) => {
-  try {
-    const db = await Database.getInstance();
-    const collection = db.collection(REWARDS_COLLECTION);
-
-    const reward = await collection.findOne({
-      walletAddress: Web3.utils.toChecksumAddress(req.body.to),
-      amount: Web3.utils.fromWei(req.body.amount, 'ether'),
-      status: TRANSACTION_STATUS.PENDING,
-    });
-
-    if (!reward) {
-      return res.status(201).send({ message: 'No reward to complete.' });
-    } else {
-      await collection.updateOne(
-        { _id: reward._id },
-        {
-          $set: {
-            transactionHash: req.body.transactionHash,
-            status: TRANSACTION_STATUS.SUCCESS,
-          },
-        },
-      );
-
-      return res.status(201).send({
-        message: 'Reward updated.',
-        transactionHash: req.body.transactionHash,
-        mongoDbId: reward._id.toString(),
-      });
-    }
-  } catch (error) {
-    return res.status(500).send({ msg: 'An error occurred', error });
-  }
-});
 
 router.post('/:collectionName', authenticateApiKey, async (req, res) => {
   const collectionName = req.params.collectionName;
@@ -64,29 +27,6 @@ router.post('/:collectionName', authenticateApiKey, async (req, res) => {
       dateAdded: new Date(),
     }),
   );
-});
-
-router.get('/backlog-signup-rewards', authenticateApiKey, async (_req, res) => {
-  try {
-    const db = await Database.getInstance();
-
-    return res.status(200).send(
-      await db
-        .collection(USERS_COLLECTION)
-        .find({
-          userTelegramID: {
-            $nin: await db
-              .collection(REWARDS_COLLECTION)
-              .distinct('userTelegramID', {
-                amount: '100',
-              }),
-          },
-        })
-        .toArray(),
-    );
-  } catch (error) {
-    return res.status(500).send({ msg: 'An error occurred', error });
-  }
 });
 
 router.get('/transactions-total', authenticateApiKey, async (_req, res) => {
