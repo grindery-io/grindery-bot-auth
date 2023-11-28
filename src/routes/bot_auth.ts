@@ -1,6 +1,5 @@
 import express from 'express';
 import axios from 'axios';
-import base64url from 'base64url';
 
 const router = express.Router();
 
@@ -16,13 +15,13 @@ const router = express.Router();
  */
 router.get('/init', async (req, res) => {
   try {
-    const encodedState = base64url.encode(
+    const encodedState = Buffer.from(
       JSON.stringify({
         response_path: req.query.responsepath || '',
         user_id: req.query.user_id || '',
         redirect_uri: req.query.redirect_uri || '',
       }),
-    );
+    ).toString("base64url");
     const currentDomain = `${req.protocol}://${req.get('host')}`;
     res.redirect(
       `https://orchestrator.grindery.org/oauth/authorize/?redirect_uri=${encodeURIComponent(
@@ -84,7 +83,7 @@ router.get('/callback', async (req, res) => {
       },
     );
 
-    const decodeState = JSON.parse(base64url.decode(String(req.query.state)));
+    const decodeState = JSON.parse(Buffer.from(String(req.query.state), "base64url").toString('utf-8'));
 
     if (
       !userPropsResponse.data.result ||

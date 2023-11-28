@@ -2,7 +2,7 @@ import express from 'express';
 import { Api } from 'telegram';
 import { StringSession } from 'telegram/sessions/index';
 import createTelegramPromise from '../utils/telegramPromise';
-import { uuid } from 'uuidv4';
+import { v4 as uuidv4 } from 'uuid';
 import TGClient from '../utils/telegramClient';
 import { isRequired } from '../utils/auth';
 
@@ -29,7 +29,7 @@ const operations = {};
  * }
  */
 router.post('/init', isRequired, async (req, res) => {
-  const operationId = uuid();
+  const operationId = uuidv4();
 
   const client = TGClient(new StringSession(''));
   operations[operationId] = {
