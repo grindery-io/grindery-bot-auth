@@ -7,6 +7,8 @@ import web3 from 'web3';
 const bigqueryClient = new BigQuery();
 const datasetId = 'telegram';
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 const importUsers = async (): Promise<void> => {
   const tableId = 'users';
   const db = await Database.getInstance();
@@ -77,6 +79,8 @@ const importUsers = async (): Promise<void> => {
   process.exit(0);
 };
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 const importTransfers = async (): Promise<void> => {
   const tableId = 'transfer';
   const db = await Database.getInstance();
@@ -296,7 +300,6 @@ export const importTransfersLast24Hours = async (): Promise<void> => {
           token_symbol: transfer.tokenSymbol,
           transaction_hash: transfer.transactionHash,
           sender_handle: transfer.senderHandle,
-          event_id: null,
         };
       });
 

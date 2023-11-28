@@ -1,16 +1,12 @@
 import express from 'express';
 import pkg from 'body-parser';
 import expressJSDocSwagger from 'express-jsdoc-swagger';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import './loadEnvironment';
 import router from './router';
-import './scripts/cronjob.ts';
+import './scripts/cronjob';
 import { PORT } from '../secrets';
 
 const { json, urlencoded } = pkg;
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const options = {
   info: {
@@ -89,7 +85,7 @@ app.use(function (req, res, next) {
 });
 
 // JSON Parser
-const bodyParserAddRawBody = (req, res, buf): void => {
+const bodyParserAddRawBody = (req, _res, buf): void => {
   req.rawBody = buf.toString();
 };
 app.use(

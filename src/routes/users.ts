@@ -15,30 +15,30 @@ router.post('/attributes', authenticateApiKey, async (req, res) => {
       });
     }
 
+    const isValid = req.body.every(update => {
+      const { userTelegramID, attributeNames } = update;
+      return Array.isArray(attributeNames) && typeof userTelegramID === 'string';
+    });
+
+    if (!isValid) {
+      return res.status(400).send({
+        msg: 'Each item in the array should have "userTelegramID" as string, "attributeNames" as an array.',
+      });
+    }
+
+    const bulkOperations = req.body.map(update => ({
+      updateOne: {
+        filter: { userTelegramID: update.userTelegramID },
+        update: { $set: { attributes: update.attributeNames } },
+        upsert: true,
+      },
+    }));
+
+    const result = await db.collection(USERS_COLLECTION).bulkWrite(bulkOperations);
+
     return res.status(200).send({
       msg: 'Updates successful',
-      result: await db.collection(USERS_COLLECTION).bulkWrite(
-        req.body.map((update) => {
-          const { userTelegramID, attributeNames } = update;
-
-          if (
-            !Array.isArray(attributeNames) ||
-            typeof userTelegramID !== 'string'
-          ) {
-            return res.status(400).send({
-              msg: 'Each item in the array should have "userTelegramID" as string, "attributeNames" as an array.',
-            });
-          }
-
-          return {
-            updateOne: {
-              filter: { userTelegramID },
-              update: { $set: { attributes: attributeNames } },
-              upsert: true,
-            },
-          };
-        }),
-      ),
+      result,
     });
   } catch (error) {
     console.log(error);
