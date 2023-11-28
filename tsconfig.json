@@ -18,7 +18,9 @@
     "noImplicitAny": false,
     "noImplicitThis": false,
     "strictNullChecks": false,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "skipLibCheck": true
   },
-  "include": ["src/**/*", "__tests__/**/*", "mocha.mocharc.cjs"]
+  "include": ["src/**/*", "__tests__/**/*", "mocha.mocharc.cjs"],
+  "exclude": ["node_modules"]
 }

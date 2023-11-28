@@ -13,6 +13,8 @@ import { SOURCE_TG_ID, SOURCE_WALLET_ADDRESS } from '../../secrets';
 
 // Example usage of the functions:
 // removeDuplicateTransfers();
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 async function removeDuplicateTransfers() {
   try {
     const db = await Database.getInstance();
@@ -53,6 +55,8 @@ async function removeDuplicateTransfers() {
 // Description: This function processes transfers data from a CSV file and deletes incomplete transfers from the database.
 // - filePath: The path to the CSV file containing transfers data.
 // Example: transfersCleanup("dune.csv");
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 async function transfersCleanup(fileName) {
   const db = await Database.getInstance();
   const collection = db.collection(TRANSFERS_COLLECTION);
@@ -99,11 +103,13 @@ async function transfersCleanup(fileName) {
       process.exit(0);
     })
     .on('error', (error) => {
-      console.log('\n Errors during CSV parsing \n');
+      console.log('\n Errors during CSV parsing \n', error);
       process.exit(1);
     });
 }
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 async function updateTransfersInformations() {
   try {
     // Connect to the database
@@ -184,6 +190,8 @@ async function updateTransfersInformations() {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 async function removeRewardFromTransfers() {
   try {
     const db = await Database.getInstance();
@@ -234,6 +242,8 @@ async function removeRewardFromTransfers() {
  * - filePath: The path to the CSV file containing transfer data.
  * Example: checkMissingTransfers("transfersData.csv");
  */
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 async function checkMissingTransfers(fileName) {
   const db = await Database.getInstance();
   const collection = db.collection(TRANSFERS_COLLECTION);
@@ -273,6 +283,8 @@ async function checkMissingTransfers(fileName) {
     });
 }
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 async function getUsersFollowUps() {
   try {
     const db = await Database.getInstance();
@@ -324,7 +336,7 @@ async function getUsersFollowUps() {
     }
 
     // Create a CSV writer
-    const csvWriter = createObjectCsvWriter({
+    const csvWriter = createCsvWriter({
       path: 'sender_followup.csv',
       header: [
         { id: 'userTelegramID', title: 'User Telegram ID' },
@@ -349,6 +361,8 @@ async function getUsersFollowUps() {
 /**
  * Asynchronous function to retrieve and export transactions statistics.
  */
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 async function getDoubleTxs() {
   try {
     const db = await Database.getInstance();
@@ -406,7 +420,7 @@ async function getDoubleTxs() {
 
     // Filter elements where numberOfTransactions > 1
     const filteredTransactions = Object.values(matchedTransactions).filter(
-      (transaction) => transaction.numberOfTransactions > 1,
+      (transaction) => (transaction as any).numberOfTransactions > 1,
     );
 
     // Export the filtered data to a CSV file
@@ -419,6 +433,8 @@ async function getDoubleTxs() {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 async function convertFieldsToString() {
   try {
     // Connect to the database
@@ -474,6 +490,8 @@ async function convertFieldsToString() {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 async function nullifyTgIds() {
   try {
     // Connect to the database
@@ -528,6 +546,8 @@ async function nullifyTgIds() {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 async function updateTransfersStatus() {
   try {
     const db = await Database.getInstance();
@@ -567,6 +587,8 @@ async function updateTransfersStatus() {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 async function importMissingTransferFromCSV(fileName) {
   const db = await Database.getInstance();
   const collection = db.collection(TRANSFERS_COLLECTION);

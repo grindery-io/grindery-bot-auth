@@ -2,13 +2,15 @@
 import { Database } from '../db/conn';
 import fs from 'fs';
 import csv from 'csv-parser';
-import csvWriter from 'csv-writer';
+import { createObjectCsvWriter as createCsvWriter } from 'csv-writer';
 import { TRANSFERS_COLLECTION, USERS_COLLECTION } from '../utils/constants';
 
 // Usage: importUsersFromCSV(filePath)
 // Description: This function imports user data from a CSV file into the database.
 // - filePath: The path to the CSV file containing user data.
 // Example: importUsersFromCSV("/path/to/your/file.csv");
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 async function importUsersFromCSV(filePath) {
   const db = await Database.getInstance();
   const collection = db.collection(USERS_COLLECTION);
@@ -60,6 +62,8 @@ async function importUsersFromCSV(filePath) {
 // Description: This function imports user data from a JSON file into the database.
 // - filePath: The path to the JSON file containing user data.
 // Example: importUsersFromJSON("/path/to/your/file.json");
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 async function importUsersFromJSON(filePath) {
   try {
     const db = await Database.getInstance();
@@ -128,6 +132,8 @@ async function importUsersFromJSON(filePath) {
 // Example usage of the function
 // Description: This function removes users from the database whose userTelegramID contains a "+" character.
 // removeUsersScientificNotationInTelegramID();
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 async function removeUsersScientificNotationInTelegramID() {
   try {
     const db = await Database.getInstance();
@@ -158,6 +164,8 @@ async function removeUsersScientificNotationInTelegramID() {
 //   { userTelegramID: "67890" },
 // ];
 // logUserTelegramIDsFromArrayOfUsers(users);
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 function logUserTelegramIDsFromArrayOfUsers(users) {
   const userTelegramIDCounts = {}; // To store the count of each unique userTelegramID
 
@@ -182,6 +190,8 @@ function logUserTelegramIDsFromArrayOfUsers(users) {
 }
 
 // Function to get all users without outgoing transfers and export to CSV
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 async function getUsersWithoutOutgoingTransfersAndExportToCSV() {
   try {
     const db = await Database.getInstance();
@@ -212,7 +222,7 @@ async function getUsersWithoutOutgoingTransfersAndExportToCSV() {
 
     // Export users without outgoing transfers to CSV
     if (usersWithoutOutgoingTransfers.length > 0) {
-      const csvWriterObject = csvWriter.createObjectCsvWriter({
+      const csvWriterObject = createCsvWriter({
         path: 'users_without_outgoing_transfers.csv',
         header: [
           { id: 'userTelegramID', title: 'UserTelegramID' },
@@ -238,6 +248,8 @@ async function getUsersWithoutOutgoingTransfersAndExportToCSV() {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 async function exportUsersWithHandleEndingInDigitsToCSV() {
   try {
     const db = await Database.getInstance();
@@ -252,7 +264,7 @@ async function exportUsersWithHandleEndingInDigitsToCSV() {
       .toArray();
 
     if (usersWithHandleEndingInDigits.length > 0) {
-      const csvWriterObject = csvWriter.createObjectCsvWriter({
+      const csvWriterObject = createCsvWriter({
         path: 'users_with_handle_ending_in_digits.csv',
         header: [
           { id: 'userTelegramID', title: 'UserTelegramID' },
@@ -278,6 +290,8 @@ async function exportUsersWithHandleEndingInDigitsToCSV() {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 async function convertDateAddedFieldToISODate() {
   try {
     const db = await Database.getInstance();

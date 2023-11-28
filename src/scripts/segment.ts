@@ -14,6 +14,8 @@ import { SEGMENT_WRITE_KEY } from '../../secrets';
 // and sends a batch request to the Segment API. The batch payload includes identification details,
 // user traits such as userName, userHandle, responsePath, and patchwallet, and the timestamp of when the user was added.
 // Example: sendUsersBatchRequest();
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 async function sendUsersBatchRequest() {
   const db = await Database.getInstance();
   const usersCollection = db.collection(USERS_COLLECTION);
@@ -63,6 +65,8 @@ async function sendUsersBatchRequest() {
 // Segment API requirements, and sends a batch request to the Segment API. The batch payload includes event details,
 // transaction properties like Amount, TxId, sender and recipient details, token details, and the timestamp of the transfer.
 // Example: sendTransfersBatchRequest();
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 async function sendTransfersBatchRequest() {
   const db = await Database.getInstance();
   const transfersCollection = db.collection(TRANSFERS_COLLECTION);
