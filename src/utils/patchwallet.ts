@@ -6,6 +6,7 @@ import {
   getClientId,
   getClientSecret,
 } from '../../secrets';
+import { CHAIN_MAPPING } from './chains';
 
 export async function getPatchWalletAccessToken() {
   return (
@@ -43,21 +44,39 @@ export async function sendTokens(
   patchWalletAccessToken: any,
   tokenAddress = G1_POLYGON_ADDRESS,
   chainName = 'matic',
+  chainId = 'eip155:137',
 ) {
-  const g1Contract = new new Web3().eth.Contract(ERC20 as any, tokenAddress);
+  let data: any[];
+  let value: string[];
+  let address: string;
+
+  try {
+    const contract = new new Web3(CHAIN_MAPPING[chainId][1]).eth.Contract(
+      ERC20 as any,
+      tokenAddress,
+    );
+    data = [
+      contract.methods['transfer'](
+        recipientwallet,
+        Web3.utils.toWei(amountEther),
+      ).encodeABI(),
+    ];
+    value = ['0x00'];
+    address = tokenAddress;
+  } catch (error) {
+    data = ['0x00'];
+    value = [Web3.utils.toWei(amountEther).toString()];
+    address = recipientwallet;
+  }
+
   return await axios.post(
     'https://paymagicapi.com/v1/kernel/tx',
     {
       userId: `grindery:${senderTgId}`,
       chain: chainName,
-      to: [tokenAddress],
-      value: ['0x00'],
-      data: [
-        g1Contract.methods['transfer'](
-          recipientwallet,
-          Web3.utils.toWei(amountEther),
-        ).encodeABI(),
-      ],
+      to: [address],
+      value: value,
+      data: data,
       auth: '',
     },
     {

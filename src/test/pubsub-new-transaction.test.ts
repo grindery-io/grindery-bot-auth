@@ -22,7 +22,7 @@ import {
 } from './utils';
 import Sinon from 'sinon';
 import axios from 'axios';
-
+import Web3 from 'web3';
 import chaiExclude from 'chai-exclude';
 import { TRANSACTION_STATUS } from '../utils/constants';
 import { v4 as uuidv4 } from 'uuid';
@@ -158,6 +158,55 @@ describe('handleNewTransaction function', async function () {
           },
         ]);
       chai.expect(transfers[0].dateAdded).to.be.a('date');
+    });
+
+    it('Should call the sendTokens function properly for ERC20 token transfer', async function () {
+      await handleNewTransaction({
+        senderTgId: mockUserTelegramID,
+        amount: '100',
+        recipientTgId: mockUserTelegramID1,
+        eventId: txId,
+      });
+
+      chai
+        .expect(
+          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl)
+            .args[1],
+        )
+        .to.deep.equal({
+          userId: `grindery:${mockUserTelegramID}`,
+          chain: 'matic',
+          to: [G1_POLYGON_ADDRESS],
+          value: ['0x00'],
+          data: [
+            '0xa9059cbb00000000000000000000000095222290dd7278aa3ddd389cc1e1d165cc4bafe50000000000000000000000000000000000000000000000056bc75e2d63100000',
+          ],
+          auth: '',
+        });
+    });
+
+    it('Should call the sendTokens function properly for Native token transfer', async function () {
+      await handleNewTransaction({
+        senderTgId: mockUserTelegramID,
+        amount: '100',
+        recipientTgId: mockUserTelegramID1,
+        eventId: txId,
+        tokenAddress: '0x00',
+      });
+
+      chai
+        .expect(
+          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl)
+            .args[1],
+        )
+        .to.deep.equal({
+          userId: `grindery:${mockUserTelegramID}`,
+          chain: 'matic',
+          to: [mockWallet],
+          value: [Web3.utils.toWei('100').toString()],
+          data: ['0x00'],
+          auth: '',
+        });
     });
 
     it('Should populate the segment transfer properly', async function () {
