@@ -1,5 +1,6 @@
 import { TRANSACTION_STATUS } from '../constants';
 import { SignUpRewardTelegram, createSignUpRewardTelegram } from '../rewards';
+import { isPendingTransactionHash } from './utils';
 
 /**
  * Handles the signup reward for a user.
@@ -35,7 +36,7 @@ export async function handleSignUpReward(params: any): Promise<boolean> {
     let txReward;
 
     // Handle pending hash status
-    if (reward.isPendingHash()) {
+    if (isPendingTransactionHash(reward.status)) {
       if (await reward.isTreatmentDurationExceeded()) return true;
 
       // Check userOpHash and updateInDatabase for success

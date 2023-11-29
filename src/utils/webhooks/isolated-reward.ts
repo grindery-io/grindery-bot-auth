@@ -3,6 +3,7 @@ import {
   IsolatedRewardTelegram,
   createIsolatedRewardTelegram,
 } from '../rewards';
+import { isPendingTransactionHash } from './utils';
 
 /**
  * Handles isolated rewards based on given parameters.
@@ -53,7 +54,7 @@ export async function handleIsolatedReward(params: any): Promise<boolean> {
     let txReward;
 
     // Handle pending hash status
-    if (reward.isPendingHash()) {
+    if (isPendingTransactionHash(reward.status)) {
       if (await reward.isTreatmentDurationExceeded()) return true;
 
       // Check userOpHash and updateInDatabase for success

@@ -2,6 +2,11 @@ import { Database } from '../../db/conn';
 import { TRANSACTION_STATUS, USERS_COLLECTION } from '../constants';
 import { sendTelegramMessage } from '../telegram';
 import { TransferTelegram, createTransferTelegram } from '../transfers';
+import {
+  isFailedTransaction,
+  isPendingTransactionHash,
+  isSuccessfulTransaction,
+} from './utils';
 
 /**
  * Handles a new transaction based on the provided parameters.
@@ -43,12 +48,16 @@ export async function handleNewTransaction(params: any): Promise<boolean> {
   if (!transfer) return false;
 
   transfer = transfer as TransferTelegram;
-  if (transfer.isSuccess() || transfer.isFailure()) return true;
+  if (
+    isSuccessfulTransaction(transfer.status) ||
+    isFailedTransaction(transfer.status)
+  )
+    return true;
 
   let tx;
 
   // Handle pending hash status
-  if (transfer.isPendingHash()) {
+  if (isPendingTransactionHash(transfer.status)) {
     if (await transfer.isTreatmentDurationExceeded()) return true;
 
     // Check userOpHash and updateInDatabase for success

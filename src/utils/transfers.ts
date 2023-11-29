@@ -410,30 +410,6 @@ export class TransferTelegram {
   }
 
   /**
-   * Checks if the transaction is successful.
-   * @returns {boolean} - True if the transaction is successful, false otherwise.
-   */
-  isSuccess(): boolean {
-    return this.status === TRANSACTION_STATUS.SUCCESS;
-  }
-
-  /**
-   * Checks if the transaction has failed.
-   * @returns {boolean} - True if the transaction has failed, false otherwise.
-   */
-  isFailure(): boolean {
-    return this.status === TRANSACTION_STATUS.FAILURE;
-  }
-
-  /**
-   * Checks if the transaction is in the pending hash state.
-   * @returns {boolean} - True if the transaction is in the pending hash state, false otherwise.
-   */
-  isPendingHash(): boolean {
-    return this.status === TRANSACTION_STATUS.PENDING_HASH;
-  }
-
-  /**
    * Retrieves the status of the PatchWallet transaction.
    * @returns {Promise<any>} - True if the transaction status is retrieved successfully, false otherwise.
    */

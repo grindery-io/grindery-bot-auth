@@ -20,6 +20,7 @@ import {
   G1_POLYGON_ADDRESS,
   SOURCE_TG_ID,
 } from '../../secrets';
+import { isSuccessfulTransaction } from './webhooks/utils';
 
 /**
  * Asynchronously creates a sign-up reward for Telegram users.
@@ -141,7 +142,7 @@ export class SignUpRewardTelegram {
       this.status = this.tx.status;
       this.userOpHash = this.tx.userOpHash;
 
-      if (this.isSuccess()) return false;
+      if (isSuccessfulTransaction(this.status)) return false;
     } else {
       await this.updateInDatabase(TRANSACTION_STATUS.PENDING, new Date());
     }
@@ -241,30 +242,6 @@ export class SignUpRewardTelegram {
    */
   updateUserOpHash(userOpHash: string): string {
     return (this.userOpHash = userOpHash);
-  }
-
-  /**
-   * Checks if the transaction is successful.
-   * @returns {boolean} - True if the transaction is successful, false otherwise.
-   */
-  isSuccess(): boolean {
-    return this.status === TRANSACTION_STATUS.SUCCESS;
-  }
-
-  /**
-   * Checks if the transaction has failed.
-   * @returns {boolean} - True if the transaction has failed, false otherwise.
-   */
-  isFailure(): boolean {
-    return this.status === TRANSACTION_STATUS.FAILURE;
-  }
-
-  /**
-   * Checks if the transaction is in the pending hash state.
-   * @returns {boolean} - True if the transaction is in the pending hash state, false otherwise.
-   */
-  isPendingHash(): boolean {
-    return this.status === TRANSACTION_STATUS.PENDING_HASH;
   }
 
   /**
@@ -561,22 +538,6 @@ export class ReferralRewardTelegram {
   }
 
   /**
-   * Checks if the transaction for the referral reward is successful.
-   * @returns {boolean} - True if the transaction is successful, false otherwise.
-   */
-  isSuccess(): boolean {
-    return this.status === TRANSACTION_STATUS.SUCCESS;
-  }
-
-  /**
-   * Checks if the transaction for the referral reward has failed.
-   * @returns {boolean} - True if the transaction has failed, false otherwise.
-   */
-  isFailure(): boolean {
-    return this.status === TRANSACTION_STATUS.FAILURE;
-  }
-
-  /**
    * Retrieves the status of the PatchWallet transaction for the referral reward.
    * @returns {Promise<boolean>} - True if the transaction status is retrieved successfully, false otherwise.
    */
@@ -589,14 +550,6 @@ export class ReferralRewardTelegram {
       );
       return false;
     }
-  }
-
-  /**
-   * Checks if the transaction for the referral reward is in the pending hash state.
-   * @returns {boolean} - True if the transaction is in the pending hash state, false otherwise.
-   */
-  isPendingHash(): boolean {
-    return this.status === TRANSACTION_STATUS.PENDING_HASH;
   }
 
   /**
@@ -818,7 +771,7 @@ export class LinkRewardTelegram {
       this.status = this.tx.status;
       this.userOpHash = this.tx.userOpHash;
 
-      if (this.isSuccess()) return false;
+      if (isSuccessfulTransaction(this.status)) return false;
     } else {
       await this.updateInDatabase(TRANSACTION_STATUS.PENDING, new Date());
     }
@@ -935,30 +888,6 @@ export class LinkRewardTelegram {
    */
   updateUserOpHash(userOpHash: string): string {
     return (this.userOpHash = userOpHash);
-  }
-
-  /**
-   * Checks if the transaction is successful.
-   * @returns {boolean} - True if the transaction is successful, false otherwise.
-   */
-  isSuccess(): boolean {
-    return this.status === TRANSACTION_STATUS.SUCCESS;
-  }
-
-  /**
-   * Checks if the transaction has failed.
-   * @returns {boolean} - True if the transaction has failed, false otherwise.
-   */
-  isFailure(): boolean {
-    return this.status === TRANSACTION_STATUS.FAILURE;
-  }
-
-  /**
-   * Checks if the transaction is in the pending hash state.
-   * @returns {boolean} - True if the transaction is in the pending hash state, false otherwise.
-   */
-  isPendingHash(): boolean {
-    return this.status === TRANSACTION_STATUS.PENDING_HASH;
   }
 
   /**
@@ -1157,7 +1086,7 @@ export class IsolatedRewardTelegram {
       this.status = this.tx.status;
       this.userOpHash = this.tx.userOpHash;
 
-      if (this.isSuccess()) return false;
+      if (isSuccessfulTransaction(this.status)) return false;
     } else {
       await this.updateInDatabase(TRANSACTION_STATUS.PENDING, new Date());
     }
@@ -1257,30 +1186,6 @@ export class IsolatedRewardTelegram {
    */
   updateUserOpHash(userOpHash: string): string {
     return (this.userOpHash = userOpHash);
-  }
-
-  /**
-   * Checks if the transaction is successful.
-   * @returns {boolean} - True if the transaction is successful, false otherwise.
-   */
-  isSuccess(): boolean {
-    return this.status === TRANSACTION_STATUS.SUCCESS;
-  }
-
-  /**
-   * Checks if the transaction has failed.
-   * @returns {boolean} - True if the transaction has failed, false otherwise.
-   */
-  isFailure(): boolean {
-    return this.status === TRANSACTION_STATUS.FAILURE;
-  }
-
-  /**
-   * Checks if the transaction is in the pending hash state.
-   * @returns {boolean} - True if the transaction is in the pending hash state, false otherwise.
-   */
-  isPendingHash(): boolean {
-    return this.status === TRANSACTION_STATUS.PENDING_HASH;
   }
 
   /**

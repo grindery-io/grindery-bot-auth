@@ -1,5 +1,6 @@
 import { TRANSACTION_STATUS } from '../constants';
 import { createReferralRewardTelegram } from '../rewards';
+import { isPendingTransactionHash, isSuccessfulTransaction } from './utils';
 
 /**
  * Handles the referral reward for a user.
@@ -31,7 +32,7 @@ export async function handleReferralReward(params: any): Promise<boolean> {
     await reward.getRewardSameFromDatabase();
 
     if (
-      reward.isSuccess() ||
+      isSuccessfulTransaction(reward.status) ||
       (await reward.getRewardFromDatabaseWithOtherEventId())
     ) {
       console.log(
@@ -48,7 +49,7 @@ export async function handleReferralReward(params: any): Promise<boolean> {
     let txReward;
 
     // Handle pending hash status
-    if (reward.isPendingHash()) {
+    if (isPendingTransactionHash(reward.status)) {
       if (await reward.isTreatmentDurationExceeded()) return true;
 
       // Check userOpHash and updateInDatabase for success
