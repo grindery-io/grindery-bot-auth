@@ -23,47 +23,44 @@ import { Database } from '../db/conn';
  * Distributes sign-up rewards of 100 Grindery One Tokens to eligible users.
  * Manages the renewal of the Patch Wallet access token.
  *
- * @returns {void} No return value.
+ * @returns {Promise<void>} No return value.
  */
-export async function distributeSignupRewards() {
-  // Set startDate to 24 hours before the current date and time
+export async function distributeSignupRewards(): Promise<void> {
   const startDate = new Date();
   startDate.setHours(startDate.getHours() - 24);
 
-  // Number of users processed in each batch
   const batchSize = 10;
 
   try {
-    // Retrieve database instance and rewards collection
     const db = await Database.getInstance();
     const rewardsCollection = db.collection(REWARDS_COLLECTION);
 
-    // Initialize Patch Wallet access token and last renewal time
     let patchWalletAccessToken = await getPatchWalletAccessToken();
     let lastTokenRenewalTime = Date.now();
 
-    // Fetch users added within the last 24 hours
-    const allUsers = await db
+    const usersCursor = db
       .collection(USERS_COLLECTION)
-      .find({
-        dateAdded: { $gt: new Date(startDate) },
-      })
-      .toArray();
+      .find({ dateAdded: { $gt: startDate } });
 
-    // Counter for processed users
+    const allUsers = [];
+    while (await usersCursor.hasNext()) {
+      allUsers.push(await usersCursor.next());
+    }
+
+    const rewardsCursor = rewardsCollection.find({
+      reason: 'user_sign_up',
+      status: 'success',
+      dateAdded: {
+        $gt: new Date(new Date(startDate).getTime() - 24 * 60 * 60 * 1000),
+      },
+    });
+
+    const allRewards = [];
+    while (await rewardsCursor.hasNext()) {
+      allRewards.push(await rewardsCursor.next());
+    }
+
     let userCount = 0;
-
-    // Fetch successful sign-up rewards within the last 48 hours
-    const allRewards = await rewardsCollection
-      .find({
-        reason: 'user_sign_up',
-        status: 'success',
-        dateAdded: {
-          $gt: new Date(new Date(startDate).getTime() - 24 * 60 * 60 * 1000),
-        },
-      })
-      .toArray();
-
     // Array to hold batch promises
     const batchPromises = [];
 
@@ -155,9 +152,9 @@ export async function distributeSignupRewards() {
  * Distributes referral rewards to eligible users who made successful referrals.
  * Manages the renewal of the Patch Wallet access token.
  *
- * @returns {void} No return value.
+ * @returns {Promise<void>} No return value.
  */
-export async function distributeReferralRewards() {
+export async function distributeReferralRewards(): Promise<void> {
   // Set startDate to 24 hours before the current date and time
   const startDate = new Date();
   startDate.setHours(startDate.getHours() - 24);
@@ -173,22 +170,34 @@ export async function distributeReferralRewards() {
     const transfersCollection = db.collection(TRANSFERS_COLLECTION);
 
     // Fetch users and transfers added within the last 24 hours
-    const allUsers = await usersCollection
-      .find({ dateAdded: { $gt: new Date(startDate) } })
-      .toArray();
-    const allTransfers = await transfersCollection
+    const userCursor = usersCollection.find({
+      dateAdded: { $gt: new Date(startDate) },
+    });
+    const allUsers = [];
+    while (await userCursor.hasNext()) {
+      allUsers.push(await userCursor.next());
+    }
+
+    const transfersCursor = transfersCollection
       .find({ status: TRANSACTION_STATUS.SUCCESS })
-      .sort({ dateAdded: 1 })
-      .toArray();
-    const allRewards = await rewardsCollection
-      .find({
-        reason: '2x_reward',
-        status: TRANSACTION_STATUS.SUCCESS,
-        dateAdded: {
-          $gt: new Date(new Date(startDate).getTime() - 24 * 60 * 60 * 1000),
-        },
-      })
-      .toArray();
+      .sort({ dateAdded: 1 });
+    const allTransfers = [];
+    while (await transfersCursor.hasNext()) {
+      allTransfers.push(await transfersCursor.next());
+    }
+
+    const rewardsCursor = rewardsCollection.find({
+      reason: '2x_reward',
+      status: TRANSACTION_STATUS.SUCCESS,
+      dateAdded: {
+        $gt: new Date(new Date(startDate).getTime() - 24 * 60 * 60 * 1000),
+      },
+    });
+
+    const allRewards = [];
+    while (await rewardsCursor.hasNext()) {
+      allRewards.push(await rewardsCursor.next());
+    }
 
     // Initial PatchWallet access token and last renewal time
     let patchWalletAccessToken = await getPatchWalletAccessToken();
