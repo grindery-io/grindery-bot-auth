@@ -7,7 +7,12 @@ import {
 import { getContract, scaleDecimals } from './web3';
 import { nativeTokenAddresses } from './constants';
 
-export async function getPatchWalletAccessToken() {
+/**
+ * Retrieves the Patch Wallet access token by making a POST request to the authentication endpoint.
+ * @returns {Promise<string>} - A Promise resolving to the Patch Wallet access token.
+ * @throws {Error} - Throws an error if there's an issue with the request or authentication process.
+ */
+export async function getPatchWalletAccessToken(): Promise<string> {
   return (
     await axios.post(
       'https://paymagicapi.com/v1/auth',
@@ -22,7 +27,15 @@ export async function getPatchWalletAccessToken() {
   ).data.access_token;
 }
 
-export async function getPatchWalletAddressFromTgId(tgId) {
+/**
+ * Retrieves the Patch Wallet address associated with a given Telegram ID by making a POST request to the resolver endpoint.
+ * @param {string} tgId - The Telegram ID for which the associated Patch Wallet address is to be fetched.
+ * @returns {Promise<string>} - A Promise resolving to the Patch Wallet address associated with the provided Telegram ID.
+ * @throws {Error} - Throws an error if there's an issue with the request or fetching the wallet address.
+ */
+export async function getPatchWalletAddressFromTgId(
+  tgId: string,
+): Promise<string> {
   return (
     await axios.post(
       'https://paymagicapi.com/v1/resolver',
@@ -36,49 +49,56 @@ export async function getPatchWalletAddressFromTgId(tgId) {
   ).data.users[0].accountAddress;
 }
 
+/**
+ * Sends tokens from one wallet to another using the PayMagic API.
+ * @param {string} senderTgId - Sender's Telegram ID.
+ * @param {string} recipientwallet - Recipient's wallet address.
+ * @param {string} amountEther - Amount of tokens to send.
+ * @param {string} patchWalletAccessToken - Access token for Patch Wallet API.
+ * @param {string} tokenAddress - Token address (default: G1_POLYGON_ADDRESS).
+ * @param {string} chainName - Name of the blockchain (default: 'matic').
+ * @param {string} chainId - ID of the blockchain (default: 'eip155:137').
+ * @returns {Promise<axios.AxiosResponse<any, any>>} - Promise resolving to the response from the PayMagic API.
+ */
 export async function sendTokens(
   senderTgId: string,
   recipientwallet: string,
-  amountEther: any,
-  patchWalletAccessToken: any,
-  tokenAddress = G1_POLYGON_ADDRESS,
-  chainName = 'matic',
-  chainId = 'eip155:137',
-) {
-  let data: any[];
-  let value: string[];
-  let address: string;
+  amountEther: string,
+  patchWalletAccessToken: string,
+  tokenAddress: string = G1_POLYGON_ADDRESS,
+  chainName: string = 'matic',
+  chainId: string = 'eip155:137',
+): Promise<axios.AxiosResponse<any, any>> {
+  // Determine data, value, and address based on the token type
+  const [data, value, address] = nativeTokenAddresses.includes(tokenAddress)
+    ? [['0x00'], [scaleDecimals(amountEther, 18)], recipientwallet]
+    : [
+        [
+          getContract(chainId, tokenAddress)
+            .methods['transfer'](
+              recipientwallet,
+              scaleDecimals(
+                amountEther,
+                await getContract(chainId, tokenAddress)
+                  .methods.decimals()
+                  .call(),
+              ),
+            )
+            .encodeABI(),
+        ],
+        ['0x00'],
+        tokenAddress,
+      ];
 
-  const isNativeToken = nativeTokenAddresses.includes(tokenAddress);
-
-  if (isNativeToken) {
-    // Native token logic
-    data = ['0x00'];
-    value = [scaleDecimals(amountEther, 18)];
-    address = recipientwallet;
-  } else {
-    // ERC20 token logic
-    const contract = getContract(chainId, tokenAddress);
-    const decimals = await contract.methods.decimals().call();
-    const amountFormatted = scaleDecimals(amountEther, decimals);
-    data = [
-      contract.methods['transfer'](
-        recipientwallet,
-        amountFormatted,
-      ).encodeABI(),
-    ];
-    value = ['0x00'];
-    address = tokenAddress;
-  }
-
+  // Send the tokens using PayMagic API
   return await axios.post(
     'https://paymagicapi.com/v1/kernel/tx',
     {
       userId: `grindery:${senderTgId}`,
       chain: chainName,
       to: [address],
-      value: value,
-      data: data,
+      value,
+      data,
       auth: '',
     },
     {
@@ -91,7 +111,14 @@ export async function sendTokens(
   );
 }
 
-export async function getTxStatus(userOpHash: any) {
+/**
+ * Retrieves transaction status using the PayMagic API.
+ * @param {string} userOpHash - User operation hash.
+ * @returns {Promise<axios.AxiosResponse<any, any>>} - Promise resolving to the response from the PayMagic API.
+ */
+export async function getTxStatus(
+  userOpHash: string,
+): Promise<axios.AxiosResponse<any, any>> {
   return await axios.post(
     'https://paymagicapi.com/v1/kernel/txStatus',
     {
@@ -106,14 +133,24 @@ export async function getTxStatus(userOpHash: any) {
   );
 }
 
+/**
+ * Initiates a token swap transaction using the PayMagic API.
+ * @param {string} userTelegramID - User's Telegram ID.
+ * @param {string} to - Destination address for the token swap.
+ * @param {string} value - Value to swap.
+ * @param {string} data - Data for the swap transaction.
+ * @param {string} chainName - Name of the chain (default: 'matic').
+ * @param {string} patchWalletAccessToken - Access token for the patch wallet authentication.
+ * @returns {Promise<axios.AxiosResponse<any, any>>} - Promise resolving to the response from the PayMagic API.
+ */
 export async function swapTokens(
-  userTelegramID: any,
-  to: any,
-  value: any,
-  data: any,
-  chainName: any,
-  patchWalletAccessToken: any,
-) {
+  userTelegramID: string,
+  to: string,
+  value: string,
+  data: string,
+  chainName: string,
+  patchWalletAccessToken: string,
+): Promise<axios.AxiosResponse<any, any>> {
   return await axios.post(
     'https://paymagicapi.com/v1/kernel/tx',
     {

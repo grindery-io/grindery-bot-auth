@@ -43,8 +43,8 @@ export async function createSignUpRewardTelegram(
   userHandle: string,
   userName: string,
   patchwallet: string,
-  tokenAddress,
-  chainName,
+  tokenAddress: string,
+  chainName: string,
 ): Promise<SignUpRewardTelegram | boolean> {
   const reward = new SignUpRewardTelegram(
     eventId,
@@ -102,8 +102,8 @@ export class SignUpRewardTelegram {
     userHandle: string,
     userName: string,
     patchwallet: string,
-    tokenAddress,
-    chainName,
+    tokenAddress: string,
+    chainName: string,
   ) {
     this.eventId = eventId;
     this.userTelegramID = userTelegramID;
@@ -1044,7 +1044,7 @@ export async function createIsolatedRewardTelegram(
   eventId: string,
   userTelegramID: string,
   reason: string,
-  amount: number,
+  amount: string,
   message: string,
   responsePath: string,
   userHandle: string,
@@ -1080,7 +1080,7 @@ export class IsolatedRewardTelegram {
   userName: string;
   patchwallet: string;
   reason: string;
-  amount: number;
+  amount: string;
   message: string;
   isInDatabase: boolean = false;
   tx?: any;
@@ -1096,7 +1096,7 @@ export class IsolatedRewardTelegram {
    * @param {string} eventId - The unique identifier for the event transaction.
    * @param {string} userTelegramID - The Telegram user ID associated with the transaction.
    * @param {string} reason - The reason for the transaction.
-   * @param {number} amount - The amount involved in the transaction.
+   * @param {string} amount - The amount involved in the transaction.
    * @param {string} message - A message associated with the transaction.
    * @param {string} responsePath - The response path for the transaction.
    * @param {string} userHandle - The user handle associated with the transaction.
@@ -1109,7 +1109,7 @@ export class IsolatedRewardTelegram {
     eventId: string,
     userTelegramID: string,
     reason: string,
-    amount: number,
+    amount: string,
     message: string,
     responsePath: string,
     userHandle: string,
