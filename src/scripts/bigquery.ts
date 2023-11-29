@@ -167,7 +167,7 @@ export const importUsersLast24Hours = async (): Promise<void> => {
 
   const endDate = new Date();
   const startDate = new Date();
-  startDate.setHours(startDate.getHours() - 1);
+  startDate.setHours(startDate.getHours() - 24);
 
   const recentUsers = collection.find({
     dateAdded: { $gte: startDate, $lte: endDate },
