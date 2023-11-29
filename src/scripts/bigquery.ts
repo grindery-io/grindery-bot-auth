@@ -19,7 +19,7 @@ const importUsers = async (): Promise<void> => {
 
   if (allUsers.length === 0) {
     console.log('BIGQUERY - No users found in MongoDB.');
-    return;
+    process.exit(0);
   }
 
   const batchSize = 3000;
@@ -64,6 +64,7 @@ const importUsers = async (): Promise<void> => {
           patchwallet: user.patchwallet,
           response_path: user.responsePath,
           user_handle: user.userHandle,
+          attributes: JSON.stringify(user.attributes),
         };
       });
 
@@ -174,13 +175,17 @@ export const importUsersLast24Hours = async (): Promise<void> => {
 
   if (recentUsers.length === 0) {
     console.log('BIGQUERY - No users found in MongoDB in the last 24 hours.');
-    return;
+    process.exit(0);
   }
 
   const batchSize = 3000;
   let importedCount = 0;
 
-  const existingPatchwallets = await getExistingPatchwallets(tableId);
+  const existingPatchwallets = await getExistingPatchwalletsLast24Hours(
+    tableId,
+    startDate,
+    endDate,
+  );
 
   for (let i = 0; i < recentUsers.length; i += batchSize) {
     console.log(
@@ -218,6 +223,7 @@ export const importUsersLast24Hours = async (): Promise<void> => {
         patchwallet: user.patchwallet,
         response_path: user.responsePath,
         user_handle: user.userHandle,
+        attributes: JSON.stringify(user.attributes),
       };
     });
 
@@ -235,12 +241,13 @@ export const importTransfersLast24Hours = async (): Promise<void> => {
   const collection = db.collection(TRANSFERS_COLLECTION);
 
   // Calculate the date 24 hours ago
+  const endDate = new Date();
   const startDate = new Date();
   startDate.setHours(startDate.getHours() - 24);
 
   // Find transfers in the last 24 hours
   const allTransfers = await collection
-    .find({ dateAdded: { $gte: startDate } })
+    .find({ dateAdded: { $gte: startDate, $lte: endDate } })
     .toArray();
 
   if (allTransfers.length === 0) {
@@ -253,8 +260,8 @@ export const importTransfersLast24Hours = async (): Promise<void> => {
   const batchSize = 10000;
   let insertedCount = 0;
 
-  const existingTransactionHashes = await getExistingTransactionHashes(tableId);
-  console.log('BIGQUERY - existingTransactionHashes');
+  const existingTransactionHashes =
+    await getExistingTransactionHashesLast24Hours(tableId, startDate, endDate);
 
   for (let i = 0; i < allTransfers.length; i += batchSize) {
     console.log(
@@ -322,8 +329,44 @@ async function getExistingPatchwallets(tableId) {
   return rows.map((row) => web3.utils.toChecksumAddress(row.patchwallet));
 }
 
+async function getExistingPatchwalletsLast24Hours(tableId, startDate, endDate) {
+  const formattedStartDate = startDate.toISOString();
+  const formattedEndDate = endDate.toISOString();
+
+  const query = `
+    SELECT patchwallet
+    FROM ${datasetId}.${tableId}
+    WHERE received_at >= '${formattedStartDate}'
+    AND received_at <= '${formattedEndDate}'
+  `;
+
+  const [rows] = await bigqueryClient.query(query);
+
+  return rows.map((row) => web3.utils.toChecksumAddress(row.patchwallet));
+}
+
 async function getExistingTransactionHashes(tableId) {
   const query = `SELECT transaction_hash FROM ${datasetId}.${tableId}`;
+  const [rows] = await bigqueryClient.query(query);
+
+  return rows.map((row) => row.transaction_hash);
+}
+
+async function getExistingTransactionHashesLast24Hours(
+  tableId,
+  startDate,
+  endDate,
+) {
+  const formattedStartDate = startDate.toISOString();
+  const formattedEndDate = endDate.toISOString();
+
+  const query = `
+    SELECT transaction_hash
+    FROM ${datasetId}.${tableId}
+    WHERE received_at >= '${formattedStartDate}'
+    AND received_at <= '${formattedEndDate}'
+  `;
+
   const [rows] = await bigqueryClient.query(query);
 
   return rows.map((row) => row.transaction_hash);
