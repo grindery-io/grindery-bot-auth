@@ -17,6 +17,6 @@ export const SEGMENT_API_ENDPOINT = 'https://api.segment.io/v1/batch';
 
 export const nativeTokenAddresses = [
   '0x0',
-  '0x000000000000000000',
-  '0xeeeeeeeeeeeeeeeeee',
+  '0x0000000000000000000000000000000000000000',
+  '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
 ];
