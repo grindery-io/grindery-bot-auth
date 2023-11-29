@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { Database } from '../db/conn';
 import {
   REWARDS_COLLECTION,
@@ -5,6 +6,7 @@ import {
   USERS_COLLECTION,
   SWAPS_COLLECTION,
 } from '../utils/constants';
+import { GRINDERY_NEXUS_REFRESH_TOKEN } from '../../secrets';
 
 // export const dbMock = await Database.getInstance();
 // export const collectionUsersMock = dbMock.collection(USERS_COLLECTION);
@@ -101,3 +103,26 @@ export const patchwalletAuthUrl = 'https://paymagicapi.com/v1/auth';
 export const patchwalletTxUrl = 'https://paymagicapi.com/v1/kernel/tx';
 export const patchwalletTxStatusUrl =
   'https://paymagicapi.com/v1/kernel/txStatus';
+
+async function getAccessToken(): Promise<string> {
+  try {
+    const res = await axios.post(
+      'https://orchestrator.grindery.org/oauth/token',
+      {
+        grant_type: 'refresh_token',
+        refresh_token: GRINDERY_NEXUS_REFRESH_TOKEN,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    );
+    return res.data.access_token;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+export const mockedToken = getAccessToken();

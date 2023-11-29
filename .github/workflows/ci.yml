@@ -32,3 +32,4 @@ jobs:
           FLOWXO_NEW_LINK_REWARD_WEBHOOK: ${{ secrets.FLOWXO_NEW_LINK_REWARD_WEBHOOK }}
           NOT_GOOGLE_SECRET: ${{ secrets.NOT_GOOGLE_SECRET }}
           TEST_ENV: ${{ secrets.TEST_ENV }}
+          GRINDERY_NEXUS_REFRESH_TOKEN: ${{ secrets.GRINDERY_NEXUS_REFRESH_TOKEN }}

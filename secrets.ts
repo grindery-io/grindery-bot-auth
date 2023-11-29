@@ -291,3 +291,10 @@ export const TELEGRAM_API_HASH = process.env.TELEGRAM_API_HASH || '';
  * Fallback: an empty string if not defined in the environment.
  */
 export const PRODUCTION_ENV = process.env.PRODUCTION_ENV || '';
+
+/**
+ * Grindery Nexus refresh token.
+ * Fallback: an empty string if not defined in the environment.
+ */
+export const GRINDERY_NEXUS_REFRESH_TOKEN =
+  process.env.GRINDERY_NEXUS_REFRESH_TOKEN || '';

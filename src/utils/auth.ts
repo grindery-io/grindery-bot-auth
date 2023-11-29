@@ -3,10 +3,16 @@ import jwt_decode from 'jwt-decode';
 import { webcrypto } from 'crypto';
 import { getApiKey, getBotToken } from '../../secrets';
 
+/**
+ * Validates a token by making a request to an external service.
+ * @param token - The token to be validated.
+ * @param workspaceKey - Optional workspace key parameter.
+ * @returns Promise<void>
+ */
 export const checkToken = async (
-  token: any,
+  token: string,
   workspaceKey: undefined = undefined,
-) => {
+): Promise<void> => {
   try {
     await axios.post(
       'https://orchestrator.grindery.org',
@@ -33,6 +39,13 @@ export const checkToken = async (
   }
 };
 
+/**
+ * Middleware to check if authentication is required and validate the token.
+ * @param req - The request object.
+ * @param res - The response object.
+ * @param next - The next middleware function.
+ * @returns void
+ */
 export const isRequired = async (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
@@ -63,6 +76,13 @@ export const isRequired = async (req, res, next) => {
   next();
 };
 
+/**
+ * Middleware to authenticate requests using an API key.
+ * @param req - The request object.
+ * @param res - The response object.
+ * @param next - The next middleware function.
+ * @returns void
+ */
 export const authenticateApiKey = async (req, res, next) => {
   const apiKey = req.headers['authorization'];
   if (!apiKey) {
@@ -78,6 +98,13 @@ export const authenticateApiKey = async (req, res, next) => {
   next();
 };
 
+/**
+ * Middleware to validate a Telegram hash for user authentication.
+ * @param req - The request object.
+ * @param res - The response object.
+ * @param next - The next middleware function.
+ * @returns void
+ */
 export const telegramHashIsValid = async (req, res, next) => {
   const BOT_TOKEN = await getBotToken();
   if (!BOT_TOKEN) {
