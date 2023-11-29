@@ -51,17 +51,16 @@ export async function sendTokens(
 
   const isNativeToken = nativeTokenAddresses.includes(tokenAddress);
 
-  const contract = getContract(chainId, tokenAddress);
-  const decimals = await contract.methods.decimals().call();
-  const amountFormatted = scaleDecimals(amountEther, decimals);
-  console.log('amountFormatted ', amountFormatted);
   if (isNativeToken) {
     // Native token logic
     data = ['0x00'];
-    value = [amountFormatted];
+    value = [scaleDecimals(amountEther, 18)];
     address = recipientwallet;
   } else {
     // ERC20 token logic
+    const contract = getContract(chainId, tokenAddress);
+    const decimals = await contract.methods.decimals().call();
+    const amountFormatted = scaleDecimals(amountEther, decimals);
     data = [
       contract.methods['transfer'](
         recipientwallet,
