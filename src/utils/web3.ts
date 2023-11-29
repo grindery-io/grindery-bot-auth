@@ -3,22 +3,37 @@ import { CHAIN_MAPPING } from './chains';
 import ERC20 from '../routes/abi/ERC20.json';
 import Web3 from 'web3';
 import BN from 'bn.js';
+import { Contract } from 'web3-eth-contract';
+import { AbiItem } from 'web3-utils';
 
+/**
+ * Creates and returns a contract instance using Web3 with the specified chainId and tokenAddress.
+ * @param {string} chainId - Chain ID (default: 'eip155:137').
+ * @param {string} tokenAddress - Token address (default: G1_POLYGON_ADDRESS from secrets).
+ * @returns {Contract} - Web3 contract instance.
+ * @throws {Error} - Throws an error if the chainId is invalid.
+ */
 export function getContract(
-  chainId = 'eip155:137',
-  tokenAddress = G1_POLYGON_ADDRESS,
-) {
+  chainId: string = 'eip155:137',
+  tokenAddress: string = G1_POLYGON_ADDRESS,
+): Contract {
   if (!CHAIN_MAPPING[chainId]) {
     throw new Error('Invalid chain: ' + chainId);
   }
 
   return new new Web3(CHAIN_MAPPING[chainId][1]).eth.Contract(
-    ERC20 as any,
+    ERC20 as AbiItem[],
     tokenAddress,
   );
 }
 
-export function numberToString(arg: any) {
+/**
+ * Converts various types of numeric inputs to a string representation.
+ * @param {any} arg - Input value to convert to a string.
+ * @returns {string} - String representation of the input value.
+ * @throws {Error} - Throws an error for invalid number values or types.
+ */
+export function numberToString(arg: any): string {
   if (typeof arg === 'string') {
     if (!arg.match(/^-?[0-9.]+$/)) {
       throw new Error(
@@ -40,7 +55,14 @@ export function numberToString(arg: any) {
   );
 }
 
-export function scaleDecimals(etherInput: string, decimals: number) {
+/**
+ * Scales a given Ethereum value with specified decimals.
+ * @param {string} etherInput - Ethereum value input.
+ * @param {number} decimals - Number of decimals.
+ * @returns {string} - Scaled Ethereum value.
+ * @throws {Error} - Throws errors for invalid or malformed input values.
+ */
+export function scaleDecimals(etherInput: string, decimals: number): string {
   let ether = numberToString(etherInput);
   const base = new BN(10).pow(new BN(decimals));
   const baseLength = base.toString(10).length - 1;
@@ -84,13 +106,9 @@ export function scaleDecimals(etherInput: string, decimals: number) {
     fraction += '0';
   }
 
-  whole = new BN(whole);
-  fraction = new BN(fraction);
-  let wei = whole.mul(base).add(fraction);
-
-  if (negative) {
-    wei = wei.mul(new BN(-1));
-  }
-
-  return wei.toString(10);
+  return (
+    negative
+      ? new BN(whole).mul(base).add(new BN(fraction)).mul(new BN(-1))
+      : new BN(whole).mul(base).add(new BN(fraction))
+  ).toString(10);
 }
