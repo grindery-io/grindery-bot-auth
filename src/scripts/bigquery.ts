@@ -173,24 +173,27 @@ export const importUsersLast24Hours = async (): Promise<void> => {
     dateAdded: { $gte: startDate, $lte: endDate },
   });
 
+  const existingPatchwallets = await getExistingPatchwalletsLast24Hours(
+    tableId,
+    startDate,
+    endDate,
+  );
+
   let hasUsers = false;
   while (await recentUsers.hasNext()) {
     const user = await recentUsers.next();
 
     hasUsers = true;
 
-    const existingPatchwallets = await getExistingPatchwalletsLast24Hours(
-      tableId,
-      startDate,
-      endDate,
-    );
-
     const userExistsInBigQuery = existingPatchwallets.includes(
       web3.utils.toChecksumAddress(user.patchwallet),
     );
 
     if (userExistsInBigQuery) {
-      console.log('BIGQUERY - User already exists in BigQuery.');
+      console.log(
+        'BIGQUERY - User already exists in BigQuery: ',
+        user.patchwallet,
+      );
       continue;
     }
 
@@ -241,18 +244,14 @@ export const importTransfersLast24Hours = async (): Promise<void> => {
     dateAdded: { $gte: startDate, $lte: endDate },
   });
 
+  const existingTransactionHashes =
+    await getExistingTransactionHashesLast24Hours(tableId, startDate, endDate);
+
   let hasTransfers = false;
   while (await allTransfers.hasNext()) {
     const transfer = await allTransfers.next();
 
     hasTransfers = true;
-
-    const existingTransactionHashes =
-      await getExistingTransactionHashesLast24Hours(
-        tableId,
-        startDate,
-        endDate,
-      );
 
     const transferExistsInBigQuery = existingTransactionHashes.includes(
       transfer.transactionHash,
