@@ -161,30 +161,37 @@ const importTransfers = async (): Promise<void> => {
 };
 
 export const importUsersLast24Hours = async (): Promise<void> => {
-  try {
-    const tableId = 'users';
-    const db = await Database.getInstance();
-    const collection = db.collection(USERS_COLLECTION);
+  const tableId = 'users';
+  const db = await Database.getInstance();
+  const collection = db.collection(USERS_COLLECTION);
 
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setHours(startDate.getHours() - 24);
+  const endDate = new Date();
+  const startDate = new Date();
+  startDate.setHours(startDate.getHours() - 48);
 
-    const recentUsers = collection.find({
-      dateAdded: { $gte: startDate, $lte: endDate },
-    });
+  const recentUsers = collection.find({
+    dateAdded: { $gte: startDate, $lte: endDate },
+  });
+  const countRecentUsers = await recentUsers.count();
 
-    const existingPatchwallets = await getExistingPatchwalletsLast24Hours(
-      tableId,
-      startDate,
-      endDate,
-    );
+  const existingPatchwallets = await getExistingPatchwalletsLast24Hours(
+    tableId,
+    startDate,
+    endDate,
+  );
 
-    let hasUsers = false;
-    while (await recentUsers.hasNext()) {
-      const user = await recentUsers.next();
-
+  let hasUsers = false;
+  let index = 0;
+  while (await recentUsers.hasNext()) {
+    try {
+      index++;
       hasUsers = true;
+
+      console.log(
+        `BIGQUERY - Total count recent users ${countRecentUsers} current index ${index}`,
+      );
+
+      const user = await recentUsers.next();
 
       const userExistsInBigQuery = existingPatchwallets.includes(
         web3.utils.toChecksumAddress(user.patchwallet),
@@ -220,46 +227,53 @@ export const importUsersLast24Hours = async (): Promise<void> => {
         .dataset(datasetId)
         .table(tableId)
         .insert(transformedUserData);
-    }
 
-    if (!hasUsers) {
-      console.log('BIGQUERY - No users found in MongoDB in the last 24 hours.');
+      console.log(
+        `BIGQUERY - User wallet (${user.patchwallet}) added in BigQuery`,
+      );
+    } catch (error) {
+      console.log(`BIGQUERY - Error importing to BigQuery ${error}`);
     }
-
-    console.log('BIGQUERY - Import completed successfully.');
-  } catch (error) {
-    console.error('BIGQUERY - Error during import:', error);
   }
+
+  if (!hasUsers) {
+    console.log('BIGQUERY - No users found in MongoDB in the last 24 hours.');
+  }
+
+  console.log('BIGQUERY - Import completed successfully.');
 };
 
 export const importTransfersLast24Hours = async (): Promise<void> => {
-  try {
-    const tableId = 'transfer';
-    const db = await Database.getInstance();
-    const collection = db.collection(TRANSFERS_COLLECTION);
+  const tableId = 'transfer';
+  const db = await Database.getInstance();
+  const collection = db.collection(TRANSFERS_COLLECTION);
 
-    // Calculate the date 24 hours ago
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setHours(startDate.getHours() - 24);
+  // Calculate the date 24 hours ago
+  const endDate = new Date();
+  const startDate = new Date();
+  startDate.setHours(startDate.getHours() - 48);
 
-    // Find transfers in the last 24 hours using Cursor
-    const allTransfers = collection.find({
-      dateAdded: { $gte: startDate, $lte: endDate },
-    });
+  // Find transfers in the last 24 hours using Cursor
+  const allTransfers = collection.find({
+    dateAdded: { $gte: startDate, $lte: endDate },
+  });
+  const countRecentTransfers = await allTransfers.count();
 
-    const existingTransactionHashes =
-      await getExistingTransactionHashesLast24Hours(
-        tableId,
-        startDate,
-        endDate,
+  const existingTransactionHashes =
+    await getExistingTransactionHashesLast24Hours(tableId, startDate, endDate);
+
+  let hasTransfers = false;
+  let index = 0;
+  while (await allTransfers.hasNext()) {
+    try {
+      index++;
+      hasTransfers = true;
+
+      console.log(
+        `BIGQUERY - Total count recent transfers ${countRecentTransfers} current index ${index}`,
       );
 
-    let hasTransfers = false;
-    while (await allTransfers.hasNext()) {
       const transfer = await allTransfers.next();
-
-      hasTransfers = true;
 
       const transferExistsInBigQuery = existingTransactionHashes.includes(
         transfer.transactionHash,
@@ -303,18 +317,22 @@ export const importTransfersLast24Hours = async (): Promise<void> => {
         .dataset(datasetId)
         .table(tableId)
         .insert(bigQueryData);
-    }
 
-    if (!hasTransfers) {
       console.log(
-        'BIGQUERY - No transfers found in the last 24 hours in MongoDB.',
+        `BIGQUERY - transfer hash (${transfer.transactionHash}) added in BigQuery`,
       );
+    } catch (error) {
+      console.error('BIGQUERY - Error during import:', error);
     }
-
-    console.log('BIGQUERY - Import completed successfully.');
-  } catch (error) {
-    console.error('BIGQUERY - Error during import:', error);
   }
+
+  if (!hasTransfers) {
+    console.log(
+      'BIGQUERY - No transfers found in the last 24 hours in MongoDB.',
+    );
+  }
+
+  console.log('BIGQUERY - Import completed successfully.');
 };
 
 async function getExistingPatchwallets(tableId) {
