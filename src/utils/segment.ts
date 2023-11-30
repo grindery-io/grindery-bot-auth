@@ -2,11 +2,18 @@ import axios from 'axios';
 import { G1_POLYGON_ADDRESS, SEGMENT_KEY } from '../../secrets';
 
 /**
- * Sends user identity information to Segment.
- * @param {any} user - User identity information.
- * @returns {Promise} Returns a Promise representing the result of the HTTP POST request.
+ * Adds an identity segment using the provided user data.
+ * @param user The user data to identify and add to the segment.
+ * @returns A Promise resolving to an AxiosResponse.
  */
-export async function addIdentitySegment(user: any): Promise<any> {
+export async function addIdentitySegment(user: {
+  userTelegramID: string;
+  responsePath: string;
+  userHandle: string;
+  userName: string;
+  patchwallet: string;
+  dateAdded: Date;
+}): Promise<axios.AxiosResponse<any, any>> {
   return await axios.post(
     'https://api.segment.io/v1/identify',
     {
@@ -29,11 +36,23 @@ export async function addIdentitySegment(user: any): Promise<any> {
 }
 
 /**
- * Sends a track event to Segment.
- * @param {any} params - Track event parameters.
- * @returns {Promise} Returns a Promise representing the result of the HTTP POST request.
+ * Adds a track segment for a transfer event using the provided parameters.
+ * @param params The parameters for the transfer event to track.
+ * @returns A Promise resolving to an AxiosResponse.
  */
-export async function addTrackSegment(params: any): Promise<any> {
+export async function addTrackSegment(params: {
+  userTelegramID: string;
+  senderTgId: string;
+  senderWallet: string;
+  senderName: string;
+  senderHandle: string;
+  recipientTgId: string;
+  recipientWallet: string;
+  tokenAmount: string;
+  transactionHash: string;
+  dateAdded: Date;
+  eventId: string;
+}): Promise<axios.AxiosResponse<any, any>> {
   return await axios.post(
     'https://api.segment.io/v1/track',
     {
@@ -65,11 +84,32 @@ export async function addTrackSegment(params: any): Promise<any> {
 }
 
 /**
- * Sends a track event to Segment.
- * @param {any} params - Track event parameters.
- * @returns {Promise} Returns a Promise representing the result of the HTTP POST request.
+ * Adds a track segment for a swap event using the provided parameters.
+ * @param params The parameters for the swap event to track.
+ * @returns A Promise resolving to an AxiosResponse.
  */
-export async function addTrackSwapSegment(params: any): Promise<any> {
+export async function addTrackSwapSegment(params: {
+  eventId: string;
+  chainId: string;
+  userTelegramID: string;
+  userWallet?: string;
+  userName?: string;
+  userHandle?: string;
+  tokenIn: string;
+  amountIn: string;
+  tokenOut: string;
+  amountOut: string;
+  priceImpact: string;
+  gas: string;
+  status: string;
+  TxId: string;
+  transactionHash: string;
+  dateAdded: Date;
+  to: string;
+  from: string;
+  tokenInSymbol: string;
+  tokenOutSymbol: string;
+}): Promise<axios.AxiosResponse<any, any>> {
   return await axios.post(
     'https://api.segment.io/v1/track',
     {

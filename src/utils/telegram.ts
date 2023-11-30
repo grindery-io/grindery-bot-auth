@@ -2,11 +2,12 @@ import { Api } from 'telegram';
 import { StringSession } from 'telegram/sessions/index';
 import TGClient from './telegramClient';
 import { decrypt } from './crypt';
+import { WithId, Document } from 'mongodb';
 
 /**
- * @summary Gets user object from authorization header
- * @param {object} req - request object
- * @returns {object} User object
+ * Extracts user information from the request headers.
+ * @param req The request object containing headers, particularly the 'authorization' header with user data.
+ * @returns The user information parsed from the request headers.
  */
 export const getUser = (req: { headers: { [x: string]: any } }): any => {
   const authorization = req.headers['authorization'];
@@ -17,17 +18,22 @@ export const getUser = (req: { headers: { [x: string]: any } }): any => {
 };
 
 /**
- * @summary Sends Telegram message on behalf of the user
- * @param {string} message - message to be sent
- * @param {string} recipientId  - recipient telegram user id
- * @param {any} senderUser - sender user object
- * @returns {Promise<any> } Promise object with a boolean `success` property, and a result `message` string
+ * Sends a message via Telegram to a recipient.
+ * @param message The content of the message to be sent.
+ * @param recipientId The Telegram ID of the message recipient.
+ * @param senderUser The sender's user information containing userHandle and telegramSession.
+ * @returns A Promise that resolves to an object indicating the success status and a descriptive message.
+ *          - success: A boolean indicating if the message was sent successfully.
+ *          - message: A string providing details about the status of the message sending process.
  */
 export const sendTelegramMessage = async (
   message: string,
   recipientId: string,
-  senderUser: any,
-): Promise<any> => {
+  senderUser: WithId<Document>,
+): Promise<{
+  success: boolean;
+  message: string;
+}> => {
   try {
     if (!message) throw new Error('Message is required');
     if (!recipientId) throw new Error('Recipient ID is required');

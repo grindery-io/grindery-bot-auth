@@ -15,6 +15,7 @@ import {
   PUBSUB_SUBSCRIPTION_NAME,
   PUBSUB_TOPIC_NAME,
 } from '../../secrets';
+import { google } from '@google-cloud/monitoring/build/protos/protos';
 
 /**
  * This is a generic and extendable implementation of a webhook endpoint and pub/sub messages queue.
@@ -57,9 +58,9 @@ router.get('/unacked-messages', authenticateApiKey, async (_req, res) => {
 
     // Iterate through the timeSeries to calculate the sum
     timeSeries?.forEach((series) => {
-      (series as any)?.forEach((serie) => {
+      (series as google.monitoring.v3.ITimeSeries[])?.forEach((serie) => {
         serie?.points?.forEach((point) => {
-          sum += parseFloat(point.value.int64Value);
+          sum += parseFloat(point.value.int64Value as string);
           count++;
         });
       });

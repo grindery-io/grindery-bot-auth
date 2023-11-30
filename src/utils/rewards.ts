@@ -21,6 +21,7 @@ import {
   SOURCE_TG_ID,
 } from '../../secrets';
 import { isSuccessfulTransaction } from './webhooks/utils';
+import { Db, Document, FindCursor, WithId } from 'mongodb';
 
 /**
  * Asynchronously creates a sign-up reward for Telegram users.
@@ -81,11 +82,11 @@ export class SignUpRewardTelegram {
   message: string = 'Sign up reward';
 
   isInDatabase: boolean = false;
-  tx?: any;
-  status?: any;
-  txHash?: any;
-  userOpHash?: any;
-  db?: any;
+  tx?: WithId<Document>;
+  status?: string;
+  txHash?: string;
+  userOpHash?: string;
+  db?: Db;
 
   /**
    * Constructor for SignUpRewardTelegram class.
@@ -154,7 +155,7 @@ export class SignUpRewardTelegram {
    * Retrieves the status of the PatchWallet transaction.
    * @returns {Promise<boolean>} - True if the transaction status is retrieved successfully, false otherwise.
    */
-  async getRewardFromDatabase(): Promise<boolean> {
+  async getRewardFromDatabase(): Promise<WithId<Document>> {
     return await this.db.collection(REWARDS_COLLECTION).findOne({
       userTelegramID: this.userTelegramID,
       eventId: this.eventId,
@@ -369,14 +370,14 @@ export class ReferralRewardTelegram {
   amount: string = '50';
   message: string = 'Referral reward';
 
-  parentTx?: any;
-  referent?: any;
-  tx?: any;
-  status?: any;
-  txHash?: any;
-  userOpHash?: any;
-  db?: any;
-  transfers?: any;
+  parentTx?: WithId<Document>;
+  referent?: WithId<Document>;
+  tx?: WithId<Document>;
+  status?: string;
+  txHash?: string;
+  userOpHash?: string;
+  db?: Db;
+  transfers?: FindCursor<WithId<Document>>;
 
   /**
    * Constructs a ReferralRewardTelegram object.
@@ -433,9 +434,9 @@ export class ReferralRewardTelegram {
 
   /**
    * Retrieves transfers from the database based on certain conditions.
-   * @returns {Promise<object>} - The retrieved transfers.
+   * @returns {Promise<FindCursor<WithId<Document>>>} - The retrieved transfers.
    */
-  async getTransfersFromDatabase(): Promise<object> {
+  async getTransfersFromDatabase(): Promise<FindCursor<WithId<Document>>> {
     return this.db.collection(TRANSFERS_COLLECTION).find({
       senderTgId: { $ne: this.userTelegramID },
       recipientTgId: this.userTelegramID,
@@ -706,12 +707,12 @@ export class LinkRewardTelegram {
   message: string = 'Referral link';
 
   isInDatabase: boolean = false;
-  tx?: any;
-  status?: any;
-  txHash?: any;
-  userOpHash?: any;
-  referent?: any;
-  db?: any;
+  tx?: WithId<Document>;
+  status?: string;
+  txHash?: string;
+  userOpHash?: string;
+  referent?: WithId<Document>;
+  db?: Db;
 
   /**
    * Constructor for LinkRewardTelegram class.
@@ -796,9 +797,9 @@ export class LinkRewardTelegram {
 
   /**
    * Retrieves the reward information from the database.
-   * @returns {Promise<object|null>} - The reward information or null if not found.
+   * @returns {Promise<WithId<Document>>} - The reward information or null if not found.
    */
-  async getRewardFromDatabase(): Promise<object | null> {
+  async getRewardFromDatabase(): Promise<WithId<Document>> {
     return await this.db.collection(REWARDS_COLLECTION).findOne({
       eventId: this.eventId,
       userTelegramID: this.referentUserTelegramID,
@@ -1012,11 +1013,11 @@ export class IsolatedRewardTelegram {
   amount: string;
   message: string;
   isInDatabase: boolean = false;
-  tx?: any;
-  status?: any;
-  txHash?: any;
-  db?: any;
-  userOpHash?: any;
+  tx?: WithId<Document>;
+  status?: string;
+  txHash?: string;
+  db?: Db;
+  userOpHash?: string;
   tokenAddress: string;
   chainName: string;
 
@@ -1096,9 +1097,9 @@ export class IsolatedRewardTelegram {
 
   /**
    * Retrieves the status of the PatchWallet transaction.
-   * @returns {Promise<boolean>} - True if the transaction status is retrieved successfully, false otherwise.
+   * @returns {Promise<WithId<Document>>} - True if the transaction status is retrieved successfully, false otherwise.
    */
-  async getRewardFromDatabase(): Promise<boolean> {
+  async getRewardFromDatabase(): Promise<WithId<Document>> {
     return await this.db.collection(REWARDS_COLLECTION).findOne({
       userTelegramID: this.userTelegramID,
       eventId: this.eventId,

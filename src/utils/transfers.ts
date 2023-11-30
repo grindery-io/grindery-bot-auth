@@ -17,13 +17,22 @@ import {
   FLOWXO_NEW_TRANSACTION_WEBHOOK,
   G1_POLYGON_ADDRESS,
 } from '../../secrets';
+import { Db, Document, WithId } from 'mongodb';
 
+/**
+ * Retrieves incoming transactions for a user from the database.
+ * @param db The MongoDB database instance.
+ * @param userId The user's Telegram ID.
+ * @param start The starting index for pagination.
+ * @param limit The limit of transactions to fetch.
+ * @returns A Promise resolving to an array of transactions.
+ */
 export async function getIncomingTxsUser(
-  db: any,
+  db: Db,
   userId: string,
   start: number,
   limit: number,
-): Promise<any> {
+) {
   return await Promise.all(
     (
       await db
@@ -46,12 +55,20 @@ export async function getIncomingTxsUser(
   );
 }
 
+/**
+ * Retrieves outgoing transactions for a user from the database.
+ * @param db The MongoDB database instance.
+ * @param userId The user's Telegram ID.
+ * @param start The starting index for pagination.
+ * @param limit The limit of transactions to fetch.
+ * @returns A Promise resolving to an array of transactions.
+ */
 export async function getOutgoingTxsUser(
-  db: any,
+  db: Db,
   userId: string,
   start: number,
   limit: number,
-): Promise<any> {
+) {
   return await Promise.all(
     (
       await db
@@ -74,12 +91,20 @@ export async function getOutgoingTxsUser(
   );
 }
 
+/**
+ * Retrieves outgoing transactions to new users from the database.
+ * @param db The MongoDB database instance.
+ * @param userId The user's Telegram ID.
+ * @param start The starting index for pagination.
+ * @param limit The limit of transactions to fetch.
+ * @returns A Promise resolving to an array of transactions.
+ */
 export async function getOutgoingTxsToNewUsers(
-  db: any,
+  db: Db,
   userId: string,
   start: number,
   limit: number,
-): Promise<any> {
+) {
   return await Promise.all(
     (
       await db
@@ -133,12 +158,20 @@ export async function getOutgoingTxsToNewUsers(
   );
 }
 
+/**
+ * Retrieves reward transactions for a user from the database.
+ * @param db The MongoDB database instance.
+ * @param userId The user's Telegram ID.
+ * @param start The starting index for pagination.
+ * @param limit The limit of transactions to fetch.
+ * @returns An array of reward transactions.
+ */
 export async function getRewardTxsUser(
-  db: any,
+  db: Db,
   userId: string,
   start: number,
   limit: number,
-): Promise<any> {
+) {
   return (
     await db
       .collection(REWARDS_COLLECTION)
@@ -153,12 +186,20 @@ export async function getRewardTxsUser(
   }));
 }
 
+/**
+ * Retrieves referral link reward transactions for a user from the database.
+ * @param db The MongoDB database instance.
+ * @param userId The user's Telegram ID.
+ * @param start The starting index for pagination.
+ * @param limit The limit of transactions to fetch.
+ * @returns A Promise resolving to an array of transactions.
+ */
 export async function getRewardLinkTxsUser(
-  db: any,
+  db: Db,
   userId: string,
   start: number,
   limit: number,
-): Promise<any> {
+) {
   return await Promise.all(
     (
       await db
@@ -181,7 +222,12 @@ export async function getRewardLinkTxsUser(
   );
 }
 
-function formatDate(date: any): string {
+/**
+ * Formats a Date object to a specific string format.
+ * @param date The Date object to format.
+ * @returns A string representing the formatted date.
+ */
+function formatDate(date: Date): string {
   return new Date(date).toLocaleDateString('en-US', {
     day: '2-digit',
     month: 'short',
@@ -191,19 +237,19 @@ function formatDate(date: any): string {
 /**
  * Creates a new transfer object and initializes it with the provided parameters.
  * @param {string} eventId - The event ID.
- * @param {object} senderInformation - Information about the sender.
+ * @param {WithId<Document>} senderInformation - Information about the sender.
  * @param {string} recipientTgId - The recipient's Telegram ID.
- * @param {number} amount - The transaction amount.
+ * @param {string} amount - The transaction amount.
  * @returns {Promise<TransferTelegram|boolean>} - The initialized transfer object if successful, false otherwise.
  */
 export async function createTransferTelegram(
   eventId: string,
-  senderInformation: object,
+  senderInformation: WithId<Document>,
   recipientTgId: string,
-  amount: number,
-  chainId,
-  tokenAddress,
-  chainName,
+  amount: string,
+  chainId: string,
+  tokenAddress: string,
+  chainName: string,
 ): Promise<TransferTelegram | boolean> {
   const transfer = new TransferTelegram(
     eventId,
@@ -222,28 +268,28 @@ export async function createTransferTelegram(
  */
 export class TransferTelegram {
   eventId: string;
-  senderInformation: any; // Change 'any' to the specific type as needed
+  senderInformation: WithId<Document>;
   recipientTgId: string;
   amount: string;
   isInDatabase: boolean = false;
-  tx?: any;
-  status?: any;
-  recipientWallet?: any;
-  txHash?: any;
-  userOpHash?: any;
-  db?: any;
+  tx?: WithId<Document>;
+  status?: string;
+  recipientWallet?: string;
+  txHash?: string;
+  userOpHash?: string;
+  db?: Db;
   chainId: string;
   tokenAddress: string;
   chainName: string;
 
   constructor(
-    eventId,
-    senderInformation,
-    recipientTgId,
-    amount,
-    chainId,
-    tokenAddress,
-    chainName,
+    eventId: string,
+    senderInformation: WithId<Document>,
+    recipientTgId: string,
+    amount: string,
+    chainId: string,
+    tokenAddress: string,
+    chainName: string,
   ) {
     this.eventId = eventId;
     this.senderInformation = senderInformation;
@@ -289,9 +335,9 @@ export class TransferTelegram {
 
   /**
    * Retrieves the transfer information from the database.
-   * @returns {Promise<object|null>} - The transfer information or null if not found.
+   * @returns {Promise<WithId<Document>>} - The transfer information or null if not found.
    */
-  async getTransferFromDatabase(): Promise<object | null> {
+  async getTransferFromDatabase(): Promise<WithId<Document>> {
     return await this.db
       .collection(TRANSFERS_COLLECTION)
       .findOne({ eventId: this.eventId });

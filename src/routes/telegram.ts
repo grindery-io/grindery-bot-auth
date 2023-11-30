@@ -5,6 +5,7 @@ import createTelegramPromise from '../utils/telegramPromise';
 import { v4 as uuidv4 } from 'uuid';
 import TGClient from '../utils/telegramClient';
 import { isRequired } from '../utils/auth';
+import bigInt from 'big-integer';
 
 const router = express.Router();
 const operations = {};
@@ -150,7 +151,7 @@ router.get('/contacts', isRequired, async (req, res) => {
 
   const contacts = await client.invoke(
     new Api.contacts.GetContacts({
-      hash: BigInt('-4156887774564') as any,
+      hash: bigInt('-4156887774564'),
     }),
   );
 

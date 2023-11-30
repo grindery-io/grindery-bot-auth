@@ -4,12 +4,30 @@ import { referral_utils } from './referral-reward';
 import { link_reward_utils } from './link-reward';
 
 /**
- * Handles the processing of a new reward for a user.
- *
- * @param {any} params - The parameters containing user and event details.
- * @returns {Promise<boolean>} - Returns true if the operation was successful, false otherwise.
+ * Handles the processing of a new reward based on the provided parameters.
+ * @param params An object containing parameters necessary for handling the reward.
+ * @param params.eventId The ID associated with the event triggering the reward.
+ * @param params.userTelegramID The Telegram ID of the user receiving the reward.
+ * @param params.responsePath The response path associated with the user.
+ * @param params.userHandle The handle of the user receiving the reward.
+ * @param params.userName The name of the user receiving the reward.
+ * @param params.referentUserTelegramID Optional: The Telegram ID of the user who referred the current user.
+ * @param params.tokenAddress Optional: The token address related to the reward.
+ * @param params.chainName Optional: The chain name associated with the reward.
+ * @param params.patchwallet Optional: The patch wallet address of the user.
+ * @returns A Promise that resolves to a boolean indicating the success status of the reward handling process.
  */
-export async function handleNewReward(params: any): Promise<boolean> {
+export async function handleNewReward(params: {
+  eventId: string;
+  userTelegramID: string;
+  responsePath: string;
+  userHandle: string;
+  userName: string;
+  referentUserTelegramID?: string;
+  tokenAddress?: string;
+  chainName?: string;
+  patchwallet?: string;
+}): Promise<boolean> {
   const user = await createUserTelegram(
     params.userTelegramID,
     params.responsePath,

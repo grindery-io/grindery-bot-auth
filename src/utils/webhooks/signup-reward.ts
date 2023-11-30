@@ -3,18 +3,28 @@ import { SignUpRewardTelegram, createSignUpRewardTelegram } from '../rewards';
 import { isPendingTransactionHash } from './utils';
 
 /**
- * Handles the signup reward for a user.
- *
- * @param {Object} db - The database object.
- * @param {string} eventId - The event ID.
- * @param {string} userTelegramID - The user's Telegram ID.
- * @param {string} responsePath - The response path.
- * @param {string} userHandle - The user's handle.
- * @param {string} userName - The user's name.
- * @param {string} rewardWallet - The wallet for the reward.
- * @returns {Promise<boolean>} - Returns true if the operation was successful, false otherwise.
+ * Handles the sign-up reward process based on provided parameters.
+ * @param params An object containing necessary parameters for handling the sign-up reward.
+ * @param params.eventId The ID of the event.
+ * @param params.userTelegramID The Telegram ID of the user.
+ * @param params.responsePath The response path.
+ * @param params.userHandle The user's handle.
+ * @param params.userName The user's name.
+ * @param params.patchwallet The user's patch wallet.
+ * @param params.tokenAddress Optional: The token address.
+ * @param params.chainName Optional: The chain name.
+ * @returns A Promise that resolves to a boolean indicating the success status of the process.
  */
-export async function handleSignUpReward(params: any): Promise<boolean> {
+export async function handleSignUpReward(params: {
+  eventId: string;
+  userTelegramID: string;
+  responsePath: string;
+  userHandle: string;
+  userName: string;
+  patchwallet: string;
+  tokenAddress?: string;
+  chainName?: string;
+}): Promise<boolean> {
   try {
     // Create a sign-up reward object
     let reward = await createSignUpRewardTelegram(

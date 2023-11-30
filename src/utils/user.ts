@@ -1,3 +1,4 @@
+import { Db, Document, WithId } from 'mongodb';
 import { Database } from '../db/conn';
 import { REWARDS_COLLECTION, USERS_COLLECTION } from './constants';
 import { getPatchWalletAddressFromTgId } from './patchwallet';
@@ -28,13 +29,18 @@ export async function createUserTelegram(
 export class UserTelegram {
   telegramID: string;
   responsePath: string;
-  patchwallet?: any;
+  patchwallet?: string;
   userHandle: string;
   userName: string;
   isInDatabase: boolean = false;
-  db?: any;
+  db?: Db;
 
-  constructor(telegramID, responsePath, userHandle, userName) {
+  constructor(
+    telegramID: string,
+    responsePath: string,
+    userHandle: string,
+    userName: string,
+  ) {
     this.telegramID = telegramID;
     this.responsePath = responsePath;
     this.patchwallet = undefined;
@@ -46,13 +52,13 @@ export class UserTelegram {
   /**
    * Initializes the UserTelegram's database connection and retrieves user data if available.
    */
-  async initializeUserDatabase(): Promise<any> {
+  async initializeUserDatabase(): Promise<void> {
     this.db = await Database.getInstance();
     const userDB = await this.getUserFromDatabase();
 
     if (userDB) {
       this.isInDatabase = true;
-      this.patchwallet = (userDB as any).patchwallet;
+      this.patchwallet = userDB.patchwallet;
     } else {
       try {
         this.patchwallet = await getPatchWalletAddressFromTgId(this.telegramID);
@@ -64,9 +70,9 @@ export class UserTelegram {
 
   /**
    * Retrieves user data from the database.
-   * @returns {Promise<Object>} - The user data from the database.
+   * @returns {Promise<WithId<Document>>} - The user data from the database.
    */
-  async getUserFromDatabase(): Promise<object> {
+  async getUserFromDatabase(): Promise<WithId<Document>> {
     return await this.db
       .collection(USERS_COLLECTION)
       .findOne({ userTelegramID: this.telegramID });
@@ -143,7 +149,7 @@ export class UserTelegram {
    * Retrieves the sign-up rewards for the user.
    * @returns {Promise<Array>} - An array of sign-up rewards.
    */
-  async getSignUpReward(): Promise<Array<any>> {
+  async getSignUpReward(): Promise<WithId<Document>[]> {
     return await this.db
       .collection(REWARDS_COLLECTION)
       .find({ userTelegramID: this.telegramID, reason: 'user_sign_up' })
@@ -162,7 +168,7 @@ export class UserTelegram {
    * Retrieves referral rewards for the user.
    * @returns {Promise<Array>} - An array of referral rewards.
    */
-  async getReferralRewards(): Promise<Array<any>> {
+  async getReferralRewards(): Promise<WithId<Document>[]> {
     return await this.db
       .collection(REWARDS_COLLECTION)
       .find({ userTelegramID: this.telegramID, reason: '2x_reward' })
@@ -181,7 +187,7 @@ export class UserTelegram {
    * Retrieves link rewards for the user.
    * @returns {Promise<Array>} - An array of link rewards.
    */
-  async getLinkRewards(): Promise<Array<any>> {
+  async getLinkRewards(): Promise<WithId<Document>[]> {
     return await this.db
       .collection(REWARDS_COLLECTION)
       .find({ userTelegramID: this.telegramID, reason: 'referral_link' })

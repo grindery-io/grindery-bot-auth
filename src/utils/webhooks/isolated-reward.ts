@@ -21,7 +21,19 @@ import { isPendingTransactionHash } from './utils';
  * @param {string} params.chainName - The name of the blockchain network.
  * @returns {boolean} - Returns true if successful, otherwise false.
  */
-export async function handleIsolatedReward(params: any): Promise<boolean> {
+export async function handleIsolatedReward(params: {
+  eventId: string;
+  userTelegramID: string;
+  responsePath: string;
+  userHandle: string;
+  userName: string;
+  patchwallet?: string;
+  reason: string;
+  message: string;
+  amount: string;
+  tokenAddress?: string;
+  chainName?: string;
+}): Promise<boolean> {
   try {
     if (
       !params.userTelegramID ||

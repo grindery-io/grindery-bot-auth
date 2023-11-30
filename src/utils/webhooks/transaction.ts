@@ -10,16 +10,27 @@ import {
 
 /**
  * Handles a new transaction based on the provided parameters.
- *
- * @param {object} params - The transaction parameters.
- * @param {string} params.eventId - The event ID.
- * @param {string} params.senderTgId - The sender's Telegram ID.
- * @param {string} params.recipientTgId - The recipient's Telegram ID.
- * @param {number} params.amount - The transaction amount.
- * @param {string} params.message - The optional message to send via Telegram.
- * @returns {Promise<boolean>} - True if the transaction is successfully handled, false otherwise.
+ * @param params An object containing parameters necessary for handling the transaction.
+ * @param params.senderTgId The Telegram ID of the sender initiating the transaction.
+ * @param params.amount The amount related to the transaction.
+ * @param params.recipientTgId The Telegram ID of the recipient.
+ * @param params.eventId The ID of the event related to the transaction.
+ * @param params.chainId Optional: The chain ID.
+ * @param params.tokenAddress Optional: The token address related to the transaction.
+ * @param params.chainName Optional: The chain name.
+ * @param params.message Optional: A message associated with the transaction.
+ * @returns A Promise that resolves to a boolean indicating the success status of the transaction handling process.
  */
-export async function handleNewTransaction(params: any): Promise<boolean> {
+export async function handleNewTransaction(params: {
+  senderTgId: string;
+  amount: string;
+  recipientTgId: string;
+  eventId: string;
+  chainId?: string;
+  tokenAddress?: string;
+  chainName?: string;
+  message?: string;
+}): Promise<boolean> {
   // Establish a connection to the database
   const db = await Database.getInstance();
 

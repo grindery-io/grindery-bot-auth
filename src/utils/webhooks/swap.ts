@@ -14,7 +14,49 @@ import axios from 'axios';
 import { addTrackSwapSegment } from '../segment';
 import { FLOWXO_NEW_SWAP_WEBHOOK } from '../../../secrets';
 
-export async function handleSwap(params: any): Promise<boolean> {
+/**
+ * Handles the swap event based on the provided parameters.
+ * @param params An object containing parameters necessary for handling the swap.
+ * @param params.value The value related to the swap.
+ * @param params.eventId The ID of the event.
+ * @param params.userTelegramID The Telegram ID of the user initiating the swap.
+ * @param params.to Optional: The recipient of the swap.
+ * @param params.data Optional: Additional data related to the swap.
+ * @param params.tokenIn The token used for input in the swap.
+ * @param params.amountIn The amount of input token.
+ * @param params.tokenOut The token used for output in the swap.
+ * @param params.amountOut The amount of output token.
+ * @param params.priceImpact The price impact of the swap.
+ * @param params.gas The gas used for the swap.
+ * @param params.from The source of the swap.
+ * @param params.tokenInSymbol The symbol of the input token.
+ * @param params.tokenOutSymbol The symbol of the output token.
+ * @param params.chainId Optional: The chain ID.
+ * @param params.chainName Optional: The chain name.
+ * @param params.amount Optional: Additional amount for the swap.
+ * @param params.senderTgId Optional: The Telegram ID of the sender.
+ * @returns A Promise that resolves to a boolean indicating the success status of the swap process.
+ */
+export async function handleSwap(params: {
+  value: string;
+  eventId: string;
+  userTelegramID: string;
+  to?: string;
+  data?: string;
+  tokenIn: string;
+  amountIn: string;
+  tokenOut: string;
+  amountOut: string;
+  priceImpact: string;
+  gas: string;
+  from: string;
+  tokenInSymbol: string;
+  tokenOutSymbol: string;
+  chainId?: string;
+  chainName?: string;
+  amount?: string;
+  senderTgId?: string;
+}): Promise<boolean> {
   const db = await Database.getInstance();
 
   const userInformation = await db

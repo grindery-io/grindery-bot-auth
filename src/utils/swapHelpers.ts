@@ -1,12 +1,49 @@
+import { Db, Document, Filter, InsertOneResult, WithId } from 'mongodb';
 import { Database } from '../db/conn';
 import { SWAPS_COLLECTION } from './constants';
 
-async function findSwapDB(query: any): Promise<any> {
+/**
+ * Finds and retrieves a swap document from the database based on the provided query.
+ * @param query The query filter used to find the swap document in the database.
+ * @returns A promise that resolves with the found swap document.
+ */
+async function findSwapDB(query: Filter<Document>): Promise<WithId<Document>> {
   const db = await Database.getInstance();
   return await db.collection(SWAPS_COLLECTION).findOne(query);
 }
 
-async function insertSwapDB(db: any, params: any): Promise<any> {
+/**
+ * Inserts a swap document into the database using the provided parameters.
+ * @param db The database instance.
+ * @param params Parameters used to create the swap document.
+ * @returns A promise that resolves with the result of the insert operation.
+ */
+async function insertSwapDB(
+  db: Db,
+  params: {
+    txId: string;
+    eventId: string;
+    chainId: string;
+    to: string;
+    from: string;
+    userTelegramID: string;
+    userWallet: string;
+    userName: string;
+    userHandle: string;
+    tokenInSymbol: string;
+    tokenIn: string;
+    amountIn: string;
+    tokenOutSymbol: string;
+    tokenOut: string;
+    amountOut: string;
+    priceImpact: string;
+    gas: string;
+    status: string;
+    transactionHash: string;
+    userOpHash: string;
+    dateAdded: string;
+  },
+): Promise<InsertOneResult<Document>> {
   const set = {} as any;
 
   if (params.txId) set.txId = params.txId;

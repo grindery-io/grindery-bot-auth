@@ -70,7 +70,7 @@ app.use(function (req, res, next) {
     'Access-Control-Allow-Headers',
     'X-CSRFToken, Origin, X-Requested-With, Content-Type, Accept, Authorization',
   );
-  res.header('Access-Control-Allow-Credentials', true as any);
+  res.header('Access-Control-Allow-Credentials', 'true');
   res.header(
     'Access-Control-Allow-Methods',
     'HEAD,OPTIONS,GET,POST,PUT,PATCH,DELETE',
