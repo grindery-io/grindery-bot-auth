@@ -3,6 +3,7 @@ import { TRANSACTION_STATUS } from '../utils/constants';
 import {
   isFailedTransaction,
   isPendingTransactionHash,
+  isPositiveFloat,
   isSuccessfulTransaction,
 } from '../utils/webhooks/utils';
 
@@ -64,6 +65,41 @@ describe('Transaction Status Functions', async function () {
       chai
         .expect(isPendingTransactionHash(TRANSACTION_STATUS.FAILURE))
         .to.equal(false);
+    });
+  });
+
+  describe('isPositiveFloat', async function () {
+    it('Should identify a positive float number', async function () {
+      chai.expect(isPositiveFloat('3.14')).to.equal(true);
+    });
+
+    it('Should identify zero as a positive float number', async function () {
+      chai.expect(isPositiveFloat('0')).to.equal(true);
+    });
+
+    it('Should identify a positive integer as a positive float number', async function () {
+      chai.expect(isPositiveFloat('42')).to.equal(true);
+      chai.expect(isPositiveFloat('1000000000000000')).to.equal(true);
+    });
+
+    it('Should identify a negative float number as not positive', async function () {
+      chai.expect(isPositiveFloat('-3.14')).to.equal(false);
+    });
+
+    it('Should identify a non-numeric string as not positive', async function () {
+      chai.expect(isPositiveFloat('abc')).to.equal(false);
+    });
+
+    it('Should identify an empty string as not positive', async function () {
+      chai.expect(isPositiveFloat('')).to.equal(false);
+    });
+
+    it('Should identify a string with only spaces as not positive', async function () {
+      chai.expect(isPositiveFloat('   ')).to.equal(false);
+    });
+
+    it('Should identify scientific notation as not positive', async function () {
+      chai.expect(isPositiveFloat('2.5e3')).to.equal(false);
     });
   });
 });
