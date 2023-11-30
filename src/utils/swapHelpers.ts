@@ -20,29 +20,7 @@ async function findSwapDB(query: Filter<Document>): Promise<WithId<Document>> {
  */
 async function insertSwapDB(
   db: Db,
-  params: {
-    txId: string;
-    eventId: string;
-    chainId: string;
-    to: string;
-    from: string;
-    userTelegramID: string;
-    userWallet: string;
-    userName: string;
-    userHandle: string;
-    tokenInSymbol: string;
-    tokenIn: string;
-    amountIn: string;
-    tokenOutSymbol: string;
-    tokenOut: string;
-    amountOut: string;
-    priceImpact: string;
-    gas: string;
-    status: string;
-    transactionHash: string;
-    userOpHash: string;
-    dateAdded: string;
-  },
+  params: any,
 ): Promise<InsertOneResult<Document>> {
   const set = {} as any;
 
