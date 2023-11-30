@@ -296,6 +296,104 @@ describe('handleNewTransaction function', async function () {
     });
   });
 
+  describe('Normal process to handle a transaction with a float number', async function () {
+    beforeEach(async function () {
+      await collectionUsersMock.insertOne({
+        userTelegramID: mockUserTelegramID,
+        userName: mockUserName,
+        userHandle: mockUserHandle,
+        patchwallet: mockWallet,
+        responsePath: mockResponsePath,
+      });
+    });
+
+    it('Should populate transfers database', async function () {
+      await handleNewTransaction({
+        senderTgId: mockUserTelegramID,
+        amount: '10.002',
+        recipientTgId: mockUserTelegramID1,
+        eventId: txId,
+        chainId: mockChainId,
+        tokenAddress: mockTokenAddress,
+        chainName: mockChainName,
+      });
+
+      const transfers = await collectionTransfersMock.find({}).toArray();
+
+      chai
+        .expect(transfers)
+        .excluding(['dateAdded', '_id'])
+        .to.deep.equal([
+          {
+            eventId: txId,
+            chainId: mockChainId,
+            tokenSymbol: 'g1',
+            tokenAddress: mockTokenAddress,
+            senderTgId: mockUserTelegramID,
+            senderWallet: mockWallet,
+            senderName: mockUserName,
+            senderHandle: mockUserHandle,
+            recipientTgId: mockUserTelegramID1,
+            recipientWallet: mockWallet,
+            tokenAmount: '10.002',
+            transactionHash: mockTransactionHash,
+            status: TRANSACTION_STATUS.SUCCESS,
+            userOpHash: null,
+          },
+        ]);
+      chai.expect(transfers[0].dateAdded).to.be.a('date');
+    });
+
+    it('Should call the sendTokens function properly for ERC20 token transfer', async function () {
+      await handleNewTransaction({
+        senderTgId: mockUserTelegramID,
+        amount: '10.9',
+        recipientTgId: mockUserTelegramID1,
+        eventId: txId,
+      });
+
+      chai
+        .expect(
+          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl)
+            .args[1],
+        )
+        .to.deep.equal({
+          userId: `grindery:${mockUserTelegramID}`,
+          chain: 'matic',
+          to: [G1_POLYGON_ADDRESS],
+          value: ['0x00'],
+          data: [
+            '0xa9059cbb00000000000000000000000095222290dd7278aa3ddd389cc1e1d165cc4bafe50000000000000000000000000000000000000000000000000000000000000064',
+          ],
+          auth: '',
+        });
+    });
+
+    it('Should call the sendTokens function properly for Native token transfer', async function () {
+      await handleNewTransaction({
+        senderTgId: mockUserTelegramID,
+        amount: '10.3',
+        recipientTgId: mockUserTelegramID1,
+        eventId: txId,
+        tokenAddress: nativeTokenAddresses[0],
+      });
+
+      chai
+        .expect(
+          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl)
+            .args[1],
+        )
+        .to.deep.equal({
+          userId: `grindery:${mockUserTelegramID}`,
+          chain: 'matic',
+          to: [mockWallet],
+          value: ['10300000000000000000'],
+          data: ['0x00'],
+          auth: '',
+        });
+    });
+  });
+
   describe('Transaction is already a success', async function () {
     beforeEach(async function () {
       await collectionUsersMock.insertOne({

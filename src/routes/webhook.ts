@@ -15,6 +15,7 @@ import {
   PUBSUB_SUBSCRIPTION_NAME,
   PUBSUB_TOPIC_NAME,
 } from '../../secrets';
+import { isPositiveFloat } from '../utils/webhooks/utils';
 
 /**
  * This is a generic and extendable implementation of a webhook endpoint and pub/sub messages queue.
@@ -103,63 +104,75 @@ router.get('/unacked-messages', authenticateApiKey, async (_req, res) => {
  */
 router.post('/', authenticateApiKey, async (req, res) => {
   try {
+    // Filter and validate transaction amounts for the 'new_transaction_batch' event
     if (req.body.event === 'new_transaction_batch') {
-      req.body.params = req.body.params.filter((transaction) => {
-        return (
-          /^\d+$/.test(transaction.amount) && parseInt(transaction.amount) > 0
-        );
-      });
+      req.body.params = req.body.params.filter(
+        (transaction: { amount: string }) =>
+          isPositiveFloat(transaction.amount),
+      );
 
+      // Check if all token amounts are incorrect
       if (req.body.params.length === 0) {
-        res
+        return res
           .status(400)
           .json({ success: false, message: 'all token amounts incorrect' });
       }
     }
 
-    if (req.body.event === 'new_transaction') {
-      if (
-        !/^\d+$/.test(req.body.params.amount) ||
-        parseInt(req.body.params.amount) <= 0
-      ) {
-        res
-          .status(400)
-          .json({ success: false, message: 'token amount incorrect' });
-        return;
-      }
+    // Validate token amount for 'new_transaction' event
+    if (
+      req.body.event === 'new_transaction' &&
+      !isPositiveFloat(req.body.params.amount)
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'token amount incorrect' });
     }
 
+    // Validate parameters for 'isolated_reward' event
     if (req.body.event === 'isolated_reward') {
       if (!req.body.params.userTelegramID) {
-        res
+        return res
           .status(400)
           .json({ success: false, message: 'User Telegram ID is missing' });
       } else if (!req.body.params.amount) {
-        res.status(400).json({ success: false, message: 'Amount is missing' });
+        return res
+          .status(400)
+          .json({ success: false, message: 'Amount is missing' });
       } else if (!req.body.params.reason) {
-        res.status(400).json({ success: false, message: 'Reason is missing' });
+        return res
+          .status(400)
+          .json({ success: false, message: 'Reason is missing' });
       }
     }
 
+    // Generate unique eventId for each transaction
     req.body.event === 'new_transaction_batch'
       ? req.body.params.forEach(
-          (transaction) => (transaction.eventId = uuidv4()),
+          (transaction: { eventId: any }) => (transaction.eventId = uuidv4()),
         )
       : (req.body.params.eventId = uuidv4());
+
+    // Prepare data and publish message to Pub/Sub
     const data = JSON.stringify(req.body);
     console.log(`Publishing message: ${data}`);
     const dataBuffer = Buffer.from(data);
     const messageId = await pubSubClient
       .topic(topicName)
       .publishMessage({ data: dataBuffer });
+
+    // Check if message was successfully published
     if (messageId) {
-      res.json({ success: true, messageId });
+      return res.json({ success: true, messageId });
     } else {
-      res.status(500).json({ success: false, error: "Event wasn't saved" });
+      return res
+        .status(500)
+        .json({ success: false, error: "Event wasn't saved" });
     }
   } catch (error) {
+    // Handle errors during publishing and return error response
     console.error(`Received error while publishing: ${error.message}`);
-    res.status(500).json({ success: false, error: error.message });
+    return res.status(500).json({ success: false, error: error.message });
   }
 });
 

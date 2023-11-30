@@ -26,3 +26,16 @@ export function isFailedTransaction(status: string): boolean {
 export function isPendingTransactionHash(status: string): boolean {
   return status === TRANSACTION_STATUS.PENDING_HASH;
 }
+
+/**
+ * Checks if the given string is a positive float number.
+ * @param inputString - The string to be checked.
+ * @returns {boolean} - True if the string is a positive float number, otherwise false.
+ */
+export function isPositiveFloat(inputString: string): boolean {
+  // Regular expression to match a positive float number
+  const floatRegex = /^[+]?\d+(\.\d+)?$/;
+
+  // Check if the input string matches the regex pattern for a positive float number
+  return floatRegex.test(inputString);
+}
