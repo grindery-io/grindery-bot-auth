@@ -167,63 +167,80 @@ export const importUsersLast24Hours = async (): Promise<void> => {
 
   const endDate = new Date();
   const startDate = new Date();
-  startDate.setHours(startDate.getHours() - 24);
+  startDate.setHours(startDate.getHours() - 48);
 
   const recentUsers = collection.find({
     dateAdded: { $gte: startDate, $lte: endDate },
   });
+  const countRecentUsers = await recentUsers.count();
+
+  const existingPatchwallets = await getExistingPatchwalletsLast24Hours(
+    tableId,
+    startDate,
+    endDate,
+  );
 
   let hasUsers = false;
+  let index = 0;
   while (await recentUsers.hasNext()) {
-    const user = await recentUsers.next();
+    try {
+      index++;
+      hasUsers = true;
 
-    hasUsers = true;
+      console.log(
+        `BIGQUERY - Total count recent users ${countRecentUsers} current index ${index}`,
+      );
 
-    const existingPatchwallets = await getExistingPatchwalletsLast24Hours(
-      tableId,
-      startDate,
-      endDate,
-    );
+      const user = await recentUsers.next();
 
-    const userExistsInBigQuery = existingPatchwallets.includes(
-      web3.utils.toChecksumAddress(user.patchwallet),
-    );
+      const userExistsInBigQuery = existingPatchwallets.includes(
+        web3.utils.toChecksumAddress(user.patchwallet),
+      );
 
-    if (userExistsInBigQuery) {
-      console.log('BIGQUERY - User already exists in BigQuery.');
-      continue;
+      if (userExistsInBigQuery) {
+        console.log(
+          `BIGQUERY - User wallet (${user.patchwallet}) already exists in BigQuery`,
+        );
+        continue;
+      }
+
+      const transformedUserData = {
+        context_ip: null,
+        id: user._id.toString(),
+        context_library_name: null,
+        context_library_version: null,
+        email: null,
+        industry: null,
+        loaded_at: null,
+        name: user.userName,
+        received_at: new Date(),
+        uuid_ts: new Date(user.dateAdded),
+        user_name: user.userName,
+        user_telegram_id: user.userTelegramID,
+        patchwallet: user.patchwallet,
+        response_path: user.responsePath,
+        user_handle: user.userHandle,
+        attributes: JSON.stringify(user.attributes),
+      };
+
+      await bigqueryClient
+        .dataset(datasetId)
+        .table(tableId)
+        .insert(transformedUserData);
+
+      console.log(
+        `BIGQUERY - User wallet (${user.patchwallet}) added in BigQuery`,
+      );
+    } catch (error) {
+      console.log(`BIGQUERY - Error importing to BigQuery ${error}`);
     }
-
-    const transformedUserData = {
-      context_ip: null,
-      id: user._id.toString(),
-      context_library_name: null,
-      context_library_version: null,
-      email: null,
-      industry: null,
-      loaded_at: null,
-      name: user.userName,
-      received_at: new Date(),
-      uuid_ts: new Date(user.dateAdded),
-      user_name: user.userName,
-      user_telegram_id: user.userTelegramID,
-      patchwallet: user.patchwallet,
-      response_path: user.responsePath,
-      user_handle: user.userHandle,
-      attributes: JSON.stringify(user.attributes),
-    };
-
-    await bigqueryClient
-      .dataset(datasetId)
-      .table(tableId)
-      .insert(transformedUserData);
   }
 
   if (!hasUsers) {
     console.log('BIGQUERY - No users found in MongoDB in the last 24 hours.');
   }
 
-  process.exit(0);
+  console.log('BIGQUERY - Import completed successfully.');
 };
 
 export const importTransfersLast24Hours = async (): Promise<void> => {
@@ -234,63 +251,79 @@ export const importTransfersLast24Hours = async (): Promise<void> => {
   // Calculate the date 24 hours ago
   const endDate = new Date();
   const startDate = new Date();
-  startDate.setHours(startDate.getHours() - 24);
+  startDate.setHours(startDate.getHours() - 48);
 
   // Find transfers in the last 24 hours using Cursor
   const allTransfers = collection.find({
     dateAdded: { $gte: startDate, $lte: endDate },
   });
+  const countRecentTransfers = await allTransfers.count();
+
+  const existingTransactionHashes =
+    await getExistingTransactionHashesLast24Hours(tableId, startDate, endDate);
 
   let hasTransfers = false;
+  let index = 0;
   while (await allTransfers.hasNext()) {
-    const transfer = await allTransfers.next();
+    try {
+      index++;
+      hasTransfers = true;
 
-    hasTransfers = true;
-
-    const existingTransactionHashes =
-      await getExistingTransactionHashesLast24Hours(
-        tableId,
-        startDate,
-        endDate,
+      console.log(
+        `BIGQUERY - Total count recent transfers ${countRecentTransfers} current index ${index}`,
       );
 
-    const transferExistsInBigQuery = existingTransactionHashes.includes(
-      transfer.transactionHash,
-    );
+      const transfer = await allTransfers.next();
 
-    if (transferExistsInBigQuery) {
-      console.log('BIGQUERY - Transfer already exists in BigQuery.');
-      continue;
+      const transferExistsInBigQuery = existingTransactionHashes.includes(
+        transfer.transactionHash,
+      );
+
+      if (transferExistsInBigQuery) {
+        console.log(
+          `BIGQUERY - Transfer hash (${transfer.transactionHash}) already exists in BigQuery`,
+        );
+        continue;
+      }
+
+      const bigQueryData = {
+        amount: transfer.tokenAmount,
+        context_library_name: null,
+        context_library_version: null,
+        event_id: transfer.eventId,
+        event_text: null,
+        id: transfer._id.toString(),
+        loaded_at: null,
+        original_timestamp: null,
+        received_at: new Date(),
+        sent_at: null,
+        timestamp: new Date(transfer.dateAdded),
+        user_id: null,
+        uuid_ts: null,
+        chain_id: transfer.chainId,
+        recipient_tg_id: transfer.recipientTgId,
+        recipient_wallet: transfer.recipientWallet,
+        sender_name: transfer.senderName,
+        sender_tg_id: transfer.senderTgId,
+        sender_wallet: transfer.senderWallet,
+        token_address: transfer.tokenAddress,
+        token_amount: transfer.tokenAmount,
+        token_symbol: transfer.tokenSymbol,
+        transaction_hash: transfer.transactionHash,
+        sender_handle: transfer.senderHandle,
+      };
+
+      await bigqueryClient
+        .dataset(datasetId)
+        .table(tableId)
+        .insert(bigQueryData);
+
+      console.log(
+        `BIGQUERY - transfer hash (${transfer.transactionHash}) added in BigQuery`,
+      );
+    } catch (error) {
+      console.error('BIGQUERY - Error during import:', error);
     }
-
-    const bigQueryData = {
-      amount: transfer.tokenAmount,
-      context_library_name: null,
-      context_library_version: null,
-      event_id: transfer.eventId,
-      event_text: null,
-      id: transfer._id.toString(),
-      loaded_at: null,
-      original_timestamp: null,
-      received_at: new Date(),
-      sent_at: null,
-      timestamp: new Date(transfer.dateAdded),
-      user_id: null,
-      uuid_ts: null,
-      chain_id: transfer.chainId,
-      recipient_tg_id: transfer.recipientTgId,
-      recipient_wallet: transfer.recipientWallet,
-      sender_name: transfer.senderName,
-      sender_tg_id: transfer.senderTgId,
-      sender_wallet: transfer.senderWallet,
-      token_address: transfer.tokenAddress,
-      token_amount: transfer.tokenAmount,
-      token_symbol: transfer.tokenSymbol,
-      transaction_hash: transfer.transactionHash,
-      sender_handle: transfer.senderHandle,
-    };
-
-    await bigqueryClient.dataset(datasetId).table(tableId).insert(bigQueryData);
   }
 
   if (!hasTransfers) {
@@ -299,7 +332,7 @@ export const importTransfersLast24Hours = async (): Promise<void> => {
     );
   }
 
-  process.exit(0);
+  console.log('BIGQUERY - Import completed successfully.');
 };
 
 async function getExistingPatchwallets(tableId) {
