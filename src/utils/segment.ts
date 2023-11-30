@@ -52,6 +52,9 @@ export async function addTrackSegment(params: {
   transactionHash: string;
   dateAdded: Date;
   eventId: string;
+  tokenSymbol: string;
+  tokenAddress: string;
+  chainId: string;
 }): Promise<axios.AxiosResponse<any, any>> {
   return await axios.post(
     'https://api.segment.io/v1/track',

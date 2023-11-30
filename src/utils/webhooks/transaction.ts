@@ -30,6 +30,7 @@ export async function handleNewTransaction(params: {
   tokenAddress?: string;
   chainName?: string;
   message?: string;
+  tokenSymbol?: string;
 }): Promise<boolean> {
   // Establish a connection to the database
   const db = await Database.getInstance();
