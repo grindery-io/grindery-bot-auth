@@ -55,6 +55,7 @@ export async function handleNewTransaction(params: {
     params.chainId,
     params.tokenAddress,
     params.chainName,
+    params.tokenSymbol,
   );
   if (!transfer) return false;
 

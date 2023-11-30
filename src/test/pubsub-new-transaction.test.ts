@@ -166,7 +166,7 @@ describe('handleNewTransaction function', async function () {
           {
             eventId: txId,
             chainId: mockChainId,
-            tokenSymbol: 'g1',
+            tokenSymbol: 'G1',
             tokenAddress: mockTokenAddress,
             senderTgId: mockUserTelegramID,
             senderWallet: mockWallet,
@@ -238,6 +238,9 @@ describe('handleNewTransaction function', async function () {
         amount: '100',
         recipientTgId: mockUserTelegramID1,
         eventId: txId,
+        tokenSymbol: 'USDC',
+        tokenAddress: '0xe36BD65609c08Cd17b53520293523CF4560533d2',
+        chainId: mockChainId,
       });
 
       const segmentIdentityCall = axiosStub
@@ -251,9 +254,9 @@ describe('handleNewTransaction function', async function () {
           userId: mockUserTelegramID,
           event: 'Transfer',
           properties: {
-            chainId: 'eip155:137',
-            tokenSymbol: 'g1',
-            tokenAddress: G1_POLYGON_ADDRESS,
+            chainId: mockChainId,
+            tokenSymbol: 'USDC',
+            tokenAddress: '0xe36BD65609c08Cd17b53520293523CF4560533d2',
             senderTgId: mockUserTelegramID,
             senderWallet: mockWallet,
             senderName: mockUserName,
@@ -282,7 +285,7 @@ describe('handleNewTransaction function', async function () {
       chai.expect(FlowXOCallArgs).excluding(['dateAdded']).to.deep.equal({
         senderResponsePath: mockResponsePath,
         chainId: 'eip155:137',
-        tokenSymbol: 'g1',
+        tokenSymbol: 'G1',
         tokenAddress: G1_POLYGON_ADDRESS,
         senderTgId: mockUserTelegramID,
         senderWallet: mockWallet,
@@ -327,7 +330,7 @@ describe('handleNewTransaction function', async function () {
           {
             eventId: txId,
             chainId: mockChainId,
-            tokenSymbol: 'g1',
+            tokenSymbol: 'G1',
             tokenAddress: mockTokenAddress,
             senderTgId: mockUserTelegramID,
             senderWallet: mockWallet,
@@ -614,7 +617,7 @@ describe('handleNewTransaction function', async function () {
           {
             eventId: txId,
             chainId: 'eip155:137',
-            tokenSymbol: 'g1',
+            tokenSymbol: 'G1',
             tokenAddress: G1_POLYGON_ADDRESS,
             senderTgId: mockUserTelegramID,
             senderWallet: mockWallet,
@@ -928,7 +931,7 @@ describe('handleNewTransaction function', async function () {
           {
             eventId: txId,
             chainId: 'eip155:137',
-            tokenSymbol: 'g1',
+            tokenSymbol: 'G1',
             tokenAddress: G1_POLYGON_ADDRESS,
             senderTgId: mockUserTelegramID,
             senderWallet: mockWallet,
@@ -1018,7 +1021,7 @@ describe('handleNewTransaction function', async function () {
           {
             eventId: txId,
             chainId: 'eip155:137',
-            tokenSymbol: 'g1',
+            tokenSymbol: 'G1',
             tokenAddress: G1_POLYGON_ADDRESS,
             senderTgId: mockUserTelegramID,
             senderWallet: mockWallet,
@@ -1108,7 +1111,7 @@ describe('handleNewTransaction function', async function () {
           {
             eventId: txId,
             chainId: 'eip155:137',
-            tokenSymbol: 'g1',
+            tokenSymbol: 'G1',
             tokenAddress: G1_POLYGON_ADDRESS,
             senderTgId: mockUserTelegramID,
             senderWallet: mockWallet,
@@ -1200,7 +1203,7 @@ describe('handleNewTransaction function', async function () {
             {
               eventId: txId,
               chainId: 'eip155:137',
-              tokenSymbol: 'g1',
+              tokenSymbol: 'G1',
               tokenAddress: G1_POLYGON_ADDRESS,
               senderTgId: mockUserTelegramID,
               senderWallet: mockWallet,
@@ -1245,7 +1248,7 @@ describe('handleNewTransaction function', async function () {
         await collectionTransfersMock.insertOne({
           eventId: txId,
           chainId: 'eip155:137',
-          tokenSymbol: 'g1',
+          tokenSymbol: 'G1',
           tokenAddress: G1_POLYGON_ADDRESS,
           senderTgId: mockUserTelegramID,
           senderWallet: mockWallet,
@@ -1298,7 +1301,7 @@ describe('handleNewTransaction function', async function () {
             {
               eventId: txId,
               chainId: 'eip155:137',
-              tokenSymbol: 'g1',
+              tokenSymbol: 'G1',
               tokenAddress: G1_POLYGON_ADDRESS,
               senderTgId: mockUserTelegramID,
               senderWallet: mockWallet,
@@ -1329,7 +1332,7 @@ describe('handleNewTransaction function', async function () {
         chai.expect(FlowXOCallArgs).excluding(['dateAdded']).to.deep.equal({
           senderResponsePath: mockResponsePath,
           chainId: 'eip155:137',
-          tokenSymbol: 'g1',
+          tokenSymbol: 'G1',
           tokenAddress: G1_POLYGON_ADDRESS,
           senderTgId: mockUserTelegramID,
           senderWallet: mockWallet,
@@ -1361,7 +1364,7 @@ describe('handleNewTransaction function', async function () {
         await collectionTransfersMock.insertOne({
           eventId: txId,
           chainId: 'eip155:137',
-          tokenSymbol: 'g1',
+          tokenSymbol: 'G1',
           tokenAddress: G1_POLYGON_ADDRESS,
           senderTgId: mockUserTelegramID,
           senderWallet: mockWallet,
@@ -1421,7 +1424,7 @@ describe('handleNewTransaction function', async function () {
             {
               eventId: txId,
               chainId: 'eip155:137',
-              tokenSymbol: 'g1',
+              tokenSymbol: 'G1',
               tokenAddress: G1_POLYGON_ADDRESS,
               senderTgId: mockUserTelegramID,
               senderWallet: mockWallet,
@@ -1466,7 +1469,7 @@ describe('handleNewTransaction function', async function () {
         await collectionTransfersMock.insertOne({
           eventId: txId,
           chainId: 'eip155:137',
-          tokenSymbol: 'g1',
+          tokenSymbol: 'G1',
           tokenAddress: G1_POLYGON_ADDRESS,
           senderTgId: mockUserTelegramID,
           senderWallet: mockWallet,
@@ -1523,7 +1526,7 @@ describe('handleNewTransaction function', async function () {
             {
               eventId: txId,
               chainId: 'eip155:137',
-              tokenSymbol: 'g1',
+              tokenSymbol: 'G1',
               tokenAddress: G1_POLYGON_ADDRESS,
               senderTgId: mockUserTelegramID,
               senderWallet: mockWallet,
@@ -1567,7 +1570,7 @@ describe('handleNewTransaction function', async function () {
         await collectionTransfersMock.insertOne({
           eventId: txId,
           chainId: 'eip155:137',
-          tokenSymbol: 'g1',
+          tokenSymbol: 'G1',
           tokenAddress: G1_POLYGON_ADDRESS,
           senderTgId: mockUserTelegramID,
           senderWallet: mockWallet,
@@ -1626,7 +1629,7 @@ describe('handleNewTransaction function', async function () {
             {
               eventId: txId,
               chainId: 'eip155:137',
-              tokenSymbol: 'g1',
+              tokenSymbol: 'G1',
               tokenAddress: G1_POLYGON_ADDRESS,
               senderTgId: mockUserTelegramID,
               senderWallet: mockWallet,
@@ -1671,7 +1674,7 @@ describe('handleNewTransaction function', async function () {
         await collectionTransfersMock.insertOne({
           eventId: txId,
           chainId: 'eip155:137',
-          tokenSymbol: 'g1',
+          tokenSymbol: 'G1',
           tokenAddress: G1_POLYGON_ADDRESS,
           senderTgId: mockUserTelegramID,
           senderWallet: mockWallet,
@@ -1723,7 +1726,7 @@ describe('handleNewTransaction function', async function () {
             {
               eventId: txId,
               chainId: 'eip155:137',
-              tokenSymbol: 'g1',
+              tokenSymbol: 'G1',
               tokenAddress: G1_POLYGON_ADDRESS,
               senderTgId: mockUserTelegramID,
               senderWallet: mockWallet,
@@ -1768,7 +1771,7 @@ describe('handleNewTransaction function', async function () {
         await collectionTransfersMock.insertOne({
           eventId: txId,
           chainId: 'eip155:137',
-          tokenSymbol: 'g1',
+          tokenSymbol: 'G1',
           tokenAddress: G1_POLYGON_ADDRESS,
           senderTgId: mockUserTelegramID,
           senderWallet: mockWallet,
@@ -1828,7 +1831,7 @@ describe('handleNewTransaction function', async function () {
             {
               eventId: txId,
               chainId: 'eip155:137',
-              tokenSymbol: 'g1',
+              tokenSymbol: 'G1',
               tokenAddress: G1_POLYGON_ADDRESS,
               senderTgId: mockUserTelegramID,
               senderWallet: mockWallet,

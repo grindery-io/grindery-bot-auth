@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { G1_POLYGON_ADDRESS, SEGMENT_KEY } from '../../secrets';
+import { SEGMENT_KEY } from '../../secrets';
 
 /**
  * Adds an identity segment using the provided user data.
@@ -59,9 +59,9 @@ export async function addTrackSegment(params: {
       userId: params.userTelegramID,
       event: 'Transfer',
       properties: {
-        chainId: 'eip155:137',
-        tokenSymbol: 'g1',
-        tokenAddress: G1_POLYGON_ADDRESS,
+        chainId: params.chainId,
+        tokenSymbol: params.tokenSymbol,
+        tokenAddress: params.tokenAddress,
         senderTgId: params.senderTgId,
         senderWallet: params.senderWallet,
         senderHandle: params.senderHandle,

@@ -250,6 +250,7 @@ export async function createTransferTelegram(
   chainId: string,
   tokenAddress: string,
   chainName: string,
+  tokenSymbol: string,
 ): Promise<TransferTelegram | boolean> {
   const transfer = new TransferTelegram(
     eventId,
@@ -259,6 +260,7 @@ export async function createTransferTelegram(
     chainId,
     tokenAddress,
     chainName,
+    tokenSymbol,
   );
   return (await transfer.initializeTransferDatabase()) && transfer;
 }
@@ -281,6 +283,7 @@ export class TransferTelegram {
   chainId: string;
   tokenAddress: string;
   chainName: string;
+  tokenSymbol: string;
 
   constructor(
     eventId: string,
@@ -290,6 +293,7 @@ export class TransferTelegram {
     chainId: string,
     tokenAddress: string,
     chainName: string,
+    tokenSymbol: string,
   ) {
     this.eventId = eventId;
     this.senderInformation = senderInformation;
@@ -304,6 +308,7 @@ export class TransferTelegram {
     this.chainId = chainId ? chainId : 'eip155:137';
     this.tokenAddress = tokenAddress ? tokenAddress : G1_POLYGON_ADDRESS;
     this.chainName = chainName ? chainName : 'matic';
+    this.tokenSymbol = tokenSymbol ? tokenSymbol : 'G1';
   }
 
   /**
@@ -355,7 +360,7 @@ export class TransferTelegram {
         $set: {
           eventId: this.eventId,
           chainId: this.chainId,
-          tokenSymbol: 'g1',
+          tokenSymbol: this.tokenSymbol,
           tokenAddress: this.tokenAddress,
           senderTgId: this.senderInformation.userTelegramID,
           senderWallet: this.senderInformation.patchwallet,
@@ -429,6 +434,9 @@ export class TransferTelegram {
       transactionHash: this.txHash,
       dateAdded: new Date(),
       eventId: this.eventId,
+      tokenSymbol: this.tokenSymbol,
+      tokenAddress: this.tokenAddress,
+      chainId: this.chainId,
     });
   }
 
@@ -441,7 +449,7 @@ export class TransferTelegram {
     await axios.post(FLOWXO_NEW_TRANSACTION_WEBHOOK, {
       senderResponsePath: this.senderInformation.responsePath,
       chainId: this.chainId,
-      tokenSymbol: 'g1',
+      tokenSymbol: this.tokenSymbol,
       tokenAddress: this.tokenAddress,
       senderTgId: this.senderInformation.userTelegramID,
       senderWallet: this.senderInformation.patchwallet,
