@@ -7,27 +7,62 @@ import {
   CHAINSTACK_API_KEY_2,
 } from '../../secrets';
 
-const ANKR = (name) => [
+/**
+ * Retrieves ANKR WebSocket and HTTP endpoints based on the provided network name.
+ * @param name The network name.
+ * @returns An array containing WebSocket and HTTP endpoints.
+ */
+const ANKR = (name: string) => [
   `wss://rpc.ankr.com/${name}/ws/${ANKR_KEY || ''}`,
   `https://rpc.ankr.com/${name}/${ANKR_KEY || ''}`,
 ];
-const ALCHEMY = (name) => [
+
+/**
+ * Retrieves ALCHEMY WebSocket and HTTP endpoints based on the provided network name.
+ * @param name The network name.
+ * @returns An array containing WebSocket and HTTP endpoints.
+ */
+const ALCHEMY = (name: string) => [
   `wss://${name}.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
   `https://${name}.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
 ];
-const GETBLOCK = (name, netType = 'mainnet') => [
+
+/**
+ * Retrieves GETBLOCK WebSocket and HTTP endpoints based on the provided network name and type.
+ * @param name The network name.
+ * @param netType The network type. Default is 'mainnet'.
+ * @returns An array containing WebSocket and HTTP endpoints.
+ */
+const GETBLOCK = (name: string, netType = 'mainnet') => [
   `wss://${name}.getblock.io/${GETBLOCK_API_KEY}/${netType}/`,
   `https://${name}.getblock.io/${GETBLOCK_API_KEY}/${netType}/`,
 ];
-const LAVANET = (wsPath, httpsPath) => [
+
+/**
+ * Retrieves LAVANET WebSocket and HTTP endpoints based on the provided WebSocket and HTTP paths.
+ * @param wsPath The WebSocket path.
+ * @param httpsPath The HTTP path.
+ * @returns An array containing WebSocket and HTTP endpoints.
+ */
+const LAVANET = (wsPath: string, httpsPath: string) => [
   `wss://g.w.lavanet.xyz:443/gateway/${wsPath}/${LAVANET_API_KEY}`,
   `https://g.w.lavanet.xyz:443/gateway/${httpsPath}/${LAVANET_API_KEY}`,
 ];
-const CHAINSTACK = (nodeId, key) => [
+
+/**
+ * Retrieves CHAINSTACK WebSocket and HTTP endpoints based on the provided node ID and key.
+ * @param nodeId The node ID.
+ * @param key The key.
+ * @returns An array containing WebSocket and HTTP endpoints.
+ */
+const CHAINSTACK = (nodeId: string, key: string) => [
   `wss://ws-${nodeId}.p2pify.com/${key || CHAINSTACK_API_KEY}`,
   `https://${nodeId}.p2pify.com/${key || CHAINSTACK_API_KEY}`,
 ];
 
+/**
+ * Mapping of chain IDs to their respective WebSocket and HTTP endpoints.
+ */
 export const CHAIN_MAPPING = {
   'eip155:1': ANKR('eth'),
   eth: ANKR('eth'),
