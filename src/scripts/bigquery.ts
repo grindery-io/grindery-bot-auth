@@ -1,7 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Database } from '../db/conn';
 import { BigQuery } from '@google-cloud/bigquery';
-import { TRANSFERS_COLLECTION, USERS_COLLECTION } from '../utils/constants';
+import {
+  TRANSFERS_COLLECTION,
+  USERS_COLLECTION,
+  WALLET_USERS_COLLECTION,
+} from '../utils/constants';
 import web3 from 'web3';
 
 const bigqueryClient = new BigQuery();
@@ -335,6 +339,106 @@ export const importTransfersLast24Hours = async (): Promise<void> => {
   console.log('BIGQUERY - Import completed successfully.');
 };
 
+/**
+ * Imports or updates wallet user records from MongoDB to BigQuery based on recent activity.
+ * This function specifically processes wallet users updated in the last 2 hours,
+ * checking each user's existence in BigQuery. If a user exists, their record is updated;
+ * if not, the user is added to BigQuery. The process involves data transformation
+ * and handling of different data types for proper integration.
+ *
+ * @returns {Promise<void>} No return value. Outputs log messages regarding the process status.
+ */
+export const importOrUpdateWalletUsersLast2Hours = async (): Promise<void> => {
+  const db = await Database.getInstance();
+  const walletUsersCollection = db.collection(WALLET_USERS_COLLECTION);
+  const tableId = 'wallet_users';
+
+  const startDate = new Date();
+  startDate.setHours(startDate.getHours() - 2); // Set to 2 hours ago
+
+  const recentWallets = walletUsersCollection.find({
+    dateUpdated: { $gte: startDate },
+  });
+
+  let hasWallets = false;
+  while (await recentWallets.hasNext()) {
+    try {
+      hasWallets = true;
+      const wallet = await recentWallets.next();
+
+      const walletExistsInBigQuery = await checkWalletInBigQuery(
+        wallet.userTelegramID,
+      );
+
+      const walletFormatted = {
+        userTelegramID: wallet.userTelegramID ? wallet.userTelegramID : null,
+        webAppOpened: wallet.webAppOpened ? wallet.webAppOpened : null,
+        webAppOpenedFirstDate: wallet.webAppOpenedFirstDate
+          ? wallet.webAppOpenedFirstDate
+          : null,
+        webAppOpenedLastDate: wallet.webAppOpenedLastDate
+          ? wallet.webAppOpenedLastDate
+          : null,
+        telegramSessionSavedDate: wallet.telegramSessionSavedDate
+          ? wallet.telegramSessionSavedDate
+          : null,
+        dateAdded: wallet.dateAdded ? wallet.dateAdded : null,
+        balance: wallet.balance ? wallet.balance : null,
+        debug: wallet.debug ? JSON.stringify(wallet.debug) : null,
+      };
+
+      if (walletExistsInBigQuery) {
+        const query = `
+          UPDATE ${datasetId}.${tableId}
+          SET
+            webAppOpened = @webAppOpened,
+            webAppOpenedFirstDate = @webAppOpenedFirstDate,
+            webAppOpenedLastDate = @webAppOpenedLastDate,
+            telegramSessionSavedDate = @telegramSessionSavedDate,
+            dateAdded = @dateAdded,
+            balance = @balance,
+            debug = @debug
+          WHERE userTelegramID = @userTelegramID
+        `;
+
+        const options = {
+          query: query,
+          params: walletFormatted,
+          types: {
+            webAppOpened: 'STRING',
+            webAppOpenedFirstDate: 'STRING',
+            webAppOpenedLastDate: 'STRING',
+            telegramSessionSavedDate: 'STRING',
+            balance: 'STRING',
+            dateAdded: 'STRING',
+            debug: 'STRING',
+            userTelegramID: 'STRING',
+          },
+        };
+
+        await bigqueryClient.query(options);
+      } else {
+        await bigqueryClient
+          .dataset(datasetId)
+          .table(tableId)
+          .insert(walletFormatted);
+
+        console.log(
+          `BIGQUERY - Wallet User Telegram ID (${walletFormatted.userTelegramID}) added in BigQuery`,
+        );
+      }
+    } catch (error) {
+      console.log(`BIGQUERY - Error processing wallet: ${error}`);
+    }
+  }
+
+  if (!hasWallets) {
+    console.log('BIGQUERY - No wallet users found in MongoDB.');
+  }
+
+  console.log('BIGQUERY - Wallet import/update process completed.');
+};
+
 async function getExistingPatchwallets(tableId) {
   const query = `SELECT patchwallet FROM ${datasetId}.${tableId}`;
   const [rows] = await bigqueryClient.query(query);
@@ -383,4 +487,16 @@ async function getExistingTransactionHashesLast24Hours(
   const [rows] = await bigqueryClient.query(query);
 
   return rows.map((row) => row.transaction_hash);
+}
+
+async function checkWalletInBigQuery(userTelegramID: string): Promise<boolean> {
+  const tableId = 'wallet_users';
+
+  const query = `
+    SELECT userTelegramID
+    FROM ${datasetId}.${tableId}
+    WHERE userTelegramID = '${userTelegramID}'
+  `;
+  const [rows] = await bigqueryClient.query(query);
+  return rows.length > 0;
 }
