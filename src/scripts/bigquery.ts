@@ -357,7 +357,7 @@ export const importOrUpdateWalletUsersLast2Hours = async (): Promise<void> => {
   startDate.setHours(startDate.getHours() - 2); // Set to 2 hours ago
 
   const recentWallets = walletUsersCollection.find({
-    dateUpdated: { $gte: startDate },
+    webAppOpenedLastDate: { $gte: startDate },
   });
 
   let hasWallets = false;
