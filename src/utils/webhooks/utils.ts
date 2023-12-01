@@ -5,6 +5,7 @@ import {
   ReferralRewardTelegram,
   SignUpRewardTelegram,
 } from '../rewards';
+import { getXMinBeforeDate } from '../time';
 import { TransferTelegram } from '../transfers';
 
 /**
@@ -62,7 +63,7 @@ export async function isTreatmentDurationExceeded(
     | TransferTelegram,
 ): Promise<boolean> {
   return (
-    (inst.tx.dateAdded < new Date(new Date().getTime() - 10 * 60 * 1000) &&
+    (inst.tx.dateAdded < getXMinBeforeDate(new Date(), 10) &&
       (console.log(
         `[${inst.eventId}] was stopped due to too long treatment duration (> 10 min).`,
       ),
