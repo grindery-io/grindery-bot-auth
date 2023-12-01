@@ -13,6 +13,7 @@ import { Database } from '../../db/conn';
 import axios from 'axios';
 import { addTrackSwapSegment } from '../segment';
 import { FLOWXO_NEW_SWAP_WEBHOOK } from '../../../secrets';
+import { getXMinBeforeDate } from '../time';
 
 /**
  * Handles the swap event based on the provided parameters.
@@ -117,7 +118,7 @@ export async function handleSwap(params: {
   let tx = undefined;
 
   if (swap_db?.status === TRANSACTION_STATUS.PENDING_HASH) {
-    if (swap_db.dateAdded < new Date(new Date().getTime() - 10 * 60 * 1000)) {
+    if (swap_db.dateAdded < getXMinBeforeDate(new Date(), 10)) {
       console.log(
         `[SWAP EVENT] event id [${params.eventId}] was stopped due to too long treatment duration (> 10 min).`,
       );

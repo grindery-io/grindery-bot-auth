@@ -22,6 +22,7 @@ import {
 } from '../../secrets';
 import { isSuccessfulTransaction } from './webhooks/utils';
 import { Db, Document, FindCursor, WithId } from 'mongodb';
+import { getXMinBeforeDate } from './time';
 
 /**
  * Asynchronously creates a sign-up reward for Telegram users.
@@ -217,7 +218,7 @@ export class SignUpRewardTelegram {
    */
   async isTreatmentDurationExceeded(): Promise<boolean> {
     return (
-      (this.tx.dateAdded < new Date(new Date().getTime() - 10 * 60 * 1000) &&
+      (this.tx.dateAdded < getXMinBeforeDate(new Date(), 10) &&
         (console.log(
           `[${this.eventId}] was stopped due to too long treatment duration (> 10 min).`,
         ),
@@ -559,7 +560,7 @@ export class ReferralRewardTelegram {
    */
   async isTreatmentDurationExceeded(): Promise<boolean> {
     return (
-      (this.tx.dateAdded < new Date(new Date().getTime() - 10 * 60 * 1000) &&
+      (this.tx.dateAdded < getXMinBeforeDate(new Date(), 10) &&
         (console.log(
           `[${this.eventId}] was stopped due to too long treatment duration (> 10 min).`,
         ),
@@ -863,7 +864,7 @@ export class LinkRewardTelegram {
    */
   async isTreatmentDurationExceeded(): Promise<boolean> {
     return (
-      (this.tx.dateAdded < new Date(new Date().getTime() - 10 * 60 * 1000) &&
+      (this.tx.dateAdded < getXMinBeforeDate(new Date(), 10) &&
         (console.log(
           `[${this.eventId}] was stopped due to too long treatment duration (> 10 min).`,
         ),
@@ -1161,7 +1162,7 @@ export class IsolatedRewardTelegram {
    */
   async isTreatmentDurationExceeded(): Promise<boolean> {
     return (
-      (this.tx.dateAdded < new Date(new Date().getTime() - 10 * 60 * 1000) &&
+      (this.tx.dateAdded < getXMinBeforeDate(new Date(), 10) &&
         (console.log(
           `[${this.eventId}] was stopped due to too long treatment duration (> 10 min).`,
         ),

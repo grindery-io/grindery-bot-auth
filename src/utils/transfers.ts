@@ -18,6 +18,7 @@ import {
   G1_POLYGON_ADDRESS,
 } from '../../secrets';
 import { Db, Document, WithId } from 'mongodb';
+import { getXMinBeforeDate } from './time';
 
 /**
  * Retrieves incoming transactions for a user from the database.
@@ -388,7 +389,7 @@ export class TransferTelegram {
    */
   async isTreatmentDurationExceeded(): Promise<boolean> {
     return (
-      (this.tx.dateAdded < new Date(new Date().getTime() - 10 * 60 * 1000) &&
+      (this.tx.dateAdded < getXMinBeforeDate(new Date(), 10) &&
         (console.log(
           `[${this.eventId}] was stopped due to too long treatment duration (> 10 min).`,
         ),
