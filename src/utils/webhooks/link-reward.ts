@@ -1,7 +1,7 @@
 import { G1_POLYGON_ADDRESS } from '../../../secrets';
 import { TRANSACTION_STATUS } from '../constants';
 import { LinkRewardTelegram, createLinkRewardTelegram } from '../rewards';
-import { isPendingTransactionHash } from './utils';
+import { isPendingTransactionHash, isTreatmentDurationExceeded } from './utils';
 
 /**
  * Handles the referral link reward for a user.
@@ -36,7 +36,7 @@ export async function handleLinkReward(
 
     // Handle pending hash status
     if (isPendingTransactionHash(reward.status)) {
-      if (await reward.isTreatmentDurationExceeded()) return true;
+      if (await isTreatmentDurationExceeded(reward)) return true;
 
       // Check userOpHash and updateInDatabase for success
       if (!reward.userOpHash)

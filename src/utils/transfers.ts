@@ -383,22 +383,6 @@ export class TransferTelegram {
   }
 
   /**
-   * Checks if the treatment duration has exceeded the limit.
-   * @returns {Promise<boolean>} - True if the treatment duration has exceeded, false otherwise.
-   */
-  async isTreatmentDurationExceeded(): Promise<boolean> {
-    return (
-      (this.tx.dateAdded < new Date(new Date().getTime() - 10 * 60 * 1000) &&
-        (console.log(
-          `[${this.eventId}] was stopped due to too long treatment duration (> 10 min).`,
-        ),
-        await this.updateInDatabase(TRANSACTION_STATUS.FAILURE, new Date()),
-        true)) ||
-      false
-    );
-  }
-
-  /**
    * Updates the transaction hash.
    * @param {string} txHash - The transaction hash to be updated.
    * @returns {string} - The updated transaction hash.

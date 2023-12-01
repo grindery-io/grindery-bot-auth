@@ -17,24 +17,24 @@ import {
 const router = express.Router();
 
 router.post('/:collectionName', authenticateApiKey, async (req, res) => {
-  const collectionName = req.params.collectionName;
-  const db = await Database.getInstance();
-  const collection = db.collection(collectionName);
-
-  res.status(201).send(
-    await collection.insertOne({
-      ...req.body,
-      dateAdded: new Date(),
-    }),
-  );
+  try {
+    return res.status(201).send(
+      await (await Database.getInstance())
+        .collection(req.params.collectionName)
+        .insertOne({
+          ...req.body,
+          dateAdded: new Date(),
+        }),
+    );
+  } catch (error) {
+    return res.status(500).send({ msg: 'An error occurred', error });
+  }
 });
 
 router.get('/transactions-total', authenticateApiKey, async (_req, res) => {
   try {
-    const db = await Database.getInstance();
-
     return res.status(200).send({
-      transactions_counts: await db
+      transactions_counts: await (await Database.getInstance())
         .collection(TRANSFERS_COLLECTION)
         .estimatedDocumentCount(),
     });
@@ -45,10 +45,8 @@ router.get('/transactions-total', authenticateApiKey, async (_req, res) => {
 
 router.get('/users-total', authenticateApiKey, async (_req, res) => {
   try {
-    const db = await Database.getInstance();
-
     return res.status(200).send({
-      users_counts: await db
+      users_counts: await (await Database.getInstance())
         .collection(USERS_COLLECTION)
         .estimatedDocumentCount(),
     });
@@ -59,10 +57,9 @@ router.get('/users-total', authenticateApiKey, async (_req, res) => {
 
 router.get('/rewards-amount', authenticateApiKey, async (req, res) => {
   try {
-    const db = await Database.getInstance();
     return res.status(200).send({
       total_rewards: (
-        await db
+        await (await Database.getInstance())
           .collection(REWARDS_COLLECTION)
           .find({ userTelegramID: req.query.userId })
           .toArray()
@@ -75,10 +72,9 @@ router.get('/rewards-amount', authenticateApiKey, async (req, res) => {
 
 router.get('/rewards-amount-reason', authenticateApiKey, async (req, res) => {
   try {
-    const db = await Database.getInstance();
     return res.status(200).send({
       total_rewards: (
-        await db
+        await (await Database.getInstance())
           .collection(REWARDS_COLLECTION)
           .find({ userTelegramID: req.query.userId, reason: req.query.reason })
           .toArray()
@@ -91,9 +87,9 @@ router.get('/rewards-amount-reason', authenticateApiKey, async (req, res) => {
 
 router.get('/contacts-referred', authenticateApiKey, async (req, res) => {
   try {
-    const db = await Database.getInstance();
-
-    const referred_users = await db
+    const referred_users = await (
+      await Database.getInstance()
+    )
       .collection(TRANSFERS_COLLECTION)
       .aggregate([
         {
@@ -147,8 +143,7 @@ router.get('/contacts-referred', authenticateApiKey, async (req, res) => {
 
 router.get('/transactions-count', authenticateApiKey, async (req, res) => {
   try {
-    const db = await Database.getInstance();
-    const txs = await db
+    const txs = await (await Database.getInstance())
       .collection(TRANSFERS_COLLECTION)
       .find({ senderTgId: req.query.userId })
       .toArray();
@@ -162,9 +157,9 @@ router.get('/transactions-count', authenticateApiKey, async (req, res) => {
 
 router.get('/transactions-new-users', authenticateApiKey, async (req, res) => {
   try {
-    const db = await Database.getInstance();
-
-    const txs = await db
+    const txs = await (
+      await Database.getInstance()
+    )
       .collection(TRANSFERS_COLLECTION)
       .aggregate([
         {
@@ -206,9 +201,9 @@ router.get(
   authenticateApiKey,
   async (req, res) => {
     try {
-      const db = await Database.getInstance();
-
-      const txs = await db
+      const txs = await (
+        await Database.getInstance()
+      )
         .collection(TRANSFERS_COLLECTION)
         .aggregate([
           {
@@ -248,8 +243,7 @@ router.get(
 
 router.get('/referral-link-count', authenticateApiKey, async (req, res) => {
   try {
-    const db = await Database.getInstance();
-    const rewards = await db
+    const rewards = await (await Database.getInstance())
       .collection(REWARDS_COLLECTION)
       .find({ userTelegramID: req.query.userId, reason: 'referral_link' })
       .toArray();
@@ -287,7 +281,11 @@ router.get(
         return outgoingTxs.length > 0
           ? `<b>Transfers to non-Grindery users:</b>\n${outgoingTxs
               .map(
-                (transfer) =>
+                (transfer: {
+                  recipientTgId: string;
+                  dateAdded: Date;
+                  tokenAmount: string;
+                }) =>
                   `${transfer.recipientTgId} | ${transfer.dateAdded} | ${transfer.tokenAmount} G1`,
               )
               .join('\n')}`
@@ -402,7 +400,11 @@ router.get('/format-transfers-user', authenticateApiKey, async (req, res) => {
       return rewardTxs.length > 0
         ? `<b>Reward transfers:</b>\n${rewardTxs
             .map(
-              (transfer) =>
+              (transfer: {
+                amount: string;
+                dateAdded: Date;
+                message: string;
+              }) =>
                 `- ${transfer.amount} g1 on ${transfer.dateAdded} ${
                   transfer.message ? `[${transfer.message}]` : ''
                 }`,
@@ -440,7 +442,12 @@ router.get('/format-transfers-user', authenticateApiKey, async (req, res) => {
       return incomingTxs.length > 0
         ? `<b>Incoming transfers:</b>\n${incomingTxs
             .map(
-              (transfer) =>
+              (transfer: {
+                tokenAmount: string;
+                senderUserHandle: string;
+                dateAdded: Date;
+                message: string;
+              }) =>
                 `- ${transfer.tokenAmount} g1 from @${
                   transfer.senderUserHandle
                 } on ${transfer.dateAdded} ${
@@ -460,7 +467,13 @@ router.get('/format-transfers-user', authenticateApiKey, async (req, res) => {
       return outgoingTxs.length > 0
         ? `<b>Outgoing transfers:</b>\n${outgoingTxs
             .map(
-              (transfer) =>
+              (transfer: {
+                tokenAmount: string;
+                recipientUserHandle: string;
+                recipientTgId: string;
+                dateAdded: Date;
+                message: string;
+              }) =>
                 `- ${transfer.tokenAmount} g1 to ${
                   transfer.recipientUserHandle
                     ? `@${transfer.recipientUserHandle}`
@@ -482,7 +495,11 @@ router.get('/format-transfers-user', authenticateApiKey, async (req, res) => {
       return rewardTxs.length > 0
         ? `<b>Reward transfers:</b>\n${rewardTxs
             .map(
-              (transfer) =>
+              (transfer: {
+                amount: string;
+                dateAdded: Date;
+                message: string;
+              }) =>
                 `- ${transfer.amount} g1 on ${transfer.dateAdded} ${
                   transfer.message ? `[${transfer.message}]` : ''
                 }`,

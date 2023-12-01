@@ -6,6 +6,7 @@ import {
   isFailedTransaction,
   isPendingTransactionHash,
   isSuccessfulTransaction,
+  isTreatmentDurationExceeded,
 } from './utils';
 
 /**
@@ -71,7 +72,7 @@ export async function handleNewTransaction(params: {
 
   // Handle pending hash status
   if (isPendingTransactionHash(transfer.status)) {
-    if (await transfer.isTreatmentDurationExceeded()) return true;
+    if (await isTreatmentDurationExceeded(transfer)) return true;
 
     // Check userOpHash and updateInDatabase for success
     if (!transfer.userOpHash)

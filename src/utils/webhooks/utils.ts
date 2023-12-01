@@ -1,4 +1,11 @@
 import { TRANSACTION_STATUS } from '../constants';
+import {
+  IsolatedRewardTelegram,
+  LinkRewardTelegram,
+  ReferralRewardTelegram,
+  SignUpRewardTelegram,
+} from '../rewards';
+import { TransferTelegram } from '../transfers';
 
 /**
  * Checks if the provided status indicates a successful transaction.
@@ -38,4 +45,29 @@ export function isPositiveFloat(inputString: string): boolean {
 
   // Check if the input string matches the regex pattern for a positive float number
   return floatRegex.test(inputString);
+}
+
+/**
+ * Checks if the treatment duration of a given instance exceeds a specified duration.
+ * @param {IsolatedRewardTelegram | LinkRewardTelegram | ReferralRewardTelegram | SignUpRewardTelegram | TransferTelegram} inst - The instance to be checked.
+ * @returns {Promise<boolean>} A Promise resolving to a boolean indicating if the treatment duration has exceeded.
+ * @throws {Error} Throws an error if there is an issue updating the instance in the database.
+ */
+export async function isTreatmentDurationExceeded(
+  inst:
+    | IsolatedRewardTelegram
+    | LinkRewardTelegram
+    | ReferralRewardTelegram
+    | SignUpRewardTelegram
+    | TransferTelegram,
+): Promise<boolean> {
+  return (
+    (inst.tx.dateAdded < new Date(new Date().getTime() - 10 * 60 * 1000) &&
+      (console.log(
+        `[${inst.eventId}] was stopped due to too long treatment duration (> 10 min).`,
+      ),
+      await inst.updateInDatabase(TRANSACTION_STATUS.FAILURE, new Date()),
+      true)) ||
+    false
+  );
 }

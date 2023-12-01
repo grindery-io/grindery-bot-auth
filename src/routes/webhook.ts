@@ -231,16 +231,14 @@ const listenForMessages = () => {
         case 'new_transaction_batch':
           for (const singleTransaction of messageData.params) {
             // Publishing each transaction as a new event
-            const transactionEvent = {
-              event: 'new_transaction',
-              params: singleTransaction,
-            };
-            const transactionDataBuffer = Buffer.from(
-              JSON.stringify(transactionEvent),
-            );
-            await pubSubClient
-              .topic(topicName)
-              .publishMessage({ data: transactionDataBuffer });
+            await pubSubClient.topic(topicName).publishMessage({
+              data: Buffer.from(
+                JSON.stringify({
+                  event: 'new_transaction',
+                  params: singleTransaction,
+                }),
+              ),
+            });
           }
           processed = true;
           break;
@@ -260,9 +258,7 @@ const listenForMessages = () => {
           break;
       }
 
-      if (!processed) {
-        throw new Error('Error processing event');
-      }
+      if (!processed) throw new Error('Error processing event');
 
       console.log(
         'Acknowledged message:',
