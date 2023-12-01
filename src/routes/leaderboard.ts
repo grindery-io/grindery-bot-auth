@@ -2,6 +2,7 @@ import express from 'express';
 import { Database } from '../db/conn';
 import { authenticateApiKey } from '../utils/auth';
 import { REWARDS_COLLECTION, TRANSFERS_COLLECTION } from '../utils/constants';
+import { getXDayBeforeDate } from '../utils/time';
 
 const router = express.Router();
 
@@ -46,7 +47,7 @@ router.get('/tx-sent', async (req, res) => {
     if (days && !isNaN(Number(days.toString()))) {
       dateFilter = {
         dateAdded: {
-          $gte: new Date(Date.now() - Number(days) * 24 * 60 * 60 * 1000),
+          $gte: getXDayBeforeDate(new Date(), Number(days)),
         },
       };
     }
@@ -115,7 +116,7 @@ router.get('/tokensent', authenticateApiKey, async (req, res) => {
     if (days && !isNaN(Number(days))) {
       dateFilter = {
         dateAdded: {
-          $gte: new Date(Date.now() - Number(days) * 24 * 60 * 60 * 1000),
+          $gte: getXDayBeforeDate(new Date(), Number(days)),
         },
       };
     }
@@ -185,7 +186,7 @@ router.get('/rewards', authenticateApiKey, async (req, res) => {
   if (days && !isNaN(Number(days))) {
     dateFilter = {
       dateAdded: {
-        $gte: new Date(Date.now() - Number(days) * 24 * 60 * 60 * 1000),
+        $gte: getXDayBeforeDate(new Date(), Number(days)),
       },
     };
   }

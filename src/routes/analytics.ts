@@ -2,6 +2,7 @@ import express from 'express';
 import { authenticateApiKey } from '../utils/auth';
 import { TRANSFERS_COLLECTION } from '../utils/constants';
 import { Database } from '../db/conn';
+import { getLastHourDateTime } from '../utils/time';
 
 const router = express.Router();
 
@@ -29,7 +30,7 @@ router.get('/transactions-last-hour', authenticateApiKey, async (_req, res) => {
 
     return res.status(200).json({
       count: await db.collection(TRANSFERS_COLLECTION).count({
-        dateAdded: { $gte: new Date(Date.now() - 60 * 60 * 1000) },
+        dateAdded: { $gte: getLastHourDateTime() },
       }),
     });
   } catch (error) {

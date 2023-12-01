@@ -18,6 +18,7 @@ import { ObjectId } from 'mongodb';
 import { v4 as uuidv4 } from 'uuid';
 import { SOURCE_TG_ID, SOURCE_WALLET_ADDRESS } from '../../secrets';
 import { Database } from '../db/conn';
+import { get24HoursBeforeDate } from '../utils/time';
 
 /**
  * Distributes sign-up rewards of 100 Grindery One Tokens to eligible users.
@@ -59,7 +60,7 @@ export async function distributeSignupRewards(): Promise<void> {
         reason: 'user_sign_up',
         status: 'success',
         dateAdded: {
-          $gt: new Date(new Date(startDate).getTime() - 24 * 60 * 60 * 1000),
+          $gt: get24HoursBeforeDate(new Date(startDate)),
         },
       })
       .toArray();
@@ -185,7 +186,7 @@ export async function distributeReferralRewards(): Promise<void> {
         reason: '2x_reward',
         status: TRANSACTION_STATUS.SUCCESS,
         dateAdded: {
-          $gt: new Date(new Date(startDate).getTime() - 24 * 60 * 60 * 1000),
+          $gt: get24HoursBeforeDate(new Date(startDate)),
         },
       })
       .toArray();
