@@ -8,7 +8,6 @@ import {
 import {
   getPatchWalletAccessToken,
   getPatchWalletAddressFromTgId,
-  getTxStatus,
   sendTokens,
 } from './patchwallet';
 import axios from 'axios';
@@ -227,24 +226,6 @@ export class SignUpRewardTelegram {
    */
   updateUserOpHash(userOpHash: string): string {
     return (this.userOpHash = userOpHash);
-  }
-
-  /**
-   * Retrieves the status of the PatchWallet transaction.
-   * @returns {Promise<any>} - True if the transaction status is retrieved successfully, false otherwise.
-   */
-  async getStatus(): Promise<any> {
-    try {
-      // Retrieve the status of the PatchWallet transaction
-      return await getTxStatus(this.userOpHash);
-    } catch (error) {
-      // Log error if retrieving transaction status fails
-      console.error(
-        `[${this.eventId}] Error processing PatchWallet transaction status: ${error}`,
-      );
-      // Return true if the error status is 470, marking the transaction as failed
-      return false;
-    }
   }
 
   /**
@@ -520,21 +501,6 @@ export class ReferralRewardTelegram {
    */
   updateUserOpHash(userOpHash: string): string {
     return (this.userOpHash = userOpHash);
-  }
-
-  /**
-   * Retrieves the status of the PatchWallet transaction for the referral reward.
-   * @returns {Promise<boolean>} - True if the transaction status is retrieved successfully, false otherwise.
-   */
-  async getStatus(): Promise<any> {
-    try {
-      return await getTxStatus(this.userOpHash);
-    } catch (error) {
-      console.error(
-        `[${this.eventId}] Error processing PatchWallet transaction status: ${error}`,
-      );
-      return false;
-    }
   }
 
   /**
@@ -844,24 +810,6 @@ export class LinkRewardTelegram {
   }
 
   /**
-   * Retrieves the transaction status.
-   * @returns {Promise<string|boolean>} - The transaction status or false if an error occurs.
-   */
-  async getStatus(): Promise<any> {
-    try {
-      // Retrieve the status of the PatchWallet transaction
-      return await getTxStatus(this.userOpHash);
-    } catch (error) {
-      // Log error if retrieving transaction status fails
-      console.error(
-        `[${this.eventId}] Error processing PatchWallet transaction status: ${error}`,
-      );
-      // Return true if the error status is 470, marking the transaction as failed
-      return false;
-    }
-  }
-
-  /**
    * Saves transaction information to FlowXO.
    */
   async saveToFlowXO() {
@@ -1123,24 +1071,6 @@ export class IsolatedRewardTelegram {
    */
   updateUserOpHash(userOpHash: string): string {
     return (this.userOpHash = userOpHash);
-  }
-
-  /**
-   * Retrieves the status of the PatchWallet transaction.
-   * @returns {Promise<any>} - True if the transaction status is retrieved successfully, false otherwise.
-   */
-  async getStatus(): Promise<any> {
-    try {
-      // Retrieve the status of the PatchWallet transaction
-      return await getTxStatus(this.userOpHash);
-    } catch (error) {
-      // Log error if retrieving transaction status fails
-      console.error(
-        `[${this.eventId}] Error processing PatchWallet transaction status: ${error}`,
-      );
-      // Return true if the error status is 470, marking the transaction as failed
-      return false;
-    }
   }
 
   /**

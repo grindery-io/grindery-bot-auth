@@ -1,4 +1,5 @@
 import { TRANSACTION_STATUS } from '../constants';
+import { getTxStatus } from '../patchwallet';
 import {
   IsolatedRewardTelegram,
   LinkRewardTelegram,
@@ -71,4 +72,36 @@ export async function isTreatmentDurationExceeded(
       true)) ||
     false
   );
+}
+
+/**
+ * Retrieves the status of rewards based on the provided reward instance.
+ *
+ * @param inst An instance representing various reward types:
+ *  - `IsolatedRewardTelegram`
+ *  - `LinkRewardTelegram`
+ *  - `ReferralRewardTelegram`
+ *  - `SignUpRewardTelegram`
+ * @returns A Promise that resolves to the status of rewards retrieval.
+ *   If successful, returns the status obtained from the transaction; otherwise, returns `false`.
+ * @throws Error if there's an issue during the status retrieval process.
+ */
+export async function getStatusRewards(
+  inst:
+    | IsolatedRewardTelegram
+    | LinkRewardTelegram
+    | ReferralRewardTelegram
+    | SignUpRewardTelegram,
+): Promise<any> {
+  try {
+    // Retrieve the status of the PatchWallet transaction
+    return await getTxStatus(inst.userOpHash);
+  } catch (error) {
+    // Log error if retrieving transaction status fails
+    console.error(
+      `[${inst.eventId}] Error processing PatchWallet transaction status: ${error}`,
+    );
+    // Return true if the error status is 470, marking the transaction as failed
+    return false;
+  }
 }

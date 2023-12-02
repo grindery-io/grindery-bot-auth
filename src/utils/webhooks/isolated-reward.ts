@@ -3,7 +3,11 @@ import {
   IsolatedRewardTelegram,
   createIsolatedRewardTelegram,
 } from '../rewards';
-import { isPendingTransactionHash, isTreatmentDurationExceeded } from './utils';
+import {
+  getStatusRewards,
+  isPendingTransactionHash,
+  isTreatmentDurationExceeded,
+} from './utils';
 
 /**
  * Handles isolated rewards based on given parameters.
@@ -77,7 +81,8 @@ export async function handleIsolatedReward(params: {
         );
 
       // Get status of reward test
-      if ((txReward = await reward.getStatus()) === false) return txReward;
+      if ((txReward = await getStatusRewards(reward)) === false)
+        return txReward;
     }
 
     // Check for txReward and send transaction if not present

@@ -1,6 +1,10 @@
 import { TRANSACTION_STATUS } from '../constants';
 import { SignUpRewardTelegram, createSignUpRewardTelegram } from '../rewards';
-import { isPendingTransactionHash, isTreatmentDurationExceeded } from './utils';
+import {
+  getStatusRewards,
+  isPendingTransactionHash,
+  isTreatmentDurationExceeded,
+} from './utils';
 
 /**
  * Handles the sign-up reward process based on provided parameters.
@@ -57,7 +61,8 @@ export async function handleSignUpReward(params: {
         );
 
       // Get status of reward test
-      if ((txReward = await reward.getStatus()) === false) return txReward;
+      if ((txReward = await getStatusRewards(reward)) === false)
+        return txReward;
     }
 
     // Check for txReward and send transaction if not present

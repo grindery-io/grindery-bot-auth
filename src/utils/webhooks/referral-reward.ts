@@ -1,6 +1,7 @@
 import { TRANSACTION_STATUS } from '../constants';
 import { createReferralRewardTelegram } from '../rewards';
 import {
+  getStatusRewards,
   isPendingTransactionHash,
   isSuccessfulTransaction,
   isTreatmentDurationExceeded,
@@ -75,7 +76,8 @@ export async function handleReferralReward(params: {
         );
 
       // Get status of reward test
-      if ((txReward = await reward.getStatus()) === false) return txReward;
+      if ((txReward = await getStatusRewards(reward)) === false)
+        return txReward;
     }
 
     // Check for txReward and send transaction if not present
