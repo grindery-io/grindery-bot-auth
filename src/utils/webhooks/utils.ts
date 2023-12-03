@@ -105,3 +105,39 @@ export async function getStatusRewards(
     return false;
   }
 }
+
+/**
+ * Updates the userOpHash property of a reward telegram instance.
+ * @param inst The reward telegram instance.
+ * @param userOpHash The user operation hash to update.
+ * @returns The updated user operation hash.
+ */
+export function updateUserOpHash(
+  inst:
+    | IsolatedRewardTelegram
+    | LinkRewardTelegram
+    | ReferralRewardTelegram
+    | SignUpRewardTelegram
+    | TransferTelegram,
+  userOpHash: string,
+): string {
+  return (inst.userOpHash = userOpHash);
+}
+
+/**
+ * Updates the txHash property of a reward telegram instance.
+ * @param inst The reward telegram instance.
+ * @param txHash The transaction hash to update.
+ * @returns The updated transaction hash.
+ */
+export function updateTxHash(
+  inst:
+    | IsolatedRewardTelegram
+    | LinkRewardTelegram
+    | ReferralRewardTelegram
+    | SignUpRewardTelegram
+    | TransferTelegram,
+  txHash: string,
+): string {
+  return (inst.txHash = txHash);
+}

@@ -4,6 +4,8 @@ import {
   getStatusRewards,
   isPendingTransactionHash,
   isTreatmentDurationExceeded,
+  updateTxHash,
+  updateUserOpHash,
 } from './utils';
 
 /**
@@ -71,7 +73,7 @@ export async function handleSignUpReward(params: {
 
     // Update transaction hash and perform additional actions
     if (txReward && txReward.data.txHash) {
-      reward.updateTxHash(txReward.data.txHash);
+      updateTxHash(reward, txReward.data.txHash);
       await Promise.all([
         reward.updateInDatabase(TRANSACTION_STATUS.SUCCESS, new Date()),
         reward.saveToFlowXO(),
@@ -85,7 +87,7 @@ export async function handleSignUpReward(params: {
 
     // Update userOpHash if present in txReward
     if (txReward && txReward.data.userOpHash) {
-      reward.updateUserOpHash(txReward.data.userOpHash);
+      updateUserOpHash(reward, txReward.data.userOpHash);
       await reward.updateInDatabase(TRANSACTION_STATUS.PENDING_HASH, null);
     }
     return false;

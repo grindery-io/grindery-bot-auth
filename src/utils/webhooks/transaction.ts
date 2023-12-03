@@ -7,6 +7,8 @@ import {
   isPendingTransactionHash,
   isSuccessfulTransaction,
   isTreatmentDurationExceeded,
+  updateTxHash,
+  updateUserOpHash,
 } from './utils';
 
 /**
@@ -91,7 +93,7 @@ export async function handleNewTransaction(params: {
 
   // Finalize transaction handling
   if (tx && tx.data.txHash) {
-    transfer.updateTxHash(tx.data.txHash);
+    updateTxHash(transfer, tx.data.txHash);
     await Promise.all([
       transfer.updateInDatabase(TRANSACTION_STATUS.SUCCESS, new Date()),
       transfer.saveToSegment(),
@@ -122,7 +124,7 @@ export async function handleNewTransaction(params: {
   // Handle pending hash for userOpHash
   tx &&
     tx.data.userOpHash &&
-    transfer.updateUserOpHash(tx.data.userOpHash) &&
+    updateUserOpHash(transfer, tx.data.userOpHash) &&
     (await transfer.updateInDatabase(TRANSACTION_STATUS.PENDING_HASH, null));
 
   return false;

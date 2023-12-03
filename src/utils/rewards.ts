@@ -211,24 +211,6 @@ export class SignUpRewardTelegram {
   }
 
   /**
-   * Updates the transaction hash.
-   * @param {string} txHash - The transaction hash to be updated.
-   * @returns {string} - The updated transaction hash.
-   */
-  updateTxHash(txHash: string): string {
-    return (this.txHash = txHash);
-  }
-
-  /**
-   * Updates the user operation hash.
-   * @param {string} userOpHash - The user operation hash to be updated.
-   * @returns {string} - The updated user operation hash.
-   */
-  updateUserOpHash(userOpHash: string): string {
-    return (this.userOpHash = userOpHash);
-  }
-
-  /**
    * Saves transaction information to FlowXO.
    * @returns {Promise<void>} - The result of sending the transaction to FlowXO.
    */
@@ -483,24 +465,6 @@ export class ReferralRewardTelegram {
         newUserAddress: this.patchwallet,
       }),
     );
-  }
-
-  /**
-   * Updates the transaction hash for the referral reward.
-   * @param {string} txHash - The transaction hash to be updated.
-   * @returns {string} - The updated transaction hash.
-   */
-  updateTxHash(txHash: string): string {
-    return (this.txHash = txHash);
-  }
-
-  /**
-   * Updates the user operation hash for the referral reward.
-   * @param {string} userOpHash - The user operation hash to be updated.
-   * @returns {string} - The updated user operation hash.
-   */
-  updateUserOpHash(userOpHash: string): string {
-    return (this.userOpHash = userOpHash);
   }
 
   /**
@@ -792,24 +756,6 @@ export class LinkRewardTelegram {
   }
 
   /**
-   * Updates the transaction hash.
-   * @param {string} txHash - The transaction hash to be updated.
-   * @returns {string} - The updated transaction hash.
-   */
-  updateTxHash(txHash: string): string {
-    return (this.txHash = txHash);
-  }
-
-  /**
-   * Updates the user operation hash.
-   * @param {string} userOpHash - The user operation hash to be updated.
-   * @returns {string} - The updated user operation hash.
-   */
-  updateUserOpHash(userOpHash: string): string {
-    return (this.userOpHash = userOpHash);
-  }
-
-  /**
    * Saves transaction information to FlowXO.
    */
   async saveToFlowXO() {
@@ -1053,24 +999,6 @@ export class IsolatedRewardTelegram {
     console.log(
       `[${this.eventId}] sign up reward for ${this.userTelegramID} in MongoDB as ${status} with transaction hash : ${this.txHash}.`,
     );
-  }
-
-  /**
-   * Updates the transaction hash.
-   * @param {string} txHash - The transaction hash to be updated.
-   * @returns {string} - The updated transaction hash.
-   */
-  updateTxHash(txHash: string): string {
-    return (this.txHash = txHash);
-  }
-
-  /**
-   * Updates the user operation hash.
-   * @param {string} userOpHash - The user operation hash to be updated.
-   * @returns {string} - The updated user operation hash.
-   */
-  updateUserOpHash(userOpHash: string): string {
-    return (this.userOpHash = userOpHash);
   }
 
   /**

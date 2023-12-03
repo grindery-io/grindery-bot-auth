@@ -383,24 +383,6 @@ export class TransferTelegram {
   }
 
   /**
-   * Updates the transaction hash.
-   * @param {string} txHash - The transaction hash to be updated.
-   * @returns {string} - The updated transaction hash.
-   */
-  updateTxHash(txHash: string): string {
-    return (this.txHash = txHash);
-  }
-
-  /**
-   * Updates the user operation hash.
-   * @param {string} userOpHash - The user operation hash to be updated.
-   * @returns {string} - The updated user operation hash.
-   */
-  updateUserOpHash(userOpHash: string): string {
-    return (this.userOpHash = userOpHash);
-  }
-
-  /**
    * Saves transaction information to the Segment.
    * @returns {Promise<void>} - The result of adding the transaction to the Segment.
    */
