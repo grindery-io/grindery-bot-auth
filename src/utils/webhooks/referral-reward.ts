@@ -2,6 +2,7 @@ import { TRANSACTION_STATUS } from '../constants';
 import { createReferralRewardTelegram } from '../rewards';
 import {
   getStatusRewards,
+  isGasPriceExceed,
   isPendingTransactionHash,
   isSuccessfulTransaction,
   isTreatmentDurationExceeded,
@@ -31,6 +32,7 @@ export async function handleReferralReward(params: {
   patchwallet: string;
   tokenAddress?: string;
   chainName?: string;
+  gasPrice?: string;
 }): Promise<boolean> {
   try {
     const reward = await createReferralRewardTelegram(
@@ -48,6 +50,13 @@ export async function handleReferralReward(params: {
     if (!(await reward.getReferent())) return true;
 
     await reward.getRewardSameFromDatabase();
+
+    // Throttle referral reward transactions to reduce gas price cost
+    if (isGasPriceExceed(params.gasPrice, params.chainName))
+      return (
+        await reward.updateInDatabase(TRANSACTION_STATUS.ON_HOLD, new Date()),
+        true
+      );
 
     if (
       isSuccessfulTransaction(reward.status) ||

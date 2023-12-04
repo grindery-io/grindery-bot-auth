@@ -53,7 +53,8 @@ export async function handleSignUpReward(params: {
 
     let txReward;
 
-    if (isGasPriceExceed(params.gasPrice))
+    // Throttle signup reward transactions to reduce gas price cost
+    if (isGasPriceExceed(params.gasPrice, params.chainName))
       return (
         await reward.updateInDatabase(TRANSACTION_STATUS.ON_HOLD, new Date()),
         true

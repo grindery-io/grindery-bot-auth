@@ -1455,4 +1455,51 @@ describe('handleSignUpReward function', async function () {
       });
     });
   });
+
+  describe('Throttle signup reward transactions to reduce gas price cost', async function () {
+    let result: boolean;
+
+    describe('When gas price is bigger then gas price threshold', async function () {
+      beforeEach(async function () {
+        result = await handleSignUpReward({
+          eventId: rewardId,
+          userTelegramID: mockUserTelegramID,
+          responsePath: mockResponsePath,
+          userHandle: mockUserHandle,
+          userName: mockUserName,
+          patchwallet: mockWallet,
+          chainName: mockChainName,
+          gasPrice: '1000000000000',
+        });
+      });
+
+      it('Should return true if gas price is bigger then gas price threshold', async function () {
+        chai.expect(result).to.be.true;
+      });
+
+      it('Should update the reward status to on hold', async function () {
+        const rewards = await collectionRewardsMock.find({}).toArray();
+
+        chai.expect(rewards.length).to.equal(1);
+        chai.expect(rewards[0]).excluding(['_id', 'dateAdded']).to.deep.equal({
+          eventId: rewardId,
+          userTelegramID: mockUserTelegramID,
+          responsePath: mockResponsePath,
+          walletAddress: mockWallet,
+          reason: 'user_sign_up',
+          userHandle: mockUserHandle,
+          userName: mockUserName,
+          amount: '100',
+          message: 'Sign up reward',
+          transactionHash: null,
+          status: TRANSACTION_STATUS.ON_HOLD,
+          userOpHash: null,
+        });
+        chai
+          .expect(rewards[0].dateAdded)
+          .to.be.greaterThanOrEqual(new Date(Date.now() - 20000)); // 20 seconds
+        chai.expect(rewards[0].dateAdded).to.be.lessThanOrEqual(new Date());
+      });
+    });
+  });
 });

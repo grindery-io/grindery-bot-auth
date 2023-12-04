@@ -1205,4 +1205,58 @@ describe('handleLinkReward function', async function () {
       });
     });
   });
+
+  describe('Throttle referral reward transactions to reduce gas price cost', async function () {
+    let result: boolean;
+
+    describe('When gas price is bigger then gas price threshold', async function () {
+      beforeEach(async function () {
+        await collectionUsersMock.insertOne({
+          userTelegramID: mockUserTelegramID1,
+          responsePath: mockResponsePath,
+          userHandle: mockUserHandle,
+          userName: mockUserName,
+          patchwallet: mockWallet,
+        });
+
+        result = await handleLinkReward(
+          rewardId,
+          mockUserTelegramID,
+          mockUserTelegramID1,
+          mockTokenAddress,
+          mockChainName,
+          '10000000000',
+        );
+      });
+
+      it('Should return true if gas price is bigger then gas price threshold', async function () {
+        chai.expect(result).to.be.true;
+      });
+
+      it('Should update the reward status to on hold', async function () {
+        const rewards = await collectionRewardsMock.find({}).toArray();
+
+        chai.expect(rewards.length).to.equal(1);
+        chai.expect(rewards[0]).excluding(['_id', 'dateAdded']).to.deep.equal({
+          eventId: rewardId,
+          sponsoredUserTelegramID: mockUserTelegramID,
+          userTelegramID: mockUserTelegramID1,
+          responsePath: mockResponsePath,
+          walletAddress: mockWallet,
+          reason: 'referral_link',
+          userHandle: mockUserHandle,
+          userName: mockUserName,
+          amount: '10',
+          message: 'Referral link',
+          transactionHash: null,
+          status: TRANSACTION_STATUS.ON_HOLD,
+          userOpHash: null,
+        });
+        chai
+          .expect(rewards[0].dateAdded)
+          .to.be.greaterThanOrEqual(new Date(Date.now() - 20000)); // 20 seconds
+        chai.expect(rewards[0].dateAdded).to.be.lessThanOrEqual(new Date());
+      });
+    });
+  });
 });

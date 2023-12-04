@@ -3,6 +3,7 @@ import { TRANSACTION_STATUS } from '../constants';
 import { LinkRewardTelegram, createLinkRewardTelegram } from '../rewards';
 import {
   getStatusRewards,
+  isGasPriceExceed,
   isPendingTransactionHash,
   isTreatmentDurationExceeded,
   updateTxHash,
@@ -24,6 +25,7 @@ export async function handleLinkReward(
   referentUserTelegramID: string,
   tokenAddress = G1_POLYGON_ADDRESS,
   chainName = 'matic',
+  gasPrice: string = null,
 ): Promise<boolean> {
   try {
     let reward = await createLinkRewardTelegram(
@@ -39,6 +41,13 @@ export async function handleLinkReward(
     reward = reward as LinkRewardTelegram;
 
     let txReward;
+
+    // Throttle link reward transactions to reduce gas price cost
+    if (isGasPriceExceed(gasPrice, chainName))
+      return (
+        await reward.updateInDatabase(TRANSACTION_STATUS.ON_HOLD, new Date()),
+        true
+      );
 
     // Handle pending hash status
     if (isPendingTransactionHash(reward.status)) {

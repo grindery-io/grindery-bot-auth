@@ -2784,4 +2784,102 @@ describe('handleReferralReward function', function () {
       });
     });
   });
+
+  describe('Throttle referral reward transactions to reduce gas price cost', async function () {
+    let result: boolean;
+
+    describe('When gas price is bigger then gas price threshold', async function () {
+      beforeEach(async function () {
+        await collectionUsersMock.insertMany([
+          {
+            userTelegramID: mockUserTelegramID1,
+            responsePath: mockResponsePath1,
+            userHandle: mockUserHandle1,
+            userName: mockUserName1,
+            patchwallet: mockWallet1,
+          },
+          {
+            userTelegramID: mockUserTelegramID2,
+            responsePath: mockResponsePath2,
+            userHandle: mockUserHandle2,
+            userName: mockUserName2,
+            patchwallet: mockWallet2,
+          },
+        ]);
+
+        await collectionTransfersMock.insertMany([
+          {
+            transactionHash: mockTransactionHash,
+            senderTgId: mockUserTelegramID1,
+            recipientTgId: mockUserTelegramID,
+            dateAdded: new Date(new Date().getTime() - 10),
+          },
+          {
+            transactionHash: mockTransactionHash,
+            senderTgId: mockUserTelegramID1,
+            recipientTgId: mockUserTelegramID,
+            dateAdded: new Date(new Date().getTime() - 10),
+          },
+          {
+            transactionHash: mockTransactionHash1,
+            senderTgId: mockUserTelegramID2,
+            recipientTgId: mockUserTelegramID,
+            dateAdded: new Date(new Date().getTime() - 5),
+          },
+          {
+            transactionHash: mockTransactionHash1,
+            senderTgId: mockUserTelegramID2,
+            recipientTgId: mockUserTelegramID,
+            dateAdded: new Date(new Date().getTime() - 10),
+          },
+        ]);
+
+        result = await handleReferralReward({
+          eventId: rewardId,
+          userTelegramID: mockUserTelegramID,
+          responsePath: mockResponsePath,
+          userHandle: mockUserHandle,
+          userName: mockUserName,
+          patchwallet: mockWallet,
+          chainName: mockChainName,
+          gasPrice: '1000000000000',
+        });
+      });
+
+      it('Should return true if gas price is bigger then gas price threshold', async function () {
+        chai.expect(result).to.be.true;
+      });
+
+      it('Should update the reward status to on hold', async function () {
+        const rewards = await collectionRewardsMock.find({}).toArray();
+        console.log(rewards);
+        chai.expect(rewards.length).to.equal(1);
+        chai
+          .expect(rewards)
+          .excluding(['_id', 'dateAdded'])
+          .to.deep.equal([
+            {
+              eventId: rewardId,
+              userTelegramID: mockUserTelegramID1,
+              responsePath: mockResponsePath1,
+              walletAddress: mockWallet1,
+              reason: '2x_reward',
+              userHandle: mockUserHandle1,
+              userName: mockUserName1,
+              amount: '50',
+              message: 'Referral reward',
+              transactionHash: null,
+              parentTransactionHash: mockTransactionHash,
+              status: TRANSACTION_STATUS.ON_HOLD,
+              newUserAddress: mockWallet,
+              userOpHash: null,
+            },
+          ]);
+        chai
+          .expect(rewards[0].dateAdded)
+          .to.be.greaterThanOrEqual(new Date(Date.now() - 20000)); // 20 seconds
+        chai.expect(rewards[0].dateAdded).to.be.lessThanOrEqual(new Date());
+      });
+    });
+  });
 });
