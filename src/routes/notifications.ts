@@ -116,10 +116,12 @@ router.post('/wallet', async (req, res) => {
     });
 
     const walletWorkflowExists = workflows.find(
-      (workflow) => workflow.workflow.title === walletWorkflow.title,
+      (workflow: { workflow: { title: string } }) =>
+        workflow.workflow.title === walletWorkflow.title,
     );
     const erc20WorkflowExists = workflows.find(
-      (workflow) => workflow.workflow.title === erc20Workflow.title,
+      (workflow: { workflow: { title: string } }) =>
+        workflow.workflow.title === erc20Workflow.title,
     );
 
     // check if workflow already exists

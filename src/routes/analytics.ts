@@ -26,12 +26,12 @@ const router = express.Router();
  */
 router.get('/transactions-last-hour', authenticateApiKey, async (_req, res) => {
   try {
-    const db = await Database.getInstance();
-
     return res.status(200).json({
-      count: await db.collection(TRANSFERS_COLLECTION).count({
-        dateAdded: { $gte: getLastHourDateTime() },
-      }),
+      count: await (await Database.getInstance())
+        .collection(TRANSFERS_COLLECTION)
+        .count({
+          dateAdded: { $gte: getLastHourDateTime() },
+        }),
     });
   } catch (error) {
     return res.status(500).json({ msg: 'An error occurred', error });
