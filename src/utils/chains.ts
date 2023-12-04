@@ -91,3 +91,11 @@ export const CHAIN_MAPPING = {
   'eip155:44787': LAVANET('alfajores/rpc', 'alfajores/rpc-http'),
   'eip155:9000': LAVANET('evmost/json-rpc', 'evmost/json-rpc-http'),
 };
+
+/**
+ * Mapping of chain IDs to their respective WebSocket and HTTP endpoints.
+ */
+export const GAS_PRICE_THRESHOLD_MAPPING = {
+  eth: 10000,
+  matic: 20000,
+};

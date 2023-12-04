@@ -1,3 +1,4 @@
+import { GAS_PRICE_THRESHOLD_MAPPING } from '../chains';
 import { TRANSACTION_STATUS } from '../constants';
 import { getTxStatus } from '../patchwallet';
 import {
@@ -142,10 +143,16 @@ export function updateTxHash(
   return (inst.txHash = txHash);
 }
 
-export function isGasPriceExceed(gasPrice: string): boolean {
+/**
+ * Checks if the provided gas price exceeds the threshold for a specific blockchain.
+ * @param gasPrice The gas price to check.
+ * @param chainName The name of the blockchain for which the threshold is defined.
+ * @returns `true` if the gas price exceeds the threshold, `false` otherwise.
+ */
+export function isGasPriceExceed(gasPrice: string, chainName: string): boolean {
+  const gasPriceThreshold: number = GAS_PRICE_THRESHOLD_MAPPING[chainName];
   if (!gasPrice) return false;
-
-  if (gasPrice > '100000') return true;
-
+  if (!gasPriceThreshold) return false;
+  if (Number(gasPrice) > gasPriceThreshold) return true;
   return false;
 }
