@@ -27,6 +27,7 @@ export async function handleNewReward(params: {
   tokenAddress?: string;
   chainName?: string;
   patchwallet?: string;
+  gasPrice?: string;
 }): Promise<boolean> {
   const user = await createUserTelegram(
     params.userTelegramID,

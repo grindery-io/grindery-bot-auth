@@ -141,3 +141,11 @@ export function updateTxHash(
 ): string {
   return (inst.txHash = txHash);
 }
+
+export function isGasPriceExceed(gasPrice: string): boolean {
+  if (!gasPrice) return false;
+
+  if (gasPrice > '100000') return true;
+
+  return false;
+}

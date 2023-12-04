@@ -41,6 +41,7 @@ export const TRANSACTION_STATUS = {
   SUCCESS: 'success',
   FAILURE: 'failure',
   PENDING_HASH: 'pending_hash',
+  ON_HOLD: 'on_hold',
 };
 
 /**

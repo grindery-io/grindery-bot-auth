@@ -2,6 +2,7 @@ import { TRANSACTION_STATUS } from '../constants';
 import { SignUpRewardTelegram, createSignUpRewardTelegram } from '../rewards';
 import {
   getStatusRewards,
+  isGasPriceExceed,
   isPendingTransactionHash,
   isTreatmentDurationExceeded,
   updateTxHash,
@@ -30,6 +31,7 @@ export async function handleSignUpReward(params: {
   patchwallet: string;
   tokenAddress?: string;
   chainName?: string;
+  gasPrice?: string;
 }): Promise<boolean> {
   try {
     // Create a sign-up reward object
@@ -50,6 +52,12 @@ export async function handleSignUpReward(params: {
     reward = reward as SignUpRewardTelegram;
 
     let txReward;
+
+    if (isGasPriceExceed(params.gasPrice))
+      return (
+        await reward.updateInDatabase(TRANSACTION_STATUS.ON_HOLD, new Date()),
+        true
+      );
 
     // Handle pending hash status
     if (isPendingTransactionHash(reward.status)) {
