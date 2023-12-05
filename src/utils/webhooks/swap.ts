@@ -27,7 +27,7 @@ export async function handleSwap(params: SwapParams): Promise<boolean> {
   // If user information is not found, log an error and return true indicating handled status
   if (!userInformation) {
     console.error(
-      `[SWAP EVENT] event id [${params.eventId}] User Telegram Id [${params.userTelegramID}] is not a user`,
+      `[SWAP EVENT] Event ID [${params.eventId}] User Telegram ID [${params.userTelegramID}] does not exist in the database.`,
     );
     return true;
   }
@@ -47,11 +47,13 @@ export async function handleSwap(params: SwapParams): Promise<boolean> {
     if (await isTreatmentDurationExceeded(swap)) return true;
 
     // If userOpHash is not available, mark the swap as successful and return true indicating handled status
-    if (!swap.userOpHash)
-      return (
-        await swap.updateInDatabase(TRANSACTION_STATUS.SUCCESS, new Date()),
-        true
+    if (!swap.userOpHash) {
+      await swap.updateInDatabase(TRANSACTION_STATUS.SUCCESS, new Date());
+      console.log(
+        `[SWAP EVENT] Event ID [${params.eventId}] Swap marked as successful as userOpHash is not available.`,
       );
+      return true; // Indicating handled status
+    }
 
     // Check status for userOpHash and return the status if it's retrieved successfully or false if failed
     if ((tx = await swap.getStatus()) === true || tx == false) return tx;
@@ -71,13 +73,13 @@ export async function handleSwap(params: SwapParams): Promise<boolean> {
       swap.saveToFlowXO(),
     ]).catch((error) =>
       console.error(
-        `[${params.eventId}] Error processing Segment or FlowXO webhook: ${error}`,
+        `[SWAP EVENT] Event ID [${params.eventId}] Error processing Segment or FlowXO webhook: ${error}`,
       ),
     );
 
     // Log successful swap event completion
     console.log(
-      `[${swap.txHash}] swap event [${tx.data.txHash}] from ${params.userTelegramID} finished.`,
+      `[SWAP EVENT] Event ID [${swap.txHash}] Swap event [${tx.data.txHash}] from ${params.userTelegramID} completed successfully.`,
     );
     return true;
   }
