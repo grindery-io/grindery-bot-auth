@@ -1502,6 +1502,53 @@ describe('handleSignUpReward function', async function () {
           .to.be.greaterThanOrEqual(new Date(Date.now() - 20000)); // 20 seconds
         chai.expect(rewards[0].dateAdded).to.be.lessThanOrEqual(new Date());
       });
+
+      it('Should return true if the reward already exists in the rewards collection', async function () {
+        await collectionRewardsMock.insertOne({
+          eventId: rewardId,
+          userTelegramID: mockUserTelegramID,
+          reason: 'user_sign_up',
+          status: TRANSACTION_STATUS.ON_HOLD,
+        });
+
+        chai.expect(result).to.be.true;
+      });
+
+      it.only('Should not add another reward if there is already an on hold reward in the rewards collection', async function () {
+        await handleSignUpReward({
+          eventId: rewardId,
+          userTelegramID: mockUserTelegramID,
+          responsePath: mockResponsePath,
+          userHandle: mockUserHandle,
+          userName: mockUserName,
+          patchwallet: mockWallet,
+          chainName: mockChainName,
+          gasPrice: '1000000000000',
+          chainId: mockChainId,
+        });
+
+        const rewards = await collectionRewardsMock.find({}).toArray();
+
+        chai.expect(rewards.length).to.equal(1);
+        chai.expect(rewards[0]).excluding(['_id', 'dateAdded']).to.deep.equal({
+          eventId: rewardId,
+          userTelegramID: mockUserTelegramID,
+          responsePath: mockResponsePath,
+          walletAddress: mockWallet,
+          reason: 'user_sign_up',
+          userHandle: mockUserHandle,
+          userName: mockUserName,
+          amount: '100',
+          message: 'Sign up reward',
+          transactionHash: null,
+          status: TRANSACTION_STATUS.ON_HOLD,
+          userOpHash: null,
+        });
+        chai
+          .expect(rewards[0].dateAdded)
+          .to.be.greaterThanOrEqual(new Date(Date.now() - 20000)); // 20 seconds
+        chai.expect(rewards[0].dateAdded).to.be.lessThanOrEqual(new Date());
+      });
     });
   });
 });
