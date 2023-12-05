@@ -26,6 +26,7 @@ export async function handleLinkReward(
   tokenAddress = G1_POLYGON_ADDRESS,
   chainName = 'matic',
   gasPrice: string = null,
+  chainId: string = null,
 ): Promise<boolean> {
   try {
     let reward = await createLinkRewardTelegram(
@@ -43,7 +44,7 @@ export async function handleLinkReward(
     let txReward;
 
     // Throttle link reward transactions to reduce gas price cost
-    if (isGasPriceExceed(gasPrice, chainName))
+    if (isGasPriceExceed(gasPrice, chainId))
       return (
         await reward.updateInDatabase(TRANSACTION_STATUS.ON_HOLD, new Date()),
         true

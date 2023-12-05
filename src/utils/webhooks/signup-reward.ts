@@ -32,6 +32,7 @@ export async function handleSignUpReward(params: {
   tokenAddress?: string;
   chainName?: string;
   gasPrice?: string;
+  chainId?: string;
 }): Promise<boolean> {
   try {
     // Create a sign-up reward object
@@ -54,7 +55,7 @@ export async function handleSignUpReward(params: {
     let txReward;
 
     // Throttle signup reward transactions to reduce gas price cost
-    if (isGasPriceExceed(params.gasPrice, params.chainName))
+    if (isGasPriceExceed(params.gasPrice, params.chainId))
       return (
         await reward.updateInDatabase(TRANSACTION_STATUS.ON_HOLD, new Date()),
         true

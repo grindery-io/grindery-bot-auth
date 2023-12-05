@@ -127,7 +127,9 @@ describe('Gas Price Exceed', async function () {
     });
 
     it('Should return true when gas price is bigger then gas price threshold', async function () {
-      chai.expect(isGasPriceExceed('999999999999999', 'matic')).to.equal(true);
+      chai
+        .expect(isGasPriceExceed('999999999999999', 'eip155:137'))
+        .to.equal(true);
     });
   });
 });

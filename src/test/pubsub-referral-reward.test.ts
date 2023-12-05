@@ -35,6 +35,7 @@ import {
   getCollectionTransfersMock,
   getCollectionUsersMock,
   getCollectionRewardsMock,
+  mockChainId,
 } from './utils';
 import Sinon from 'sinon';
 import axios from 'axios';
@@ -2843,6 +2844,7 @@ describe('handleReferralReward function', function () {
           patchwallet: mockWallet,
           chainName: mockChainName,
           gasPrice: '1000000000000',
+          chainId: mockChainId,
         });
       });
 

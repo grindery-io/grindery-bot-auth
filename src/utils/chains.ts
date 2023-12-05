@@ -96,6 +96,6 @@ export const CHAIN_MAPPING = {
  * Mapping of chain IDs to their respective WebSocket and HTTP endpoints.
  */
 export const GAS_PRICE_THRESHOLD_MAPPING = {
-  eth: 10000,
-  matic: 20000,
+  'eip155:1': 10000,
+  'eip155:137': 20000,
 };

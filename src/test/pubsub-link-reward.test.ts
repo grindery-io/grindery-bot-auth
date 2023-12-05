@@ -17,6 +17,7 @@ import {
   mockChainName,
   getCollectionUsersMock,
   getCollectionRewardsMock,
+  mockChainId,
 } from './utils';
 import Sinon from 'sinon';
 import axios from 'axios';
@@ -1226,6 +1227,7 @@ describe('handleLinkReward function', async function () {
           mockTokenAddress,
           mockChainName,
           '10000000000',
+          mockChainId,
         );
       });
 

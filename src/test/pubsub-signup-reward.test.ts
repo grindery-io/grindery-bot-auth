@@ -15,6 +15,7 @@ import {
   mockTokenAddress,
   getCollectionUsersMock,
   getCollectionRewardsMock,
+  mockChainId,
 } from './utils';
 import { handleSignUpReward } from '../utils/webhooks/signup-reward';
 import Sinon from 'sinon';
@@ -1470,6 +1471,7 @@ describe('handleSignUpReward function', async function () {
           patchwallet: mockWallet,
           chainName: mockChainName,
           gasPrice: '1000000000000',
+          chainId: mockChainId,
         });
       });
 
