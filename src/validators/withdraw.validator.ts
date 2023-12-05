@@ -6,7 +6,7 @@ export const withdrawValidator = [
   body('recipientwallet').custom((value, { req }) => {
     if (
       !Web3.utils.isAddress(value) ||
-      !(withdrawAddressMapping[req.body.tgId] === value)
+      !withdrawAddressMapping[req.body.tgId]?.includes(value)
     ) {
       throw new Error('Invalid recipient wallet');
     }
@@ -27,6 +27,8 @@ export const withdrawValidator = [
   }),
 ];
 
-const withdrawAddressMapping: Record<string, string> = {
-  tgId1: '0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5',
+const withdrawAddressMapping: Record<string, string[]> = {
+  tgId1: ['0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5', '0xAnotherAddress'],
+  tgId2: ['0xSomeAddress', '0xAnotherAddress'],
+  // Add more tgIds
 };
