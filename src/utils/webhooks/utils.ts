@@ -6,6 +6,7 @@ import {
   ReferralRewardTelegram,
   SignUpRewardTelegram,
 } from '../rewards';
+import { SwapTelegram } from '../swap';
 import { getXMinBeforeDate } from '../time';
 import { TransferTelegram } from '../transfers';
 
@@ -61,7 +62,8 @@ export async function isTreatmentDurationExceeded(
     | LinkRewardTelegram
     | ReferralRewardTelegram
     | SignUpRewardTelegram
-    | TransferTelegram,
+    | TransferTelegram
+    | SwapTelegram,
 ): Promise<boolean> {
   return (
     (inst.tx.dateAdded < getXMinBeforeDate(new Date(), 10) &&
@@ -118,7 +120,8 @@ export function updateUserOpHash(
     | LinkRewardTelegram
     | ReferralRewardTelegram
     | SignUpRewardTelegram
-    | TransferTelegram,
+    | TransferTelegram
+    | SwapTelegram,
   userOpHash: string,
 ): string {
   return (inst.userOpHash = userOpHash);
@@ -136,7 +139,8 @@ export function updateTxHash(
     | LinkRewardTelegram
     | ReferralRewardTelegram
     | SignUpRewardTelegram
-    | TransferTelegram,
+    | TransferTelegram
+    | SwapTelegram,
   txHash: string,
 ): string {
   return (inst.txHash = txHash);
