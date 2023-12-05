@@ -260,7 +260,7 @@ export class SignUpRewardTelegram {
       userTelegramID: this.userTelegramID,
       eventId: { $ne: this.eventId },
       reason: this.reason,
-      status: TRANSACTION_STATUS.ON_HOLD
+      status: TRANSACTION_STATUS.ON_HOLD,
     });
   }
 }

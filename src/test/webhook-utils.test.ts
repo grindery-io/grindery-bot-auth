@@ -103,33 +103,33 @@ describe('Transaction Status Functions', async function () {
       chai.expect(isPositiveFloat('2.5e3')).to.equal(false);
     });
   });
-});
 
-describe('Gas Price Exceed', async function () {
-  describe('isGasPriceExceed', async function () {
-    it('Should return false when gas price is not informed', async function () {
-      chai.expect(isGasPriceExceed('', 'matic')).to.equal(false);
-      chai.expect(isGasPriceExceed(' ', 'matic')).to.equal(false);
-      chai.expect(isGasPriceExceed(undefined, 'matic')).to.equal(false);
-    });
+  describe('Gas Price Exceed', async function () {
+    describe('isGasPriceExceed', async function () {
+      it('Should return false when gas price is not informed', async function () {
+        chai.expect(isGasPriceExceed('', 'matic')).to.equal(false);
+        chai.expect(isGasPriceExceed(' ', 'matic')).to.equal(false);
+        chai.expect(isGasPriceExceed(undefined, 'matic')).to.equal(false);
+      });
 
-    it('Should return false when does not exist gas price threshold for the informed chain name', async function () {
-      chai
-        .expect(isGasPriceExceed('100', 'invalid-chain-name'))
-        .to.equal(false);
-      chai.expect(isGasPriceExceed('100', '')).to.equal(false);
-      chai.expect(isGasPriceExceed('100', ' ')).to.equal(false);
-      chai.expect(isGasPriceExceed('100', undefined)).to.equal(false);
-    });
+      it('Should return false when does not exist gas price threshold for the informed chain name', async function () {
+        chai
+          .expect(isGasPriceExceed('100', 'invalid-chain-name'))
+          .to.equal(false);
+        chai.expect(isGasPriceExceed('100', '')).to.equal(false);
+        chai.expect(isGasPriceExceed('100', ' ')).to.equal(false);
+        chai.expect(isGasPriceExceed('100', undefined)).to.equal(false);
+      });
 
-    it('Should return false when gas price is equal to gas price threshold', async function () {
-      chai.expect(isGasPriceExceed('20000', 'matic')).to.equal(false);
-    });
+      it('Should return false when gas price is equal to gas price threshold', async function () {
+        chai.expect(isGasPriceExceed('20000', 'matic')).to.equal(false);
+      });
 
-    it('Should return true when gas price is bigger then gas price threshold', async function () {
-      chai
-        .expect(isGasPriceExceed('999999999999999', 'eip155:137'))
-        .to.equal(true);
+      it('Should return true when gas price is bigger then gas price threshold', async function () {
+        chai
+          .expect(isGasPriceExceed('999999999999999', 'eip155:137'))
+          .to.equal(true);
+      });
     });
   });
 });
