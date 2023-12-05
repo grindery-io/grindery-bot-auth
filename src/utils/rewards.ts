@@ -254,6 +254,15 @@ export class SignUpRewardTelegram {
       return false;
     }
   }
+
+  async getOtherOnHoldRewardFromDatabase(): Promise<object | null> {
+    return await this.db.collection(REWARDS_COLLECTION).findOne({
+      userTelegramID: this.userTelegramID,
+      eventId: { $ne: this.eventId },
+      reason: this.reason,
+      status: TRANSACTION_STATUS.ON_HOLD
+    });
+  }
 }
 
 /**
