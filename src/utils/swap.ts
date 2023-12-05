@@ -220,10 +220,6 @@ export class SwapTelegram {
           priceImpact: this.params.priceImpact,
           gas: this.params.gas,
           status: status,
-          //   TxId: this.txHash ? this.txHash.substring(1, 8) : undefined,
-          ...(this.txHash !== undefined
-            ? { TxId: this.txHash.substring(1, 8) }
-            : {}),
           transactionHash: this.txHash,
           ...(date !== null ? { dateAdded: date } : {}),
           to: this.params.to,
@@ -260,7 +256,6 @@ export class SwapTelegram {
       priceImpact: this.params.priceImpact,
       gas: this.params.gas,
       status: TRANSACTION_STATUS.SUCCESS,
-      TxId: this.txHash.substring(1, 8),
       transactionHash: this.txHash,
       dateAdded: new Date(),
       to: this.params.to,
@@ -290,7 +285,6 @@ export class SwapTelegram {
       priceImpact: this.params.priceImpact,
       gas: this.params.gas,
       status: TRANSACTION_STATUS.SUCCESS,
-      TxId: this.txHash.substring(1, 8),
       transactionHash: this.txHash,
       dateAdded: new Date(),
       to: this.params.to,

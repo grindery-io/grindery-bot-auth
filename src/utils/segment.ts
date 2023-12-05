@@ -105,7 +105,6 @@ export async function addTrackSwapSegment(params: {
   priceImpact: string;
   gas: string;
   status: string;
-  TxId: string;
   transactionHash: string;
   dateAdded: Date;
   to: string;
@@ -129,7 +128,6 @@ export async function addTrackSwapSegment(params: {
         priceImpact: params.priceImpact,
         gas: params.gas,
         status: params.status,
-        TxId: params.TxId,
         transactionHash: params.transactionHash,
         to: params.to,
         from: params.from,

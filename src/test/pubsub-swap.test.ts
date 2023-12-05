@@ -168,7 +168,6 @@ describe('handleSwap function', async function () {
         .to.deep.equal([
           {
             eventId: swapId,
-            TxId: mockTransactionHash.substring(1, 8),
             chainId: mockChainId,
             userTelegramID: mockUserTelegramID,
             userWallet: mockWallet,
@@ -235,7 +234,6 @@ describe('handleSwap function', async function () {
             tokenInSymbol: mockTokenInSymbol,
             tokenOutSymbol: mockTokenOutSymbol,
             status: TRANSACTION_STATUS.SUCCESS,
-            TxId: mockTransactionHash.substring(1, 8),
             transactionHash: mockTransactionHash,
           },
         });
@@ -263,30 +261,26 @@ describe('handleSwap function', async function () {
         .getCalls()
         .find((e) => e.firstArg === FLOWXO_NEW_SWAP_WEBHOOK).args[1];
 
-      chai
-        .expect(FlowXOCallArgs)
-        .excluding(['dateAdded'])
-        .to.deep.equal({
-          eventId: swapId,
-          chainId: 'eip155:137',
-          userTelegramID: mockUserTelegramID,
-          userName: mockUserName,
-          userHandle: mockUserHandle,
-          userWallet: mockWallet,
-          tokenIn: mockTokenIn,
-          amountIn: mockAmountIn,
-          tokenOut: mockTokenOut,
-          amountOut: mockAmountOut,
-          priceImpact: mockPriceImpact,
-          gas: mockGas,
-          to: mockToSwap,
-          from: mockFromSwap,
-          tokenInSymbol: mockTokenInSymbol,
-          tokenOutSymbol: mockTokenOutSymbol,
-          status: TRANSACTION_STATUS.SUCCESS,
-          TxId: mockTransactionHash.substring(1, 8),
-          transactionHash: mockTransactionHash,
-        });
+      chai.expect(FlowXOCallArgs).excluding(['dateAdded']).to.deep.equal({
+        eventId: swapId,
+        chainId: 'eip155:137',
+        userTelegramID: mockUserTelegramID,
+        userName: mockUserName,
+        userHandle: mockUserHandle,
+        userWallet: mockWallet,
+        tokenIn: mockTokenIn,
+        amountIn: mockAmountIn,
+        tokenOut: mockTokenOut,
+        amountOut: mockAmountOut,
+        priceImpact: mockPriceImpact,
+        gas: mockGas,
+        to: mockToSwap,
+        from: mockFromSwap,
+        tokenInSymbol: mockTokenInSymbol,
+        tokenOutSymbol: mockTokenOutSymbol,
+        status: TRANSACTION_STATUS.SUCCESS,
+        transactionHash: mockTransactionHash,
+      });
     });
   });
 
@@ -1572,7 +1566,6 @@ describe('handleSwap function', async function () {
           .excluding(['_id', 'dateAdded'])
           .to.deep.equal([
             {
-              TxId: mockTransactionHash.substring(1, 8),
               transactionHash: mockTransactionHash,
               chainId: 'eip155:137',
               userTelegramID: mockUserTelegramID,
@@ -1617,30 +1610,26 @@ describe('handleSwap function', async function () {
           .getCalls()
           .find((e) => e.firstArg === FLOWXO_NEW_SWAP_WEBHOOK).args[1];
 
-        chai
-          .expect(FlowXOCallArgs)
-          .excluding(['dateAdded'])
-          .to.deep.equal({
-            eventId: swapId,
-            chainId: 'eip155:137',
-            userTelegramID: mockUserTelegramID,
-            userName: mockUserName,
-            userHandle: mockUserHandle,
-            userWallet: mockWallet,
-            tokenIn: mockTokenIn,
-            amountIn: mockAmountIn,
-            tokenOut: mockTokenOut,
-            amountOut: mockAmountOut,
-            priceImpact: mockPriceImpact,
-            gas: mockGas,
-            to: mockToSwap,
-            from: mockFromSwap,
-            tokenInSymbol: mockTokenInSymbol,
-            tokenOutSymbol: mockTokenOutSymbol,
-            TxId: mockTransactionHash.substring(1, 8),
-            transactionHash: mockTransactionHash,
-            status: TRANSACTION_STATUS.SUCCESS,
-          });
+        chai.expect(FlowXOCallArgs).excluding(['dateAdded']).to.deep.equal({
+          eventId: swapId,
+          chainId: 'eip155:137',
+          userTelegramID: mockUserTelegramID,
+          userName: mockUserName,
+          userHandle: mockUserHandle,
+          userWallet: mockWallet,
+          tokenIn: mockTokenIn,
+          amountIn: mockAmountIn,
+          tokenOut: mockTokenOut,
+          amountOut: mockAmountOut,
+          priceImpact: mockPriceImpact,
+          gas: mockGas,
+          to: mockToSwap,
+          from: mockFromSwap,
+          tokenInSymbol: mockTokenInSymbol,
+          tokenOutSymbol: mockTokenOutSymbol,
+          transactionHash: mockTransactionHash,
+          status: TRANSACTION_STATUS.SUCCESS,
+        });
 
         chai
           .expect(FlowXOCallArgs.dateAdded)
