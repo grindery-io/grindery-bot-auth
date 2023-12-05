@@ -10,6 +10,8 @@ import {
   sendTokens,
 } from '../utils/patchwallet';
 import { AbiItem } from 'web3-utils';
+import { withdrawValidator } from '../validators/withdraw.validator';
+import { validateResult } from '../validators/utils';
 
 const router = express.Router();
 
@@ -189,5 +191,35 @@ router.post('/sendTokens', authenticateApiKey, async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 });
+
+router.post(
+  '/withdraw',
+  withdrawValidator,
+  authenticateApiKey,
+  async (req, res) => {
+    const validator = validateResult(req);
+    if (validator.length) {
+      return res.status(400).send(validator);
+    }
+    try {
+      return res
+        .status(200)
+        .json(
+          (
+            await sendTokens(
+              req.body.tgId,
+              req.body.recipientwallet,
+              req.body.amount,
+              await getPatchWalletAccessToken(),
+              req.body.tokenAddress,
+            )
+          ).data,
+        );
+    } catch (error) {
+      console.error('Error:', error);
+      return res.status(500).json({ error: error.message });
+    }
+  },
+);
 
 export default router;
