@@ -1,5 +1,6 @@
 import { TRANSACTION_STATUS } from '../constants';
 import { createReferralRewardTelegram } from '../rewards';
+import { RewardParams } from './types';
 import {
   getStatusRewards,
   isPendingTransactionHash,
@@ -10,39 +11,17 @@ import {
 } from './utils';
 
 /**
- * Handles the referral reward process based on provided parameters.
- * @param params An object containing necessary parameters for handling the referral reward.
- * @param params.eventId The ID of the event.
- * @param params.userTelegramID The Telegram ID of the user.
- * @param params.responsePath The response path.
- * @param params.userHandle The user's handle.
- * @param params.userName The user's name.
- * @param params.patchwallet The user's patch wallet.
- * @param params.tokenAddress Optional: The token address.
- * @param params.chainName Optional: The chain name.
- * @returns A Promise that resolves to a boolean indicating the success status of the process.
+ * Handles the processing of a referral reward based on specified parameters.
+ * @param params - The parameters required for the referral reward.
+ * @returns A promise resolving to a boolean value.
+ *          - Returns `true` if the referral reward handling is completed or conditions are not met.
+ *          - Returns `false` if an error occurs during the referral reward processing.
  */
-export async function handleReferralReward(params: {
-  eventId: string;
-  userTelegramID: string;
-  responsePath: string;
-  userHandle: string;
-  userName: string;
-  patchwallet: string;
-  tokenAddress?: string;
-  chainName?: string;
-}): Promise<boolean> {
+export async function handleReferralReward(
+  params: RewardParams,
+): Promise<boolean> {
   try {
-    const reward = await createReferralRewardTelegram(
-      params.eventId,
-      params.userTelegramID,
-      params.responsePath,
-      params.userHandle,
-      params.userName,
-      params.patchwallet,
-      params.tokenAddress,
-      params.chainName,
-    );
+    const reward = await createReferralRewardTelegram(params);
 
     if (!(await reward.setParentTx())) return true;
     if (!(await reward.getReferent())) return true;

@@ -2,6 +2,7 @@ import { Database } from '../../db/conn';
 import { TRANSACTION_STATUS, USERS_COLLECTION } from '../constants';
 import { sendTelegramMessage } from '../telegram';
 import { TransferTelegram, createTransferTelegram } from '../transfers';
+import { TransactionParams } from './types';
 import {
   isFailedTransaction,
   isPendingTransactionHash,
@@ -24,17 +25,9 @@ import {
  * @param params.message Optional: A message associated with the transaction.
  * @returns A Promise that resolves to a boolean indicating the success status of the transaction handling process.
  */
-export async function handleNewTransaction(params: {
-  senderTgId: string;
-  amount: string;
-  recipientTgId: string;
-  eventId: string;
-  chainId?: string;
-  tokenAddress?: string;
-  chainName?: string;
-  message?: string;
-  tokenSymbol?: string;
-}): Promise<boolean> {
+export async function handleNewTransaction(
+  params: TransactionParams,
+): Promise<boolean> {
   // Establish a connection to the database
   const db = await Database.getInstance();
 
@@ -51,16 +44,7 @@ export async function handleNewTransaction(params: {
     );
 
   // Create a transfer object
-  let transfer = await createTransferTelegram(
-    params.eventId,
-    senderInformation,
-    params.recipientTgId,
-    params.amount,
-    params.chainId,
-    params.tokenAddress,
-    params.chainName,
-    params.tokenSymbol,
-  );
+  let transfer = await createTransferTelegram({ ...params, senderInformation });
   if (!transfer) return false;
 
   transfer = transfer as TransferTelegram;
@@ -116,7 +100,7 @@ export async function handleNewTransaction(params: {
     );
 
     console.log(
-      `[${transfer.txHash}] transaction from ${transfer.senderInformation.senderTgId} to ${transfer.recipientTgId} for ${transfer.amount} with event ID ${transfer.eventId} finished.`,
+      `[${transfer.txHash}] transaction from ${transfer.params.senderInformation.senderTgId} to ${transfer.params.recipientTgId} for ${transfer.params.amount} with event ID ${transfer.eventId} finished.`,
     );
     return true;
   }

@@ -3,6 +3,7 @@ import {
   IsolatedRewardTelegram,
   createIsolatedRewardTelegram,
 } from '../rewards';
+import { RewardParams } from './types';
 import {
   getStatusRewards,
   isPendingTransactionHash,
@@ -12,34 +13,15 @@ import {
 } from './utils';
 
 /**
- * Handles isolated rewards based on given parameters.
- * @param {Object} params - Parameters necessary for handling the reward.
- * @param {string} params.eventId - The unique identifier for the event.
- * @param {string} params.userTelegramID - The Telegram user ID associated with the reward.
- * @param {string} params.reason - The reason for the reward.
- * @param {number} params.amount - The amount involved in the reward.
- * @param {string} params.message - A message associated with the reward.
- * @param {string} params.responsePath - The response path for the reward.
- * @param {string} params.userHandle - The user handle associated with the reward.
- * @param {string} params.userName - The name of the user receiving the reward.
- * @param {string} params.patchwallet - The patch wallet information.
- * @param {string} params.tokenAddress - The address of the token used in the reward.
- * @param {string} params.chainName - The name of the blockchain network.
- * @returns {boolean} - Returns true if successful, otherwise false.
+ * Handles the processing of an isolated reward based on specified parameters.
+ * @param params - The parameters required for the reward.
+ * @returns A promise resolving to a boolean value.
+ *          - Returns `true` if the reward handling is completed or conditions are not met.
+ *          - Returns `false` if an error occurs during the reward processing.
  */
-export async function handleIsolatedReward(params: {
-  eventId: string;
-  userTelegramID: string;
-  responsePath: string;
-  userHandle: string;
-  userName: string;
-  patchwallet?: string;
-  reason: string;
-  message: string;
-  amount: string;
-  tokenAddress?: string;
-  chainName?: string;
-}): Promise<boolean> {
+export async function handleIsolatedReward(
+  params: RewardParams,
+): Promise<boolean> {
   try {
     if (
       !params.userTelegramID ||
@@ -50,19 +32,7 @@ export async function handleIsolatedReward(params: {
       return true;
     }
 
-    let reward = await createIsolatedRewardTelegram(
-      params.eventId,
-      params.userTelegramID,
-      params.reason,
-      params.amount,
-      params.message,
-      params.responsePath,
-      params.userHandle,
-      params.userName,
-      params.patchwallet,
-      params.tokenAddress,
-      params.chainName,
-    );
+    let reward = await createIsolatedRewardTelegram(params);
 
     if (!reward) return true;
 

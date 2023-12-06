@@ -61,13 +61,13 @@ export async function handleNewReward(params: {
 
   if (
     params.referentUserTelegramID &&
-    !(await link_reward_utils.handleLinkReward(
-      params.eventId,
-      params.userTelegramID,
-      params.referentUserTelegramID,
-      params.tokenAddress,
-      params.chainName,
-    ))
+    !(await link_reward_utils.handleLinkReward({
+      eventId: params.eventId,
+      userTelegramID: params.userTelegramID,
+      referentUserTelegramID: params.referentUserTelegramID,
+      tokenAddress: params.tokenAddress,
+      chainName: params.chainName,
+    }))
   )
     return false;
 

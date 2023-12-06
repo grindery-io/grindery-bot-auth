@@ -21,42 +21,19 @@ import {
 } from '../../secrets';
 import { isSuccessfulTransaction } from './webhooks/utils';
 import { Db, Document, FindCursor, WithId } from 'mongodb';
+import { RewardParams } from './webhooks/types';
 
 /**
- * Asynchronously creates a sign-up reward for Telegram users.
- *
- * This function initializes a sign-up reward for a Telegram user based on provided parameters.
- * It creates an instance of SignUpRewardTelegram and initializes the reward database.
- *
- * @param {string} eventId - The ID of the event associated with the sign-up reward.
- * @param {string} userTelegramID - The Telegram ID of the user.
- * @param {string} responsePath - The response path for the reward.
- * @param {string} userHandle - The handle of the user.
- * @param {string} userName - The name of the user.
- * @param {string} patchwallet - The patchwallet details for the reward.
- * @returns {Promise<SignUpRewardTelegram|boolean>} The created sign-up reward instance if successful,
- *                                                  or `false` if initialization fails.
+ * Creates a sign-up reward specific to Telegram based on the specified parameters.
+ * @param params - The parameters required for the sign-up reward.
+ * @returns A promise resolving to a SignUpRewardTelegram instance or a boolean value.
+ *          - If the SignUpRewardTelegram instance is successfully created and initialized, it's returned.
+ *          - If initialization of the reward's database fails, returns `false`.
  */
 export async function createSignUpRewardTelegram(
-  eventId: string,
-  userTelegramID: string,
-  responsePath: string,
-  userHandle: string,
-  userName: string,
-  patchwallet: string,
-  tokenAddress: string,
-  chainName: string,
+  params: RewardParams,
 ): Promise<SignUpRewardTelegram | boolean> {
-  const reward = new SignUpRewardTelegram(
-    eventId,
-    userTelegramID,
-    responsePath,
-    userHandle,
-    userName,
-    patchwallet,
-    tokenAddress,
-    chainName,
-  );
+  const reward = new SignUpRewardTelegram(params);
 
   if (!(await reward.initializeRewardDatabase())) return false;
 
@@ -64,67 +41,59 @@ export async function createSignUpRewardTelegram(
 }
 
 /**
- * Represents a Telegram sign-up reward.
+ * Represents a sign-up reward specific to Telegram.
  */
 export class SignUpRewardTelegram {
+  /** Unique identifier for the event. */
   eventId: string;
-  userTelegramID: string;
-  responsePath: string;
-  userHandle: string;
-  userName: string;
-  patchwallet: string;
-  tokenAddress: string;
-  chainName: string;
 
-  reason: string = 'user_sign_up';
-  amount: string = '100';
-  message: string = 'Sign up reward';
+  /** The parameters required for the reward. */
+  params: RewardParams;
 
+  /** Indicates if the reward is present in the database. */
   isInDatabase: boolean = false;
+
+  /** Transaction details of the reward. */
   tx?: WithId<Document>;
+
+  /** Current status of the reward. */
   status?: string;
+
+  /** Transaction hash associated with the reward. */
   txHash?: string;
+
+  /** User operation hash. */
   userOpHash?: string;
+
+  /** Database reference. */
   db?: Db;
 
   /**
-   * Constructor for SignUpRewardTelegram class.
-   * @param {string} eventId - The event ID.
-   * @param {string} userTelegramID - The user's Telegram ID.
-   * @param {string} responsePath - The response path.
-   * @param {string} userHandle - The user's handle.
-   * @param {string} userName - The user's name.
-   * @param {string} patchwallet - The user's PatchWallet address.
+   * Creates an instance of SignUpRewardTelegram.
+   * @param params - The parameters required for the reward.
    */
-  constructor(
-    eventId: string,
-    userTelegramID: string,
-    responsePath: string,
-    userHandle: string,
-    userName: string,
-    patchwallet: string,
-    tokenAddress: string,
-    chainName: string,
-  ) {
-    this.eventId = eventId;
-    this.userTelegramID = userTelegramID;
-    this.responsePath = responsePath;
-    this.userHandle = userHandle;
-    this.userName = userName;
-    this.patchwallet = patchwallet;
+  constructor(params: RewardParams) {
+    // Properties related to user and reward details
+    this.eventId = params.eventId;
+    this.params = params;
 
-    this.reason = 'user_sign_up';
-    this.amount = '100';
-    this.message = 'Sign up reward';
+    // Reward-specific details
+    this.params.reason = 'user_sign_up'; // Default reason for the sign-up reward
+    this.params.amount = '100'; // Default amount for the sign-up reward
+    this.params.message = 'Sign up reward'; // Default message for the sign-up reward
 
+    // Properties to be initialized
     this.isInDatabase = false;
     this.tx = undefined;
     this.status = undefined;
     this.txHash = undefined;
     this.userOpHash = undefined;
 
-    (this.tokenAddress = tokenAddress ? tokenAddress : G1_POLYGON_ADDRESS),
-      (this.chainName = chainName ? chainName : 'matic');
+    // Setting default token address and chain name if not provided
+    this.params.tokenAddress = params.tokenAddress
+      ? params.tokenAddress
+      : G1_POLYGON_ADDRESS; // Default token address
+    this.params.chainName = params.chainName ? params.chainName : 'matic'; // Default chain name
   }
 
   /**
@@ -156,9 +125,9 @@ export class SignUpRewardTelegram {
    */
   async getRewardFromDatabase(): Promise<WithId<Document>> {
     return await this.db.collection(REWARDS_COLLECTION).findOne({
-      userTelegramID: this.userTelegramID,
+      userTelegramID: this.params.userTelegramID,
       eventId: this.eventId,
-      reason: this.reason,
+      reason: this.params.reason,
     });
   }
 
@@ -168,9 +137,9 @@ export class SignUpRewardTelegram {
    */
   async getOtherRewardFromDatabase(): Promise<object | null> {
     return await this.db.collection(REWARDS_COLLECTION).findOne({
-      userTelegramID: this.userTelegramID,
+      userTelegramID: this.params.userTelegramID,
       eventId: { $ne: this.eventId },
-      reason: this.reason,
+      reason: this.params.reason,
     });
   }
 
@@ -183,20 +152,20 @@ export class SignUpRewardTelegram {
     await this.db.collection(REWARDS_COLLECTION).updateOne(
       {
         eventId: this.eventId,
-        reason: this.reason,
-        userTelegramID: this.userTelegramID,
+        reason: this.params.reason,
+        userTelegramID: this.params.userTelegramID,
       },
       {
         $set: {
           eventId: this.eventId,
-          userTelegramID: this.userTelegramID,
-          responsePath: this.responsePath,
-          userHandle: this.userHandle,
-          userName: this.userName,
-          reason: this.reason,
-          walletAddress: this.patchwallet,
-          amount: this.amount,
-          message: this.message,
+          userTelegramID: this.params.userTelegramID,
+          responsePath: this.params.responsePath,
+          userHandle: this.params.userHandle,
+          userName: this.params.userName,
+          reason: this.params.reason,
+          walletAddress: this.params.patchwallet,
+          amount: this.params.amount,
+          message: this.params.message,
           ...(date !== null ? { dateAdded: date } : {}),
           transactionHash: this.txHash,
           userOpHash: this.userOpHash,
@@ -206,7 +175,7 @@ export class SignUpRewardTelegram {
       { upsert: true },
     );
     console.log(
-      `[${this.eventId}] sign up reward for ${this.userTelegramID} in MongoDB as ${status} with transaction hash : ${this.txHash}.`,
+      `[${this.eventId}] sign up reward for ${this.params.userTelegramID} in MongoDB as ${status} with transaction hash : ${this.txHash}.`,
     );
   }
 
@@ -217,14 +186,14 @@ export class SignUpRewardTelegram {
   async saveToFlowXO(): Promise<void> {
     // Send transaction information to FlowXO
     await axios.post(FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK, {
-      userTelegramID: this.userTelegramID,
-      responsePath: this.responsePath,
-      walletAddress: this.patchwallet,
-      reason: this.reason,
-      userHandle: this.userHandle,
-      userName: this.userName,
-      amount: this.amount,
-      message: this.message,
+      userTelegramID: this.params.userTelegramID,
+      responsePath: this.params.responsePath,
+      walletAddress: this.params.patchwallet,
+      reason: this.params.reason,
+      userHandle: this.params.userHandle,
+      userName: this.params.userName,
+      amount: this.params.amount,
+      message: this.params.message,
       transactionHash: this.txHash,
       dateAdded: new Date(),
     });
@@ -239,16 +208,16 @@ export class SignUpRewardTelegram {
       // Send tokens using PatchWallet
       return await sendTokens(
         SOURCE_TG_ID,
-        this.patchwallet,
-        this.amount,
+        this.params.patchwallet,
+        this.params.amount,
         await getPatchWalletAccessToken(),
-        this.tokenAddress,
-        this.chainName,
+        this.params.tokenAddress,
+        this.params.chainName,
       );
     } catch (error) {
       // Log error if sending tokens fails
       console.error(
-        `[${this.eventId}] sign up reward for ${this.userTelegramID} - Error processing PatchWallet token sending: ${error}`,
+        `[${this.eventId}] sign up reward for ${this.params.userTelegramID} - Error processing PatchWallet token sending: ${error}`,
       );
 
       return false;
@@ -257,42 +226,15 @@ export class SignUpRewardTelegram {
 }
 
 /**
- * Creates a ReferralRewardTelegram instance and initializes reward database.
- *
- * This function initializes a referral reward for a Telegram user based on the provided parameters.
- * It creates an instance of ReferralRewardTelegram and initializes the reward database by connecting to it.
- *
- * @param {string} eventId - The ID of the event associated with the referral reward.
- * @param {string} userTelegramID - The Telegram ID of the user.
- * @param {string} responsePath - The response path for the reward.
- * @param {string} userHandle - The handle of the user.
- * @param {string} userName - The name of the user.
- * @param {string} patchwallet - The PatchWallet details for the reward.
- * @param {string} tokenAddress - The token address for the reward.
- * @param {string} chainName - The blockchain name for the reward.
- * @returns {Promise<ReferralRewardTelegram>} - The created ReferralRewardTelegram instance with initialized reward database.
+ * Creates a referral reward specific to Telegram based on the specified parameters.
+ * @param params - The parameters required for the reward.
+ * @returns A promise resolving to a ReferralRewardTelegram instance.
  */
 export async function createReferralRewardTelegram(
-  eventId: string,
-  userTelegramID: string,
-  responsePath: string,
-  userHandle: string,
-  userName: string,
-  patchwallet: string,
-  tokenAddress: string,
-  chainName: string,
+  params: RewardParams,
 ): Promise<ReferralRewardTelegram> {
   // Create a new instance of ReferralRewardTelegram
-  const reward = new ReferralRewardTelegram(
-    eventId,
-    userTelegramID,
-    responsePath,
-    userHandle,
-    userName,
-    patchwallet,
-    tokenAddress,
-    chainName,
-  );
+  const reward = new ReferralRewardTelegram(params);
 
   // Initialize the reward database by connecting and retrieving necessary information
   await reward.initializeRewardDatabase();
@@ -301,66 +243,52 @@ export async function createReferralRewardTelegram(
 }
 
 /**
- * Represents a Telegram referral reward.
+ * Represents a referral reward specific to Telegram.
  */
 export class ReferralRewardTelegram {
+  /** Unique identifier for the event. */
   eventId: string;
-  userTelegramID: string;
-  responsePath: string;
-  userHandle: string;
-  userName: string;
-  patchwallet: string;
-  tokenAddress: string;
-  chainName: string;
 
-  reason: string = '2x_reward';
-  amount: string = '50';
-  message: string = 'Referral reward';
+  /** The parameters required for the reward. */
+  params: RewardParams;
 
+  /** Transaction details of the parent. */
   parentTx?: WithId<Document>;
+
+  /** Transaction details of the referent. */
   referent?: WithId<Document>;
+
+  /** Transaction details of the reward. */
   tx?: WithId<Document>;
+
+  /** Current status of the reward. */
   status?: string;
+
+  /** Transaction hash associated with the reward. */
   txHash?: string;
+
+  /** User operation hash. */
   userOpHash?: string;
+
+  /** Database reference. */
   db?: Db;
+
+  /** Cursor for transfers related to the reward. */
   transfers?: FindCursor<WithId<Document>>;
 
   /**
-   * Constructs a ReferralRewardTelegram object.
-   * @param {string} eventId - The event ID.
-   * @param {string} userTelegramID - The user's Telegram ID.
-   * @param {string} responsePath - The response path.
-   * @param {string} userHandle - The user's handle.
-   * @param {string} userName - The user's name.
-   * @param {string} patchwallet - The user's PatchWallet address.
-   * @param {string} tokenAddress - The token address for the reward.
-   * @param {string} chainName - The blockchain name.
+   * Creates an instance of ReferralRewardTelegram.
+   * @param params - The parameters required for the reward.
    */
-  constructor(
-    eventId: string,
-    userTelegramID: string,
-    responsePath: string,
-    userHandle: string,
-    userName: string,
-    patchwallet: string,
-    tokenAddress: string,
-    chainName: string,
-  ) {
+  constructor(params: RewardParams) {
     // Properties related to user and reward details
-    this.eventId = eventId;
-    this.userTelegramID = userTelegramID;
-    this.responsePath = responsePath;
-    this.userHandle = userHandle;
-    this.userName = userName;
-    this.patchwallet = patchwallet;
-    this.tokenAddress = tokenAddress ? tokenAddress : G1_POLYGON_ADDRESS;
-    this.chainName = chainName ? chainName : 'matic';
+    this.eventId = params.eventId;
+    this.params = params;
 
     // Reward-specific details
-    this.reason = '2x_reward';
-    this.amount = '50';
-    this.message = 'Referral reward';
+    this.params.reason = '2x_reward'; // Default reason for the referral reward
+    this.params.amount = '50'; // Default amount for the referral reward
+    this.params.message = 'Referral reward'; // Default message for the referral reward
 
     // Properties to be initialized
     this.parentTx = undefined;
@@ -385,8 +313,8 @@ export class ReferralRewardTelegram {
    */
   async getTransfersFromDatabase(): Promise<FindCursor<WithId<Document>>> {
     return this.db.collection(TRANSFERS_COLLECTION).find({
-      senderTgId: { $ne: this.userTelegramID },
-      recipientTgId: this.userTelegramID,
+      senderTgId: { $ne: this.params.userTelegramID },
+      recipientTgId: this.params.userTelegramID,
     });
   }
 
@@ -403,7 +331,7 @@ export class ReferralRewardTelegram {
 
     if (!this.parentTx) {
       console.log(
-        `[${this.eventId}] no referral reward to distribute with ${this.userTelegramID} as a new user.`,
+        `[${this.eventId}] no referral reward to distribute with ${this.params.userTelegramID} as a new user.`,
       );
       return false;
     }
@@ -441,7 +369,7 @@ export class ReferralRewardTelegram {
   async getRewardSameFromDatabase(): Promise<boolean> {
     this.tx = await this.db.collection(REWARDS_COLLECTION).findOne({
       eventId: this.eventId,
-      reason: this.reason,
+      reason: this.params.reason,
     });
 
     if (this.tx) {
@@ -460,9 +388,9 @@ export class ReferralRewardTelegram {
     return Boolean(
       await this.db.collection(REWARDS_COLLECTION).findOne({
         eventId: { $ne: this.eventId },
-        reason: this.reason,
+        reason: this.params.reason,
         userTelegramID: this.referent.userTelegramID,
-        newUserAddress: this.patchwallet,
+        newUserAddress: this.params.patchwallet,
       }),
     );
   }
@@ -485,7 +413,7 @@ export class ReferralRewardTelegram {
     await this.db.collection(REWARDS_COLLECTION).updateOne(
       {
         eventId: this.eventId,
-        reason: this.reason,
+        reason: this.params.reason,
       },
       {
         $set: {
@@ -494,22 +422,22 @@ export class ReferralRewardTelegram {
           responsePath: this.referent.responsePath,
           userHandle: this.referent.userHandle,
           userName: this.referent.userName,
-          reason: this.reason,
+          reason: this.params.reason,
           walletAddress: this.referent.patchwallet,
-          amount: this.amount,
-          message: this.message,
+          amount: this.params.amount,
+          message: this.params.message,
           ...(date !== null ? { dateAdded: date } : {}),
           transactionHash: this.txHash,
           userOpHash: this.userOpHash,
           status: status,
-          newUserAddress: this.patchwallet,
+          newUserAddress: this.params.patchwallet,
           parentTransactionHash: this.parentTx.transactionHash,
         },
       },
       { upsert: true },
     );
     console.log(
-      `[${this.eventId}] referral reward for ${this.referent.patchwallet} sending tokens to ${this.patchwallet} in ${this.parentTx.transactionHash} in MongoDB as ${status} with transaction hash : ${this.txHash}.`,
+      `[${this.eventId}] referral reward for ${this.referent.patchwallet} sending tokens to ${this.params.patchwallet} in ${this.parentTx.transactionHash} in MongoDB as ${status} with transaction hash : ${this.txHash}.`,
     );
   }
 
@@ -518,19 +446,19 @@ export class ReferralRewardTelegram {
    */
   async saveToFlowXO() {
     await axios.post(FLOWXO_NEW_REFERRAL_REWARD_WEBHOOK, {
-      newUserTgId: this.userTelegramID,
-      newUserResponsePath: this.responsePath,
-      newUserUserHandle: this.userHandle,
-      newUserUserName: this.userName,
-      newUserPatchwallet: this.patchwallet,
+      newUserTgId: this.params.userTelegramID,
+      newUserResponsePath: this.params.responsePath,
+      newUserUserHandle: this.params.userHandle,
+      newUserUserName: this.params.userName,
+      newUserPatchwallet: this.params.patchwallet,
       userTelegramID: this.referent.userTelegramID,
       responsePath: this.referent.responsePath,
       walletAddress: this.referent.patchwallet,
-      reason: this.reason,
+      reason: this.params.reason,
       userHandle: this.referent.userHandle,
       userName: this.referent.userName,
-      amount: this.amount,
-      message: this.message,
+      amount: this.params.amount,
+      message: this.params.message,
       transactionHash: this.txHash,
       dateAdded: new Date(),
       parentTransactionHash: this.parentTx.transactionHash,
@@ -546,10 +474,10 @@ export class ReferralRewardTelegram {
       return await sendTokens(
         SOURCE_TG_ID,
         this.referent.patchwallet,
-        this.amount,
+        this.params.amount,
         await getPatchWalletAccessToken(),
-        this.tokenAddress,
-        this.chainName,
+        this.params.tokenAddress,
+        this.params.chainName,
       );
     } catch (error) {
       console.error(
@@ -562,28 +490,16 @@ export class ReferralRewardTelegram {
 }
 
 /**
- * Creates a Link Reward Telegram instance after initializing its reward database.
- * @param {string} eventId - The event ID.
- * @param {string} userTelegramID - The user's Telegram ID.
- * @param {string} referentUserTelegramID - The referent's Telegram ID.
- * @param {string} tokenAddress - The token address.
- * @param {string} chainName - The blockchain name.
- * @returns {Promise<LinkRewardTelegram|boolean>} - A LinkRewardTelegram instance if initialization is successful, otherwise returns false.
+ * Creates a link reward specific to Telegram based on the specified parameters.
+ * @param params - The parameters required for the link reward.
+ * @returns A promise resolving to a LinkRewardTelegram instance or a boolean value.
+ *          - If the LinkRewardTelegram instance is successfully created and initialized, it's returned.
+ *          - If initialization of the reward's database fails, returns `false`.
  */
 export async function createLinkRewardTelegram(
-  eventId: string,
-  userTelegramID: string,
-  referentUserTelegramID: string,
-  tokenAddress: string,
-  chainName: string,
+  params: RewardParams,
 ): Promise<LinkRewardTelegram | boolean> {
-  const reward = new LinkRewardTelegram(
-    eventId,
-    userTelegramID,
-    referentUserTelegramID,
-    tokenAddress,
-    chainName,
-  );
+  const reward = new LinkRewardTelegram(params);
 
   if (!(await reward.initializeRewardDatabase())) return false;
 
@@ -594,50 +510,52 @@ export async function createLinkRewardTelegram(
  * Represents a link reward for Telegram users.
  */
 export class LinkRewardTelegram {
+  /** Unique identifier for the event. */
   eventId: string;
-  userTelegramID: string;
-  referentUserTelegramID: string;
-  tokenAddress: string;
-  chainName: string;
 
-  reason: string = 'referral_link';
-  amount: string = '10';
-  message: string = 'Referral link';
+  /** The parameters required for the reward. */
+  params: RewardParams;
 
+  /** Indicates if the reward is present in the database. */
   isInDatabase: boolean = false;
+
+  /** Transaction details of the reward. */
   tx?: WithId<Document>;
+
+  /** Current status of the reward. */
   status?: string;
+
+  /** Transaction hash associated with the reward. */
   txHash?: string;
+
+  /** User operation hash. */
   userOpHash?: string;
+
+  /** Transaction details of the referent. */
   referent?: WithId<Document>;
+
+  /** Database reference. */
   db?: Db;
 
   /**
    * Constructor for LinkRewardTelegram class.
-   * @param {string} eventId - The event ID.
-   * @param {string} userTelegramID - The user's Telegram ID.
-   * @param {string} referentUserTelegramID - The referent's Telegram ID.
-   * @param {string} tokenAddress - The token address.
-   * @param {string} chainName - The blockchain name.
+   * @param params - The parameters required for the reward.
    */
-  constructor(
-    eventId: string,
-    userTelegramID: string,
-    referentUserTelegramID: string,
-    tokenAddress: string,
-    chainName: string,
-  ) {
+  constructor(params: RewardParams) {
     // Properties related to user and reward details
-    this.eventId = eventId;
-    this.userTelegramID = userTelegramID;
-    this.referentUserTelegramID = referentUserTelegramID;
-    this.tokenAddress = tokenAddress ? tokenAddress : G1_POLYGON_ADDRESS;
-    this.chainName = chainName ? chainName : 'matic';
+    this.eventId = params.eventId;
+    this.params = params;
+
+    // Setting default token address and chain name if not provided
+    this.params.tokenAddress = params.tokenAddress
+      ? params.tokenAddress
+      : G1_POLYGON_ADDRESS; // Default token address
+    this.params.chainName = params.chainName ? params.chainName : 'matic'; // Default chain name
 
     // Reward-specific details
-    this.reason = 'referral_link';
-    this.amount = '10';
-    this.message = 'Referral link';
+    this.params.reason = 'referral_link'; // Default reason for the link reward
+    this.params.amount = '10'; // Default amount for the link reward
+    this.params.message = 'Referral link'; // Default message for the link reward
 
     // Properties to be initialized
     this.tx = undefined;
@@ -656,7 +574,7 @@ export class LinkRewardTelegram {
 
     if (!(await this.getReferent())) {
       console.log(
-        `[${this.eventId}] ${this.referentUserTelegramID} referent user is not a user to process the link reward.`,
+        `[${this.eventId}] ${this.params.referentUserTelegramID} referent user is not a user to process the link reward.`,
       );
       return false;
     }
@@ -685,11 +603,11 @@ export class LinkRewardTelegram {
   async getReferent(): Promise<object | null> {
     this.referent = await this.db
       .collection(USERS_COLLECTION)
-      .findOne({ userTelegramID: this.referentUserTelegramID });
+      .findOne({ userTelegramID: this.params.referentUserTelegramID });
 
     this.referent.patchwallet =
       this.referent?.patchwallet ??
-      (await getPatchWalletAddressFromTgId(this.referentUserTelegramID));
+      (await getPatchWalletAddressFromTgId(this.params.referentUserTelegramID));
     return this.referent;
   }
 
@@ -700,9 +618,9 @@ export class LinkRewardTelegram {
   async getRewardFromDatabase(): Promise<WithId<Document>> {
     return await this.db.collection(REWARDS_COLLECTION).findOne({
       eventId: this.eventId,
-      userTelegramID: this.referentUserTelegramID,
-      sponsoredUserTelegramID: this.userTelegramID,
-      reason: this.reason,
+      userTelegramID: this.params.referentUserTelegramID,
+      sponsoredUserTelegramID: this.params.userTelegramID,
+      reason: this.params.reason,
     });
   }
 
@@ -712,8 +630,8 @@ export class LinkRewardTelegram {
    */
   async getOtherRewardFromDatabase(): Promise<object | null> {
     return await this.db.collection(REWARDS_COLLECTION).findOne({
-      sponsoredUserTelegramID: this.userTelegramID,
-      reason: this.reason,
+      sponsoredUserTelegramID: this.params.userTelegramID,
+      reason: this.params.reason,
       eventId: { $ne: this.eventId },
     });
   }
@@ -727,31 +645,31 @@ export class LinkRewardTelegram {
     await this.db.collection(REWARDS_COLLECTION).updateOne(
       {
         eventId: this.eventId,
-        reason: this.reason,
-        userTelegramID: this.referentUserTelegramID,
+        reason: this.params.reason,
+        userTelegramID: this.params.referentUserTelegramID,
       },
       {
         $set: {
           eventId: this.eventId,
-          userTelegramID: this.referentUserTelegramID,
+          userTelegramID: this.params.referentUserTelegramID,
           responsePath: this.referent.responsePath,
           userHandle: this.referent.userHandle,
           userName: this.referent.userName,
-          reason: this.reason,
+          reason: this.params.reason,
           walletAddress: this.referent.patchwallet,
-          amount: this.amount,
-          message: this.message,
+          amount: this.params.amount,
+          message: this.params.message,
           ...(date !== null ? { dateAdded: date } : {}),
           transactionHash: this.txHash,
           userOpHash: this.userOpHash,
           status: status,
-          sponsoredUserTelegramID: this.userTelegramID,
+          sponsoredUserTelegramID: this.params.userTelegramID,
         },
       },
       { upsert: true },
     );
     console.log(
-      `[${this.eventId}] link for ${this.referentUserTelegramID} sponsoring ${this.userTelegramID} in MongoDB as ${status} with transaction hash : ${this.txHash}.`,
+      `[${this.eventId}] link for ${this.params.referentUserTelegramID} sponsoring ${this.params.userTelegramID} in MongoDB as ${status} with transaction hash : ${this.txHash}.`,
     );
   }
 
@@ -761,17 +679,17 @@ export class LinkRewardTelegram {
   async saveToFlowXO() {
     // Send transaction information to FlowXO
     await axios.post(FLOWXO_NEW_LINK_REWARD_WEBHOOK, {
-      userTelegramID: this.referentUserTelegramID,
+      userTelegramID: this.params.referentUserTelegramID,
       responsePath: this.referent.responsePath,
       walletAddress: this.referent.patchwallet,
-      reason: this.reason,
+      reason: this.params.reason,
       userHandle: this.referent.userHandle,
       userName: this.referent.userName,
-      amount: this.amount,
-      message: this.message,
+      amount: this.params.amount,
+      message: this.params.message,
       transactionHash: this.txHash,
       dateAdded: new Date(),
-      sponsoredUserTelegramID: this.userTelegramID,
+      sponsoredUserTelegramID: this.params.userTelegramID,
     });
   }
 
@@ -785,15 +703,15 @@ export class LinkRewardTelegram {
       return await sendTokens(
         SOURCE_TG_ID,
         this.referent.patchwallet,
-        this.amount,
+        this.params.amount,
         await getPatchWalletAccessToken(),
-        this.tokenAddress,
-        this.chainName,
+        this.params.tokenAddress,
+        this.params.chainName,
       );
     } catch (error) {
       // Log error if sending tokens fails
       console.error(
-        `[${this.eventId}] link reward for ${this.referentUserTelegramID} - Error processing PatchWallet token sending: ${error}`,
+        `[${this.eventId}] link reward for ${this.params.referentUserTelegramID} - Error processing PatchWallet token sending: ${error}`,
       );
 
       return false;
@@ -802,108 +720,63 @@ export class LinkRewardTelegram {
 }
 
 /**
- * Creates an isolated reward for Telegram users.
- * @param {string} eventId - The unique identifier for the event transaction.
- * @param {string} userTelegramID - The Telegram user ID associated with the reward.
- * @param {string} reason - The reason for the reward.
- * @param {number} amount - The amount involved in the reward.
- * @param {string} message - A message associated with the reward.
- * @param {string} responsePath - The response path for the reward.
- * @param {string} userHandle - The user handle associated with the reward.
- * @param {string} userName - The name of the user receiving the reward.
- * @param {string} patchwallet - The patch wallet information.
- * @param {string} tokenAddress - The address of the token used in the reward.
- * @param {string} chainName - The name of the blockchain network.
- * @returns {Promise<IsolatedRewardTelegram|boolean>} - Returns an instance of IsolatedRewardTelegram if successful, otherwise false.
+ * Creates an isolated reward for Telegram based on the specified parameters.
+ * @param params - The parameters required for the reward.
+ * @returns A promise resolving to an IsolatedRewardTelegram instance or a boolean value.
+ *          - If the IsolatedRewardTelegram instance is successfully created and initialized, it's returned.
+ *          - If initialization of the reward's database fails, returns `false`.
  */
 export async function createIsolatedRewardTelegram(
-  eventId: string,
-  userTelegramID: string,
-  reason: string,
-  amount: string,
-  message: string,
-  responsePath: string,
-  userHandle: string,
-  userName: string,
-  patchwallet: string,
-  tokenAddress: string,
-  chainName: string,
+  params: RewardParams,
 ): Promise<IsolatedRewardTelegram | boolean> {
-  const reward = new IsolatedRewardTelegram(
-    eventId,
-    userTelegramID,
-    reason,
-    amount,
-    message,
-    responsePath,
-    userHandle,
-    userName,
-    patchwallet,
-    tokenAddress,
-    chainName,
-  );
+  const reward = new IsolatedRewardTelegram(params);
 
   if (!(await reward.initializeRewardDatabase())) return false;
 
   return reward;
 }
 
+/**
+ * Represents an Isolated Reward specific to Telegram.
+ */
 export class IsolatedRewardTelegram {
+  /** The parameters required for the reward. */
+  params: RewardParams;
+
+  /** Unique identifier for the event. */
   eventId: string;
-  userTelegramID: string;
-  responsePath: string;
-  userHandle: string;
-  userName: string;
-  patchwallet: string;
-  reason: string;
-  amount: string;
-  message: string;
+
+  /** Indicates if the reward is present in the database. */
   isInDatabase: boolean = false;
+
+  /** Transaction details. */
   tx?: WithId<Document>;
+
+  /** Current status of the reward. */
   status?: string;
+
+  /** Transaction hash associated with the reward. */
   txHash?: string;
+
+  /** Database reference. */
   db?: Db;
+
+  /** User operation hash. */
   userOpHash?: string;
+
+  /** Address of the token used for the reward. */
   tokenAddress: string;
+
+  /** Name of the blockchain network. */
   chainName: string;
 
   /**
-   * Constructs a new instance of an EventTransaction.
-   * @param {string} eventId - The unique identifier for the event transaction.
-   * @param {string} userTelegramID - The Telegram user ID associated with the transaction.
-   * @param {string} reason - The reason for the transaction.
-   * @param {string} amount - The amount involved in the transaction.
-   * @param {string} message - A message associated with the transaction.
-   * @param {string} responsePath - The response path for the transaction.
-   * @param {string} userHandle - The user handle associated with the transaction.
-   * @param {string} userName - The name of the user initiating the transaction.
-   * @param {string} patchwallet - The patch wallet information.
-   * @param {string} tokenAddress - The address of the token used in the transaction (default: G1_POLYGON_ADDRESS).
-   * @param {string} chainName - The name of the blockchain network (default: 'matic').
+   * Creates an instance of IsolatedRewardTelegram.
+   * @param params - The parameters required for the reward.
    */
-  constructor(
-    eventId: string,
-    userTelegramID: string,
-    reason: string,
-    amount: string,
-    message: string,
-    responsePath: string,
-    userHandle: string,
-    userName: string,
-    patchwallet: string,
-    tokenAddress: string,
-    chainName: string,
-  ) {
-    this.eventId = eventId;
-    this.userTelegramID = userTelegramID;
-    this.responsePath = responsePath;
-    this.userHandle = userHandle;
-    this.userName = userName;
-    this.patchwallet = patchwallet;
-
-    this.reason = reason;
-    this.amount = amount;
-    this.message = message;
+  constructor(params: RewardParams) {
+    this.params = params;
+    this.eventId = params.eventId;
 
     this.isInDatabase = false;
     this.tx = undefined;
@@ -911,8 +784,10 @@ export class IsolatedRewardTelegram {
     this.txHash = undefined;
     this.userOpHash = undefined;
 
-    this.tokenAddress = tokenAddress ? tokenAddress : G1_POLYGON_ADDRESS;
-    this.chainName = chainName ? chainName : 'matic';
+    this.tokenAddress = params.tokenAddress
+      ? params.tokenAddress
+      : G1_POLYGON_ADDRESS; // Default address if not provided
+    this.chainName = params.chainName ? params.chainName : 'matic'; // Default chain name if not provided
   }
 
   /**
@@ -921,9 +796,9 @@ export class IsolatedRewardTelegram {
    */
   async initializeRewardDatabase(): Promise<boolean> {
     this.db = await Database.getInstance();
-    this.patchwallet =
-      this.patchwallet ??
-      (await getPatchWalletAddressFromTgId(this.userTelegramID));
+    this.params.patchwallet =
+      this.params.patchwallet ??
+      (await getPatchWalletAddressFromTgId(this.params.userTelegramID));
     this.tx = await this.getRewardFromDatabase();
 
     if (await this.getOtherRewardFromDatabase()) return false;
@@ -947,9 +822,9 @@ export class IsolatedRewardTelegram {
    */
   async getRewardFromDatabase(): Promise<WithId<Document>> {
     return await this.db.collection(REWARDS_COLLECTION).findOne({
-      userTelegramID: this.userTelegramID,
-      eventId: this.eventId,
-      reason: this.reason,
+      userTelegramID: this.params.userTelegramID,
+      eventId: this.params.eventId,
+      reason: this.params.reason,
     });
   }
 
@@ -959,9 +834,9 @@ export class IsolatedRewardTelegram {
    */
   async getOtherRewardFromDatabase(): Promise<object | null> {
     return await this.db.collection(REWARDS_COLLECTION).findOne({
-      userTelegramID: this.userTelegramID,
-      eventId: { $ne: this.eventId },
-      reason: this.reason,
+      userTelegramID: this.params.userTelegramID,
+      eventId: { $ne: this.params.eventId },
+      reason: this.params.reason,
     });
   }
 
@@ -973,21 +848,21 @@ export class IsolatedRewardTelegram {
   async updateInDatabase(status: string, date: Date | null) {
     await this.db.collection(REWARDS_COLLECTION).updateOne(
       {
-        eventId: this.eventId,
-        reason: this.reason,
-        userTelegramID: this.userTelegramID,
+        eventId: this.params.eventId,
+        reason: this.params.reason,
+        userTelegramID: this.params.userTelegramID,
       },
       {
         $set: {
-          eventId: this.eventId,
-          userTelegramID: this.userTelegramID,
-          responsePath: this.responsePath,
-          userHandle: this.userHandle,
-          userName: this.userName,
-          reason: this.reason,
-          walletAddress: this.patchwallet,
-          amount: this.amount,
-          message: this.message,
+          eventId: this.params.eventId,
+          userTelegramID: this.params.userTelegramID,
+          responsePath: this.params.responsePath,
+          userHandle: this.params.userHandle,
+          userName: this.params.userName,
+          reason: this.params.reason,
+          walletAddress: this.params.patchwallet,
+          amount: this.params.amount,
+          message: this.params.message,
           ...(date !== null ? { dateAdded: date } : {}),
           transactionHash: this.txHash,
           userOpHash: this.userOpHash,
@@ -997,7 +872,7 @@ export class IsolatedRewardTelegram {
       { upsert: true },
     );
     console.log(
-      `[${this.eventId}] sign up reward for ${this.userTelegramID} in MongoDB as ${status} with transaction hash : ${this.txHash}.`,
+      `[${this.params.eventId}] sign up reward for ${this.params.userTelegramID} in MongoDB as ${status} with transaction hash : ${this.txHash}.`,
     );
   }
 
@@ -1008,14 +883,14 @@ export class IsolatedRewardTelegram {
   async saveToFlowXO(): Promise<void> {
     // Send transaction information to FlowXO
     await axios.post(FLOWXO_NEW_ISOLATED_REWARD_WEBHOOK, {
-      userTelegramID: this.userTelegramID,
-      responsePath: this.responsePath,
-      walletAddress: this.patchwallet,
-      reason: this.reason,
-      userHandle: this.userHandle,
-      userName: this.userName,
-      amount: this.amount,
-      message: this.message,
+      userTelegramID: this.params.userTelegramID,
+      responsePath: this.params.responsePath,
+      walletAddress: this.params.patchwallet,
+      reason: this.params.reason,
+      userHandle: this.params.userHandle,
+      userName: this.params.userName,
+      amount: this.params.amount,
+      message: this.params.message,
       transactionHash: this.txHash,
       dateAdded: new Date(),
     });
@@ -1030,8 +905,8 @@ export class IsolatedRewardTelegram {
       // Send tokens using PatchWallet
       return await sendTokens(
         SOURCE_TG_ID,
-        this.patchwallet,
-        this.amount,
+        this.params.patchwallet,
+        this.params.amount,
         await getPatchWalletAccessToken(),
         this.tokenAddress,
         this.chainName,
@@ -1039,7 +914,7 @@ export class IsolatedRewardTelegram {
     } catch (error) {
       // Log error if sending tokens fails
       console.error(
-        `[${this.eventId}] sign up reward for ${this.userTelegramID} - Error processing PatchWallet token sending: ${error}`,
+        `[${this.params.eventId}] sign up reward for ${this.params.userTelegramID} - Error processing PatchWallet token sending: ${error}`,
       );
 
       return false;

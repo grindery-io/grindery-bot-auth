@@ -19,6 +19,7 @@ import {
 } from '../../secrets';
 import { Db, Document, WithId } from 'mongodb';
 import { formatDate } from './time';
+import { TransactionParams } from './webhooks/types';
 
 /**
  * Retrieves incoming transactions for a user from the database.
@@ -224,33 +225,16 @@ export async function getRewardLinkTxsUser(
 }
 
 /**
- * Creates a new transfer object and initializes it with the provided parameters.
- * @param {string} eventId - The event ID.
- * @param {WithId<Document>} senderInformation - Information about the sender.
- * @param {string} recipientTgId - The recipient's Telegram ID.
- * @param {string} amount - The transaction amount.
- * @returns {Promise<TransferTelegram|boolean>} - The initialized transfer object if successful, false otherwise.
+ * Creates a transfer specific to Telegram based on the specified parameters.
+ * @param params - The parameters required for the transfer.
+ * @returns A promise resolving to a TransferTelegram instance or a boolean value.
+ *          - If the TransferTelegram instance is successfully created and initialized, it's returned.
+ *          - If initialization of the transfer's database fails, returns `false`.
  */
 export async function createTransferTelegram(
-  eventId: string,
-  senderInformation: WithId<Document>,
-  recipientTgId: string,
-  amount: string,
-  chainId: string,
-  tokenAddress: string,
-  chainName: string,
-  tokenSymbol: string,
+  params: TransactionParams,
 ): Promise<TransferTelegram | boolean> {
-  const transfer = new TransferTelegram(
-    eventId,
-    senderInformation,
-    recipientTgId,
-    amount,
-    chainId,
-    tokenAddress,
-    chainName,
-    tokenSymbol,
-  );
+  const transfer = new TransferTelegram(params);
   return (await transfer.initializeTransferDatabase()) && transfer;
 }
 
@@ -258,46 +242,57 @@ export async function createTransferTelegram(
  * Represents a Telegram transfer.
  */
 export class TransferTelegram {
+  /** Unique identifier for the event. */
   eventId: string;
-  senderInformation: WithId<Document>;
-  recipientTgId: string;
-  amount: string;
-  isInDatabase: boolean = false;
-  tx?: WithId<Document>;
-  status?: string;
-  recipientWallet?: string;
-  txHash?: string;
-  userOpHash?: string;
-  db?: Db;
-  chainId: string;
-  tokenAddress: string;
-  chainName: string;
-  tokenSymbol: string;
 
-  constructor(
-    eventId: string,
-    senderInformation: WithId<Document>,
-    recipientTgId: string,
-    amount: string,
-    chainId: string,
-    tokenAddress: string,
-    chainName: string,
-    tokenSymbol: string,
-  ) {
-    this.eventId = eventId;
-    this.senderInformation = senderInformation;
-    this.recipientTgId = recipientTgId;
-    this.amount = amount.toString();
+  /** The parameters required for the transaction. */
+  params: TransactionParams;
+
+  /** Indicates if the transfer is present in the database. */
+  isInDatabase: boolean = false;
+
+  /** Transaction details of the transfer. */
+  tx?: WithId<Document>;
+
+  /** Current status of the transfer. */
+  status?: string;
+
+  /** Wallet address of the recipient. */
+  recipientWallet?: string;
+
+  /** Transaction hash associated with the transfer. */
+  txHash?: string;
+
+  /** User operation hash. */
+  userOpHash?: string;
+
+  /** Database reference. */
+  db?: Db;
+
+  /**
+   * Constructor for TransferTelegram class.
+   * @param params - The parameters required for the transfer.
+   */
+  constructor(params: TransactionParams) {
+    // Properties related to user and transaction details
+    this.eventId = params.eventId;
+    this.params = params;
+
+    // Default values if not provided
     this.isInDatabase = false;
     this.tx = undefined;
     this.status = undefined;
     this.recipientWallet = undefined;
     this.txHash = undefined;
     this.userOpHash = undefined;
-    this.chainId = chainId ? chainId : 'eip155:137';
-    this.tokenAddress = tokenAddress ? tokenAddress : G1_POLYGON_ADDRESS;
-    this.chainName = chainName ? chainName : 'matic';
-    this.tokenSymbol = tokenSymbol ? tokenSymbol : 'G1';
+
+    // Setting default values for specific parameters
+    this.params.chainId = params.chainId ? params.chainId : 'eip155:137'; // Default chain ID
+    this.params.tokenAddress = params.tokenAddress
+      ? params.tokenAddress
+      : G1_POLYGON_ADDRESS; // Default token address
+    this.params.chainName = params.chainName ? params.chainName : 'matic'; // Default chain name
+    this.params.tokenSymbol = params.tokenSymbol ? params.tokenSymbol : 'G1'; // Default token symbol
   }
 
   /**
@@ -310,7 +305,7 @@ export class TransferTelegram {
 
     try {
       this.recipientWallet = await getPatchWalletAddressFromTgId(
-        this.recipientTgId,
+        this.params.recipientTgId,
       );
     } catch (error) {
       return false;
@@ -348,16 +343,16 @@ export class TransferTelegram {
       {
         $set: {
           eventId: this.eventId,
-          chainId: this.chainId,
-          tokenSymbol: this.tokenSymbol,
-          tokenAddress: this.tokenAddress,
-          senderTgId: this.senderInformation.userTelegramID,
-          senderWallet: this.senderInformation.patchwallet,
-          senderName: this.senderInformation.userName,
-          senderHandle: this.senderInformation.userHandle,
-          recipientTgId: this.recipientTgId,
+          chainId: this.params.chainId,
+          tokenSymbol: this.params.tokenSymbol,
+          tokenAddress: this.params.tokenAddress,
+          senderTgId: this.params.senderInformation.userTelegramID,
+          senderWallet: this.params.senderInformation.patchwallet,
+          senderName: this.params.senderInformation.userName,
+          senderHandle: this.params.senderInformation.userHandle,
+          recipientTgId: this.params.recipientTgId,
           recipientWallet: this.recipientWallet,
-          tokenAmount: this.amount,
+          tokenAmount: this.params.amount,
           status: status,
           ...(date !== null ? { dateAdded: date } : {}),
           transactionHash: this.txHash,
@@ -367,7 +362,7 @@ export class TransferTelegram {
       { upsert: true },
     );
     console.log(
-      `[${this.eventId}] transaction from ${this.senderInformation.userTelegramID} to ${this.recipientTgId} for ${this.amount} in MongoDB as ${status} with transaction hash : ${this.txHash}.`,
+      `[${this.eventId}] transaction from ${this.params.senderInformation.userTelegramID} to ${this.params.recipientTgId} for ${this.params.amount} in MongoDB as ${status} with transaction hash : ${this.txHash}.`,
     );
   }
 
@@ -378,20 +373,20 @@ export class TransferTelegram {
   async saveToSegment(): Promise<void> {
     // Add transaction information to the Segment
     await addTrackSegment({
-      userTelegramID: this.senderInformation.userTelegramID,
-      senderTgId: this.senderInformation.userTelegramID,
-      senderWallet: this.senderInformation.patchwallet,
-      senderName: this.senderInformation.userName,
-      senderHandle: this.senderInformation.userHandle,
-      recipientTgId: this.recipientTgId,
+      userTelegramID: this.params.senderInformation.userTelegramID,
+      senderTgId: this.params.senderInformation.userTelegramID,
+      senderWallet: this.params.senderInformation.patchwallet,
+      senderName: this.params.senderInformation.userName,
+      senderHandle: this.params.senderInformation.userHandle,
+      recipientTgId: this.params.recipientTgId,
       recipientWallet: this.recipientWallet,
-      tokenAmount: this.amount,
+      tokenAmount: this.params.amount,
       transactionHash: this.txHash,
       dateAdded: new Date(),
       eventId: this.eventId,
-      tokenSymbol: this.tokenSymbol,
-      tokenAddress: this.tokenAddress,
-      chainId: this.chainId,
+      tokenSymbol: this.params.tokenSymbol,
+      tokenAddress: this.params.tokenAddress,
+      chainId: this.params.chainId,
     });
   }
 
@@ -402,17 +397,17 @@ export class TransferTelegram {
   async saveToFlowXO(): Promise<void> {
     // Send transaction information to FlowXO
     await axios.post(FLOWXO_NEW_TRANSACTION_WEBHOOK, {
-      senderResponsePath: this.senderInformation.responsePath,
-      chainId: this.chainId,
-      tokenSymbol: this.tokenSymbol,
-      tokenAddress: this.tokenAddress,
-      senderTgId: this.senderInformation.userTelegramID,
-      senderWallet: this.senderInformation.patchwallet,
-      senderName: this.senderInformation.userName,
-      senderHandle: this.senderInformation.userHandle,
-      recipientTgId: this.recipientTgId,
+      senderResponsePath: this.params.senderInformation.responsePath,
+      chainId: this.params.chainId,
+      tokenSymbol: this.params.tokenSymbol,
+      tokenAddress: this.params.tokenAddress,
+      senderTgId: this.params.senderInformation.userTelegramID,
+      senderWallet: this.params.senderInformation.patchwallet,
+      senderName: this.params.senderInformation.userName,
+      senderHandle: this.params.senderInformation.userHandle,
+      recipientTgId: this.params.recipientTgId,
       recipientWallet: this.recipientWallet,
-      tokenAmount: this.amount,
+      tokenAmount: this.params.amount,
       transactionHash: this.txHash,
       dateAdded: new Date(),
     });
@@ -449,21 +444,24 @@ export class TransferTelegram {
     try {
       // Send tokens using PatchWallet
       return await sendTokens(
-        this.senderInformation.userTelegramID,
+        this.params.senderInformation.userTelegramID,
         this.recipientWallet,
-        this.amount,
+        this.params.amount,
         await getPatchWalletAccessToken(),
-        this.tokenAddress,
-        this.chainName,
+        this.params.tokenAddress,
+        this.params.chainName,
       );
     } catch (error) {
       // Log error if sending tokens fails
       console.error(
-        `[${this.eventId}] transaction from ${this.senderInformation.userTelegramID} to ${this.recipientTgId} for ${this.amount} - Error processing PatchWallet token sending: ${error}`,
+        `[${this.eventId}] transaction from ${this.params.senderInformation.userTelegramID} to ${this.params.recipientTgId} for ${this.params.amount} - Error processing PatchWallet token sending: ${error}`,
       );
       // Return true if the amount is not a valid number or the error status is 470, marking the transaction as failed
-      return !/^\d+$/.test(this.amount) || error?.response?.status === 470
-        ? (console.warn(`Potentially invalid amount: ${this.amount}, dropping`),
+      return !/^\d+$/.test(this.params.amount) ||
+        error?.response?.status === 470
+        ? (console.warn(
+            `Potentially invalid amount: ${this.params.amount}, dropping`,
+          ),
           await this.updateInDatabase(TRANSACTION_STATUS.FAILURE, new Date()),
           true)
         : false;

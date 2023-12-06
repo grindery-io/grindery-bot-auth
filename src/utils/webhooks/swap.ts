@@ -1,6 +1,6 @@
 import { TRANSACTION_STATUS, USERS_COLLECTION } from '../constants';
 import { Database } from '../../db/conn';
-import { SwapParams, createSwapTelegram } from '../swap';
+import { createSwapTelegram } from '../swap';
 import {
   isFailedTransaction,
   isPendingTransactionHash,
@@ -9,6 +9,7 @@ import {
   updateTxHash,
   updateUserOpHash,
 } from './utils';
+import { SwapParams } from './types';
 
 /**
  * Handles the swap process based on provided parameters.

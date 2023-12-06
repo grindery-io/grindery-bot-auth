@@ -1,6 +1,6 @@
-import { G1_POLYGON_ADDRESS } from '../../../secrets';
 import { TRANSACTION_STATUS } from '../constants';
 import { LinkRewardTelegram, createLinkRewardTelegram } from '../rewards';
+import { RewardParams } from './types';
 import {
   getStatusRewards,
   isPendingTransactionHash,
@@ -10,29 +10,15 @@ import {
 } from './utils';
 
 /**
- * Handles the referral link reward for a user.
- *
- * @param {Object} db - The database object.
- * @param {string} eventId - The event ID.
- * @param {string} userTelegramID - The user's Telegram ID.
- * @param {string} referentUserTelegramID - The Telegram ID of the referent user.
- * @returns {Promise<boolean>} - Returns true if the operation was successful, false otherwise.
+ * Handles the processing of a link reward based on specified parameters.
+ * @param params - The parameters required for the link reward.
+ * @returns A promise resolving to a boolean value.
+ *          - Returns `true` if the link reward handling is completed or conditions are not met.
+ *          - Returns `false` if an error occurs during the link reward processing.
  */
-export async function handleLinkReward(
-  eventId: string,
-  userTelegramID: string,
-  referentUserTelegramID: string,
-  tokenAddress = G1_POLYGON_ADDRESS,
-  chainName = 'matic',
-): Promise<boolean> {
+export async function handleLinkReward(params: RewardParams): Promise<boolean> {
   try {
-    let reward = await createLinkRewardTelegram(
-      eventId,
-      userTelegramID,
-      referentUserTelegramID,
-      tokenAddress,
-      chainName,
-    );
+    let reward = await createLinkRewardTelegram(params);
 
     if (reward == false) return true;
 
@@ -67,7 +53,7 @@ export async function handleLinkReward(
         reward.saveToFlowXO(),
       ]).catch((error) =>
         console.error(
-          `[${eventId}] Error processing FlowXO webhook during sign up reward: ${error}`,
+          `[${params.eventId}] Error processing FlowXO webhook during sign up reward: ${error}`,
         ),
       );
       return true;
@@ -80,7 +66,9 @@ export async function handleLinkReward(
     }
     return false;
   } catch (error) {
-    console.error(`[${eventId}] Error processing link reward event: ${error}`);
+    console.error(
+      `[${params.eventId}] Error processing link reward event: ${error}`,
+    );
   }
   return true;
 }
