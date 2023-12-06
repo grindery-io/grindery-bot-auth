@@ -1,5 +1,5 @@
 import {
-  PatchWalletResult,
+  PatchResult,
   Reward,
   TelegramOperations,
 } from '../../types/webhook.types';
@@ -79,9 +79,7 @@ export async function isTreatmentDurationExceeded(
  *   If successful, returns the status obtained from the transaction; otherwise, returns `false`.
  * @throws Error if there's an issue during the status retrieval process.
  */
-export async function getStatusRewards(
-  inst: Reward,
-): Promise<PatchWalletResult> {
+export async function getStatusRewards(inst: Reward): Promise<PatchResult> {
   try {
     // Retrieve the status of the PatchWallet transaction
     const status = await getTxStatus(inst.userOpHash);

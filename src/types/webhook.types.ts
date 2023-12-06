@@ -132,11 +132,19 @@ export type TelegramOperations = Reward | TransferTelegram | SwapTelegram;
 /**
  * Represents the result of a wallet patch operation.
  */
-export interface PatchWalletResult {
-  /** Indicates whether an error occurred during the operation. */
-  isError: boolean;
+export interface PatchRawResult {
   /** The user operation hash, if available. */
   userOpHash?: string;
   /** The transaction hash, if available. */
   txHash?: string;
+}
+
+/**
+ * Represents the result of a wallet patch operation, including raw result details.
+ */
+export interface PatchResult extends PatchRawResult {
+  /**
+   * Indicates whether an error occurred during the operation.
+   */
+  isError: boolean;
 }

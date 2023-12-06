@@ -21,7 +21,7 @@ import {
 } from '../../secrets';
 import { isSuccessfulTransaction } from './webhooks/utils';
 import { Db, Document, FindCursor, WithId } from 'mongodb';
-import { PatchWalletResult, RewardParams } from '../types/webhook.types';
+import { PatchResult, RewardParams } from '../types/webhook.types';
 
 /**
  * Creates a sign-up reward specific to Telegram based on the specified parameters.
@@ -201,9 +201,9 @@ export class SignUpRewardTelegram {
 
   /**
    * Sends tokens using PatchWallet.
-   * @returns {Promise<any>} - True if the tokens are sent successfully, false otherwise.
+   * @returns {Promise<PatchResult>} - True if the tokens are sent successfully, false otherwise.
    */
-  async sendTx(): Promise<PatchWalletResult> {
+  async sendTx(): Promise<PatchResult> {
     try {
       // Send tokens using PatchWallet
       const res = await sendTokens(
@@ -473,9 +473,9 @@ export class ReferralRewardTelegram {
 
   /**
    * Sends tokens for the referral reward using PatchWallet.
-   * @returns {Promise<any>} - True if the tokens are sent successfully, false otherwise.
+   * @returns {Promise<PatchResult>} - True if the tokens are sent successfully, false otherwise.
    */
-  async sendTx(): Promise<PatchWalletResult> {
+  async sendTx(): Promise<PatchResult> {
     try {
       const res = await sendTokens(
         SOURCE_TG_ID,
@@ -707,9 +707,9 @@ export class LinkRewardTelegram {
 
   /**
    * Sends tokens using PatchWallet.
-   * @returns {Promise<any>} - True if sending tokens is successful, false otherwise.
+   * @returns {Promise<PatchResult>} - True if sending tokens is successful, false otherwise.
    */
-  async sendTx(): Promise<PatchWalletResult> {
+  async sendTx(): Promise<PatchResult> {
     try {
       // Send tokens using PatchWallet
       const res = await sendTokens(
@@ -918,7 +918,7 @@ export class IsolatedRewardTelegram {
    * Sends tokens using PatchWallet.
    * @returns {Promise<boolean>} - True if the tokens are sent successfully, false otherwise.
    */
-  async sendTx(): Promise<PatchWalletResult> {
+  async sendTx(): Promise<PatchResult> {
     try {
       // Send tokens using PatchWallet
       const res = await sendTokens(
