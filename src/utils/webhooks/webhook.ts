@@ -2,32 +2,15 @@ import { createUserTelegram } from '../user';
 import { signup_utils } from './signup-reward';
 import { referral_utils } from './referral-reward';
 import { link_reward_utils } from './link-reward';
+import { RewardParams } from './types';
 
 /**
- * Handles the processing of a new reward based on the provided parameters.
- * @param params An object containing parameters necessary for handling the reward.
- * @param params.eventId The ID associated with the event triggering the reward.
- * @param params.userTelegramID The Telegram ID of the user receiving the reward.
- * @param params.responsePath The response path associated with the user.
- * @param params.userHandle The handle of the user receiving the reward.
- * @param params.userName The name of the user receiving the reward.
- * @param params.referentUserTelegramID Optional: The Telegram ID of the user who referred the current user.
- * @param params.tokenAddress Optional: The token address related to the reward.
- * @param params.chainName Optional: The chain name associated with the reward.
- * @param params.patchwallet Optional: The patch wallet address of the user.
- * @returns A Promise that resolves to a boolean indicating the success status of the reward handling process.
+ * Handles the processing of a new reward event.
+ * @param params - Parameters required for the new reward event.
+ * @returns A boolean indicating successful processing of the reward event.
  */
-export async function handleNewReward(params: {
-  eventId: string;
-  userTelegramID: string;
-  responsePath: string;
-  userHandle: string;
-  userName: string;
-  referentUserTelegramID?: string;
-  tokenAddress?: string;
-  chainName?: string;
-  patchwallet?: string;
-}): Promise<boolean> {
+export async function handleNewReward(params: RewardParams): Promise<boolean> {
+  // Creates a new user based on the provided parameters.
   const user = await createUserTelegram(
     params.userTelegramID,
     params.responsePath,
@@ -35,14 +18,17 @@ export async function handleNewReward(params: {
     params.userName,
   );
 
+  // Checks if the user is already in the database.
   if (user.isInDatabase) {
-    // The user already exists, stop processing
+    // Stops processing and logs that the user already exists.
     console.log(`[${params.eventId}] ${user.telegramID} user already exists.`);
     return true;
   }
 
+  // Stops processing if user's patchwallet is missing.
   if (!user.patchwallet) return false;
 
+  // Handles the sign-up reward for the user.
   if (
     !(await signup_utils.handleSignUpReward({
       ...params,
@@ -51,6 +37,7 @@ export async function handleNewReward(params: {
   )
     return false;
 
+  // Handles the referral reward for the user.
   if (
     !(await referral_utils.handleReferralReward({
       ...params,
@@ -59,22 +46,19 @@ export async function handleNewReward(params: {
   )
     return false;
 
+  // Handles the link reward for the user if a referent user Telegram ID is provided.
   if (
     params.referentUserTelegramID &&
-    !(await link_reward_utils.handleLinkReward({
-      eventId: params.eventId,
-      userTelegramID: params.userTelegramID,
-      referentUserTelegramID: params.referentUserTelegramID,
-      tokenAddress: params.tokenAddress,
-      chainName: params.chainName,
-    }))
+    !(await link_reward_utils.handleLinkReward(params))
   )
     return false;
 
+  // Saves the user to the database if not already present.
   if (!(await user.isUserInDatabase())) {
     await user.saveToDatabase(params.eventId);
     await user.saveToSegment(params.eventId);
   }
 
+  // Indicates successful processing of the reward event.
   return true;
 }
