@@ -19,7 +19,7 @@ import {
 } from '../../secrets';
 import { Db, Document, WithId } from 'mongodb';
 import { formatDate } from './time';
-import { TransactionParams } from './webhooks/types';
+import { TransactionParams } from '../types/webhook.types';
 
 /**
  * Retrieves incoming transactions for a user from the database.

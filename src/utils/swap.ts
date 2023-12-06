@@ -9,7 +9,7 @@ import {
 import { FLOWXO_NEW_SWAP_WEBHOOK } from '../../secrets';
 import axios from 'axios';
 import { addTrackSwapSegment } from './segment';
-import { SwapParams } from './webhooks/types';
+import { SwapParams } from '../types/webhook.types';
 
 /**
  * Asynchronously creates a swap for Telegram.

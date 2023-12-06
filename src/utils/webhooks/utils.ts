@@ -1,14 +1,11 @@
+import {
+  PatchWalletResult,
+  Reward,
+  TelegramOperations,
+} from '../../types/webhook.types';
 import { TRANSACTION_STATUS } from '../constants';
 import { getTxStatus } from '../patchwallet';
-import {
-  IsolatedRewardTelegram,
-  LinkRewardTelegram,
-  ReferralRewardTelegram,
-  SignUpRewardTelegram,
-} from '../rewards';
-import { SwapTelegram } from '../swap';
 import { getXMinBeforeDate } from '../time';
-import { TransferTelegram } from '../transfers';
 
 /**
  * Checks if the provided status indicates a successful transaction.
@@ -52,18 +49,12 @@ export function isPositiveFloat(inputString: string): boolean {
 
 /**
  * Checks if the treatment duration of a given instance exceeds a specified duration.
- * @param {IsolatedRewardTelegram | LinkRewardTelegram | ReferralRewardTelegram | SignUpRewardTelegram | TransferTelegram} inst - The instance to be checked.
+ * @param {TelegramOperations} inst - The instance to be checked.
  * @returns {Promise<boolean>} A Promise resolving to a boolean indicating if the treatment duration has exceeded.
  * @throws {Error} Throws an error if there is an issue updating the instance in the database.
  */
 export async function isTreatmentDurationExceeded(
-  inst:
-    | IsolatedRewardTelegram
-    | LinkRewardTelegram
-    | ReferralRewardTelegram
-    | SignUpRewardTelegram
-    | TransferTelegram
-    | SwapTelegram,
+  inst: TelegramOperations,
 ): Promise<boolean> {
   return (
     (inst.tx.dateAdded < getXMinBeforeDate(new Date(), 10) &&
@@ -89,22 +80,22 @@ export async function isTreatmentDurationExceeded(
  * @throws Error if there's an issue during the status retrieval process.
  */
 export async function getStatusRewards(
-  inst:
-    | IsolatedRewardTelegram
-    | LinkRewardTelegram
-    | ReferralRewardTelegram
-    | SignUpRewardTelegram,
-): Promise<any> {
+  inst: Reward,
+): Promise<PatchWalletResult> {
   try {
     // Retrieve the status of the PatchWallet transaction
-    return await getTxStatus(inst.userOpHash);
+    const status = await getTxStatus(inst.userOpHash);
+    return {
+      isError: false,
+      userOpHash: status.data.userOpHash,
+      txHash: status.data.txHash,
+    };
   } catch (error) {
     // Log error if retrieving transaction status fails
     console.error(
       `[${inst.eventId}] Error processing PatchWallet transaction status: ${error}`,
     );
-    // Return true if the error status is 470, marking the transaction as failed
-    return false;
+    return { isError: true };
   }
 }
 
@@ -115,13 +106,7 @@ export async function getStatusRewards(
  * @returns The updated user operation hash.
  */
 export function updateUserOpHash(
-  inst:
-    | IsolatedRewardTelegram
-    | LinkRewardTelegram
-    | ReferralRewardTelegram
-    | SignUpRewardTelegram
-    | TransferTelegram
-    | SwapTelegram,
+  inst: TelegramOperations,
   userOpHash: string,
 ): string {
   return (inst.userOpHash = userOpHash);
@@ -133,15 +118,6 @@ export function updateUserOpHash(
  * @param txHash The transaction hash to update.
  * @returns The updated transaction hash.
  */
-export function updateTxHash(
-  inst:
-    | IsolatedRewardTelegram
-    | LinkRewardTelegram
-    | ReferralRewardTelegram
-    | SignUpRewardTelegram
-    | TransferTelegram
-    | SwapTelegram,
-  txHash: string,
-): string {
+export function updateTxHash(inst: TelegramOperations, txHash: string): string {
   return (inst.txHash = txHash);
 }

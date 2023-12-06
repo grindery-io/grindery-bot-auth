@@ -1,4 +1,12 @@
 import { Document, WithId } from 'mongodb';
+import {
+  IsolatedRewardTelegram,
+  LinkRewardTelegram,
+  ReferralRewardTelegram,
+  SignUpRewardTelegram,
+} from '../utils/rewards';
+import { TransferTelegram } from '../utils/transfers';
+import { SwapTelegram } from '../utils/swap';
 
 /**
  * Defines the structure for SwapParams.
@@ -99,3 +107,36 @@ export type TransactionParams = {
   /** Additional sender information with MongoDB document ID. */
   senderInformation?: WithId<Document>;
 };
+
+/**
+ * Type union for different reward types.
+ * @typeparam IsolatedRewardTelegram Type for an isolated reward in Telegram.
+ * @typeparam LinkRewardTelegram Type for a link reward in Telegram.
+ * @typeparam ReferralRewardTelegram Type for a referral reward in Telegram.
+ * @typeparam SignUpRewardTelegram Type for a sign-up reward in Telegram.
+ */
+export type Reward =
+  | IsolatedRewardTelegram
+  | LinkRewardTelegram
+  | ReferralRewardTelegram
+  | SignUpRewardTelegram;
+
+/**
+ * Type union for different operations in Telegram.
+ * @typeparam Reward Type union for different reward types.
+ * @typeparam TransferTelegram Type for Telegram transfers.
+ * @typeparam SwapTelegram Type for Telegram swaps.
+ */
+export type TelegramOperations = Reward | TransferTelegram | SwapTelegram;
+
+/**
+ * Represents the result of a wallet patch operation.
+ */
+export interface PatchWalletResult {
+  /** Indicates whether an error occurred during the operation. */
+  isError: boolean;
+  /** The user operation hash, if available. */
+  userOpHash?: string;
+  /** The transaction hash, if available. */
+  txHash?: string;
+}

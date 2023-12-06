@@ -1,9 +1,9 @@
+import { RewardParams } from '../../types/webhook.types';
 import { TRANSACTION_STATUS } from '../constants';
 import {
   IsolatedRewardTelegram,
   createIsolatedRewardTelegram,
 } from '../rewards';
-import { RewardParams } from './types';
 import {
   getStatusRewards,
   isPendingTransactionHash,
@@ -53,17 +53,15 @@ export async function handleIsolatedReward(
         );
 
       // Get status of reward test
-      if ((txReward = await getStatusRewards(reward)) === false)
-        return txReward;
+      if ((txReward = await getStatusRewards(reward)).isError) return false;
     }
 
     // Check for txReward and send transaction if not present
-    if (!txReward && (txReward = await reward.sendTx()) === false)
-      return txReward;
+    if (!txReward && (txReward = await reward.sendTx()).isError) return false;
 
     // Update transaction hash and perform additional actions
-    if (txReward && txReward.data.txHash) {
-      updateTxHash(reward, txReward.data.txHash);
+    if (txReward && txReward.txHash) {
+      updateTxHash(reward, txReward.txHash);
       await Promise.all([
         reward.updateInDatabase(TRANSACTION_STATUS.SUCCESS, new Date()),
         reward.saveToFlowXO(),
@@ -76,8 +74,8 @@ export async function handleIsolatedReward(
     }
 
     // Update userOpHash if present in txReward
-    if (txReward && txReward.data.userOpHash) {
-      updateUserOpHash(reward, txReward.data.userOpHash);
+    if (txReward && txReward.userOpHash) {
+      updateUserOpHash(reward, txReward.userOpHash);
       await reward.updateInDatabase(TRANSACTION_STATUS.PENDING_HASH, null);
     }
     return false;

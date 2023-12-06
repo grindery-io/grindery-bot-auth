@@ -21,7 +21,7 @@ import {
 } from '../../secrets';
 import { isSuccessfulTransaction } from './webhooks/utils';
 import { Db, Document, FindCursor, WithId } from 'mongodb';
-import { RewardParams } from './webhooks/types';
+import { PatchWalletResult, RewardParams } from '../types/webhook.types';
 
 /**
  * Creates a sign-up reward specific to Telegram based on the specified parameters.
@@ -203,10 +203,10 @@ export class SignUpRewardTelegram {
    * Sends tokens using PatchWallet.
    * @returns {Promise<any>} - True if the tokens are sent successfully, false otherwise.
    */
-  async sendTx(): Promise<any> {
+  async sendTx(): Promise<PatchWalletResult> {
     try {
       // Send tokens using PatchWallet
-      return await sendTokens(
+      const res = await sendTokens(
         SOURCE_TG_ID,
         this.params.patchwallet,
         this.params.amount,
@@ -214,13 +214,19 @@ export class SignUpRewardTelegram {
         this.params.tokenAddress,
         this.params.chainName,
       );
+
+      return {
+        isError: false,
+        userOpHash: res.data.userOpHash,
+        txHash: res.data.txHash,
+      };
     } catch (error) {
       // Log error if sending tokens fails
       console.error(
         `[${this.eventId}] sign up reward for ${this.params.userTelegramID} - Error processing PatchWallet token sending: ${error}`,
       );
 
-      return false;
+      return { isError: true };
     }
   }
 }
@@ -469,9 +475,9 @@ export class ReferralRewardTelegram {
    * Sends tokens for the referral reward using PatchWallet.
    * @returns {Promise<any>} - True if the tokens are sent successfully, false otherwise.
    */
-  async sendTx(): Promise<any> {
+  async sendTx(): Promise<PatchWalletResult> {
     try {
-      return await sendTokens(
+      const res = await sendTokens(
         SOURCE_TG_ID,
         this.referent.patchwallet,
         this.params.amount,
@@ -479,12 +485,18 @@ export class ReferralRewardTelegram {
         this.params.tokenAddress,
         this.params.chainName,
       );
+
+      return {
+        isError: false,
+        userOpHash: res.data.userOpHash,
+        txHash: res.data.txHash,
+      };
     } catch (error) {
       console.error(
         `[${this.eventId}] Error processing PatchWallet referral reward for ${this.referent.patchwallet}: ${error}`,
       );
 
-      return false;
+      return { isError: true };
     }
   }
 }
@@ -697,10 +709,10 @@ export class LinkRewardTelegram {
    * Sends tokens using PatchWallet.
    * @returns {Promise<any>} - True if sending tokens is successful, false otherwise.
    */
-  async sendTx(): Promise<any> {
+  async sendTx(): Promise<PatchWalletResult> {
     try {
       // Send tokens using PatchWallet
-      return await sendTokens(
+      const res = await sendTokens(
         SOURCE_TG_ID,
         this.referent.patchwallet,
         this.params.amount,
@@ -708,13 +720,19 @@ export class LinkRewardTelegram {
         this.params.tokenAddress,
         this.params.chainName,
       );
+
+      return {
+        isError: false,
+        userOpHash: res.data.userOpHash,
+        txHash: res.data.txHash,
+      };
     } catch (error) {
       // Log error if sending tokens fails
       console.error(
         `[${this.eventId}] link reward for ${this.params.referentUserTelegramID} - Error processing PatchWallet token sending: ${error}`,
       );
 
-      return false;
+      return { isError: true };
     }
   }
 }
@@ -900,10 +918,10 @@ export class IsolatedRewardTelegram {
    * Sends tokens using PatchWallet.
    * @returns {Promise<boolean>} - True if the tokens are sent successfully, false otherwise.
    */
-  async sendTx(): Promise<any> {
+  async sendTx(): Promise<PatchWalletResult> {
     try {
       // Send tokens using PatchWallet
-      return await sendTokens(
+      const res = await sendTokens(
         SOURCE_TG_ID,
         this.params.patchwallet,
         this.params.amount,
@@ -911,13 +929,19 @@ export class IsolatedRewardTelegram {
         this.tokenAddress,
         this.chainName,
       );
+
+      return {
+        isError: false,
+        userOpHash: res.data.userOpHash,
+        txHash: res.data.txHash,
+      };
     } catch (error) {
       // Log error if sending tokens fails
       console.error(
         `[${this.params.eventId}] sign up reward for ${this.params.userTelegramID} - Error processing PatchWallet token sending: ${error}`,
       );
 
-      return false;
+      return { isError: true };
     }
   }
 }

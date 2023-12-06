@@ -9,7 +9,7 @@ import {
   updateTxHash,
   updateUserOpHash,
 } from './utils';
-import { SwapParams } from './types';
+import { SwapParams } from '../../types/webhook.types';
 
 /**
  * Handles the swap process based on provided parameters.
