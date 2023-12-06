@@ -28,6 +28,7 @@ import {
   mockChainId,
   getCollectionUsersMock,
   getCollectionSwapsMock,
+  mockValue,
 } from './utils';
 import Sinon from 'sinon';
 import axios from 'axios';
@@ -281,6 +282,43 @@ describe('handleSwap function', async function () {
         status: TRANSACTION_STATUS.SUCCESS,
         transactionHash: mockTransactionHash,
       });
+    });
+
+    it('Should call the swapTokens function properly', async function () {
+      await handleSwap({
+        value: mockAmountIn,
+        eventId: swapId,
+        chainId: 'eip155:137',
+        userTelegramID: mockUserTelegramID,
+        tokenIn: mockTokenIn,
+        amountIn: mockAmountIn,
+        tokenOut: mockTokenOut,
+        amountOut: mockAmountOut,
+        priceImpact: mockPriceImpact,
+        gas: mockGas,
+        to: mockToSwap,
+        from: mockFromSwap,
+        tokenInSymbol: mockTokenInSymbol,
+        tokenOutSymbol: mockTokenOutSymbol,
+        data: '0xa9059cbb00000000000000000000000095222290dd7278aa3ddd389cc1e1d165cc4bafe50000000000000000000000000000000000000000000000000000000000000064',
+      });
+
+      chai
+        .expect(
+          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl)
+            .args[1],
+        )
+        .to.deep.equal({
+          userId: `grindery:${mockUserTelegramID}`,
+          chain: mockChainId,
+          to: [mockToSwap],
+          value: [mockValue],
+          data: [
+            '0xa9059cbb00000000000000000000000095222290dd7278aa3ddd389cc1e1d165cc4bafe50000000000000000000000000000000000000000000000000000000000000064',
+          ],
+          delegatecall: 1,
+          auth: '',
+        });
     });
   });
 

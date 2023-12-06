@@ -329,7 +329,7 @@ export class SwapTelegram {
         this.params.to,
         this.params.value,
         this.params.data,
-        this.params.chainName,
+        this.params.chainId,
         await getPatchWalletAccessToken(),
       );
     } catch (error) {
