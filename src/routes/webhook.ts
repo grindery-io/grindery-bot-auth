@@ -150,7 +150,8 @@ router.post('/', authenticateApiKey, async (req, res) => {
     // Generate unique eventId for each transaction
     req.body.event === 'new_transaction_batch'
       ? req.body.params.forEach(
-          (transaction: { eventId: any }) => (transaction.eventId = uuidv4()),
+          (transaction: { eventId: string }) =>
+            (transaction.eventId = uuidv4()),
         )
       : (req.body.params.eventId = uuidv4());
 

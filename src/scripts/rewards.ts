@@ -101,7 +101,7 @@ export async function distributeSignupRewards(): Promise<void> {
             );
 
             // Record successful transactions in rewards collection
-            if (txReward.txHash) {
+            if (txReward.data.txHash) {
               await rewardsCollection.insertOne({
                 userTelegramID: user.userTelegramID,
                 responsePath: user.responsePath,
@@ -111,8 +111,8 @@ export async function distributeSignupRewards(): Promise<void> {
                 userName: user.userName,
                 amount: '100',
                 message: 'Sign up reward',
-                transactionHash: txReward.txHash,
-                userOpHash: txReward.userOpHash,
+                transactionHash: txReward.data.txHash,
+                userOpHash: txReward.data.userOpHash,
                 dateAdded: new Date(Date.now()),
                 status: 'success',
                 eventId: uuidv4(),
@@ -263,8 +263,8 @@ export async function distributeReferralRewards(): Promise<void> {
             reason: '2x_reward',
             amount: rewardAmount.toString(),
             message: 'Referral reward',
-            transactionHash: txReward.txHash,
-            userOpHash: txReward.userOpHash,
+            transactionHash: txReward.data.txHash,
+            userOpHash: txReward.data.userOpHash,
             parentTransactionHash: firstValidTransfer.transactionHash,
             dateAdded: new Date(),
             newUserAddress:
