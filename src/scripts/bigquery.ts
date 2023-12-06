@@ -164,14 +164,14 @@ const importTransfers = async (): Promise<void> => {
   process.exit(0);
 };
 
-export const importUsersLast24Hours = async (): Promise<void> => {
+export const importUsersLast4Hours = async (): Promise<void> => {
   const tableId = 'users';
   const db = await Database.getInstance();
   const collection = db.collection(USERS_COLLECTION);
 
   const endDate = new Date();
   const startDate = new Date();
-  startDate.setHours(startDate.getHours() - 24);
+  startDate.setHours(startDate.getHours() - 4);
 
   const recentUsers = collection.find({
     dateAdded: { $gte: startDate, $lte: endDate },
@@ -241,13 +241,13 @@ export const importUsersLast24Hours = async (): Promise<void> => {
   }
 
   if (!hasUsers) {
-    console.log('BIGQUERY - No users found in MongoDB in the last 24 hours.');
+    console.log('BIGQUERY - No users found in MongoDB in the last 4 hours.');
   }
 
   console.log('BIGQUERY - Import completed successfully.');
 };
 
-export const importTransfersLast24Hours = async (): Promise<void> => {
+export const importTransfersLast4Hours = async (): Promise<void> => {
   const tableId = 'transfer';
   const db = await Database.getInstance();
   const collection = db.collection(TRANSFERS_COLLECTION);
@@ -255,7 +255,7 @@ export const importTransfersLast24Hours = async (): Promise<void> => {
   // Calculate the date 24 hours ago
   const endDate = new Date();
   const startDate = new Date();
-  startDate.setHours(startDate.getHours() - 24);
+  startDate.setHours(startDate.getHours() - 4);
 
   // Find transfers in the last 24 hours using Cursor
   const allTransfers = collection.find({
@@ -332,7 +332,7 @@ export const importTransfersLast24Hours = async (): Promise<void> => {
 
   if (!hasTransfers) {
     console.log(
-      'BIGQUERY - No transfers found in the last 24 hours in MongoDB.',
+      'BIGQUERY - No transfers found in the last 4 hours in MongoDB.',
     );
   }
 

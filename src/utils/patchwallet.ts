@@ -7,6 +7,7 @@ import {
 import { getContract, scaleDecimals } from './web3';
 import { nativeTokenAddresses } from './constants';
 import { PatchRawResult } from '../types/webhook.types';
+import { CHAIN_NAME_MAPPING } from './chains';
 
 /**
  * Retrieves the Patch Wallet access token by making a POST request to the authentication endpoint.
@@ -150,14 +151,16 @@ export async function swapTokens(
   to: string,
   value: string,
   data: string,
-  chainName: string,
+  chainId: string,
   patchWalletAccessToken: string,
 ): Promise<axios.AxiosResponse<PatchRawResult, AxiosError>> {
   return await axios.post(
     'https://paymagicapi.com/v1/kernel/tx',
     {
       userId: `grindery:${userTelegramID}`,
-      chain: chainName ? chainName : 'matic',
+      chain: chainId
+        ? CHAIN_NAME_MAPPING[chainId]
+        : CHAIN_NAME_MAPPING['eip155:137'],
       to: [to],
       value: [value],
       data: [data],

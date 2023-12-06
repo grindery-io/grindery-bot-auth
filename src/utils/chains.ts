@@ -91,3 +91,8 @@ export const CHAIN_MAPPING = {
   'eip155:44787': LAVANET('alfajores/rpc', 'alfajores/rpc-http'),
   'eip155:9000': LAVANET('evmost/json-rpc', 'evmost/json-rpc-http'),
 };
+
+export const CHAIN_NAME_MAPPING = {
+  'eip155:137': 'matic',
+  'eip155:59144': 'linea',
+};
