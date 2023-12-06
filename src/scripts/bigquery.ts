@@ -241,7 +241,7 @@ export const importUsersLast4Hours = async (): Promise<void> => {
   }
 
   if (!hasUsers) {
-    console.log('BIGQUERY - No users found in MongoDB in the last 24 hours.');
+    console.log('BIGQUERY - No users found in MongoDB in the last 4 hours.');
   }
 
   console.log('BIGQUERY - Import completed successfully.');
@@ -332,7 +332,7 @@ export const importTransfersLast4Hours = async (): Promise<void> => {
 
   if (!hasTransfers) {
     console.log(
-      'BIGQUERY - No transfers found in the last 24 hours in MongoDB.',
+      'BIGQUERY - No transfers found in the last 4 hours in MongoDB.',
     );
   }
 
