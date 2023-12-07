@@ -1,12 +1,19 @@
 import { body } from 'express-validator';
 import Web3 from 'web3';
+import { Database } from '../db/conn';
+import { WITHDRAW_WHITELIST_COLLECTION } from '../utils/constants';
 
 export const withdrawValidator = [
   body('tgId').isString().withMessage('must be string value'),
-  body('recipientwallet').custom((value, { req }) => {
+  body('recipientwallet').custom(async (value, { req }) => {
+    const db = await Database.getInstance();
+    const user = await db
+      .collection(WITHDRAW_WHITELIST_COLLECTION)
+      .findOne({ userTelegramID: req.body.tgId });
+
     if (
       !Web3.utils.isAddress(value) ||
-      !withdrawAddressMapping[req.body.tgId]?.includes(value)
+      !user.withdrawAddresses?.includes(value)
     ) {
       throw new Error('Invalid recipient wallet');
     }
@@ -26,9 +33,3 @@ export const withdrawValidator = [
     return true;
   }),
 ];
-
-const withdrawAddressMapping: Record<string, string[]> = {
-  tgId1: ['0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5', '0xAnotherAddress'],
-  tgId2: ['0xSomeAddress', '0xAnotherAddress'],
-  // Add more tgIds
-};

@@ -1,6 +1,11 @@
 /**
  * Collection name for storing transfers.
  */
+export const WITHDRAW_WHITELIST_COLLECTION = 'withdraws-whitelist';
+
+/**
+ * Collection name for storing transfers.
+ */
 export const TRANSFERS_COLLECTION = 'transfers';
 
 /**
