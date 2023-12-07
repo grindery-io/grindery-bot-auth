@@ -77,7 +77,7 @@ router.get('/attributes', authenticateApiKey, async (req, res) => {
   }
 });
 
-router.get('/balance', async (req, res) => {
+router.get('/balance', authenticateApiKey, async (req, res) => {
   console.log(`User [${req.query.userTelegramID}] requested balance`);
   try {
     const db = await Database.getInstance();
