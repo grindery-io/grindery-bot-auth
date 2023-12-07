@@ -5,6 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "start": "node build/src/index.js",
+    "start:debug": "ts-node ./src/index.ts",
     "clean": "rimraf coverage build tmp",
     "prebuild": "npm run lint",
     "build": "tsc -p tsconfig.json",
