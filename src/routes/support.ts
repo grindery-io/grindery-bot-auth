@@ -1,7 +1,10 @@
 import express from 'express';
 import { Database } from '../db/conn';
 import { authenticateApiKey } from '../utils/auth';
-import { USERS_COLLECTION } from '../utils/constants';
+import { TRANSFERS_COLLECTION, USERS_COLLECTION } from '../utils/constants';
+import { ANKR_KEY } from '../../secrets';
+import axios from 'axios';
+import web3 from 'web3';
 
 const router = express.Router();
 
@@ -97,6 +100,49 @@ router.post('/import', authenticateApiKey, async (req, res) => {
   } else {
     return res.status(400).send({ message: 'No valid data to insert' });
   }
+});
+
+router.get('/staking', authenticateApiKey, async (req, res) => {
+  // Stablish database connection
+  const db = await Database.getInstance();
+  const transfersCollection = db.collection(TRANSFERS_COLLECTION);
+
+  // Get address from request query
+  const patchWallet: any = req.query.address;
+
+  // Get all transactions from Grindery Wallet
+  const result = await axios.post(
+    `https://rpc.ankr.com/multichain/${ANKR_KEY}`,
+    {
+      jsonrpc: '2.0',
+      method: 'ankr_getTransactionsByAddress',
+      params: {
+        address: patchWallet,
+      },
+      id: new Date().toString(),
+    },
+    {
+      headers: { 'Content-Type': 'application/json' },
+    },
+  );
+
+  // Filter only incomming transaction (param: to) that does not exist in transfers collection
+  const transactions = result.data.result.transactions;
+  const externalTransactions = await transactions.filter(
+    async (transaction: any) => {
+      const isSameAddress =
+        web3.utils.toChecksumAddress(transaction.to) ===
+        web3.utils.toChecksumAddress(patchWallet);
+      const transactionHashExists = await transfersCollection.findOne({
+        hash: transaction.hash,
+      });
+      return isSameAddress && !transactionHashExists;
+    },
+  );
+
+  console.log(externalTransactions);
+
+  return res.status(200).send({});
 });
 
 export default router;
