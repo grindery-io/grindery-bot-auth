@@ -9,7 +9,7 @@ const client = new SecretManagerServiceClient();
  * @param {string} secretName - The name of the secret to retrieve.
  * @returns {Promise<string|null>} - The retrieved secret value or null in case of an error.
  */
-async function getSecretVersion(secretName: any): Promise<string | null> {
+async function getSecretVersion(secretName: string): Promise<string | null> {
   try {
     const [version] = await client.accessSecretVersion({
       name: secretName,

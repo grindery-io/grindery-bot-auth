@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { SEGMENT_KEY } from '../../secrets';
 
 /**
@@ -13,7 +13,7 @@ export async function addIdentitySegment(user: {
   userName: string;
   patchwallet: string;
   dateAdded: Date;
-}): Promise<axios.AxiosResponse<any, any>> {
+}): Promise<axios.AxiosResponse<any, AxiosError>> {
   return await axios.post(
     'https://api.segment.io/v1/identify',
     {
@@ -55,7 +55,7 @@ export async function addTrackSegment(params: {
   tokenSymbol: string;
   tokenAddress: string;
   chainId: string;
-}): Promise<axios.AxiosResponse<any, any>> {
+}): Promise<axios.AxiosResponse<any, AxiosError>> {
   return await axios.post(
     'https://api.segment.io/v1/track',
     {
@@ -111,7 +111,7 @@ export async function addTrackSwapSegment(params: {
   from: string;
   tokenInSymbol: string;
   tokenOutSymbol: string;
-}): Promise<axios.AxiosResponse<any, any>> {
+}): Promise<axios.AxiosResponse<any, AxiosError>> {
   return await axios.post(
     'https://api.segment.io/v1/track',
     {

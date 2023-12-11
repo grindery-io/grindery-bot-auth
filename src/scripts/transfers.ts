@@ -420,7 +420,9 @@ async function getDoubleTxs() {
 
     // Filter elements where numberOfTransactions > 1
     const filteredTransactions = Object.values(matchedTransactions).filter(
-      (transaction) => (transaction as any).numberOfTransactions > 1,
+      (transaction) =>
+        (transaction as { numberOfTransactions: number }).numberOfTransactions >
+        1,
     );
 
     // Export the filtered data to a CSV file
