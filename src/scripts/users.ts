@@ -11,7 +11,7 @@ import { TRANSFERS_COLLECTION, USERS_COLLECTION } from '../utils/constants';
 // Example: importUsersFromCSV("/path/to/your/file.csv");
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-async function importUsersFromCSV(filePath: fs.PathLike) {
+async function importUsersFromCSV(filePath: fs.PathLike): Promise<void> {
   const db = await Database.getInstance();
   const collection = db.collection(USERS_COLLECTION);
   const toInsert = [];
@@ -54,7 +54,9 @@ async function importUsersFromCSV(filePath: fs.PathLike) {
 // Example: importUsersFromJSON("/path/to/your/file.json");
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-async function importUsersFromJSON(filePath) {
+async function importUsersFromJSON(
+  filePath: fs.PathOrFileDescriptor,
+): Promise<void> {
   try {
     const db = await Database.getInstance();
     const collection = db.collection(USERS_COLLECTION);
@@ -124,7 +126,7 @@ async function importUsersFromJSON(filePath) {
 // removeUsersScientificNotationInTelegramID();
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-async function removeUsersScientificNotationInTelegramID() {
+async function removeUsersScientificNotationInTelegramID(): Promise<void> {
   try {
     const db = await Database.getInstance();
     const collectionUsers = db.collection(USERS_COLLECTION);
@@ -156,7 +158,7 @@ async function removeUsersScientificNotationInTelegramID() {
 // logUserTelegramIDsFromArrayOfUsers(users);
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-function logUserTelegramIDsFromArrayOfUsers(users) {
+function logUserTelegramIDsFromArrayOfUsers(users: any[]): Promise<void> {
   const userTelegramIDCounts = {}; // To store the count of each unique userTelegramID
 
   // Iterate through the users array
@@ -182,7 +184,7 @@ function logUserTelegramIDsFromArrayOfUsers(users) {
 // Function to get all users without outgoing transfers and export to CSV
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-async function getUsersWithoutOutgoingTransfersAndExportToCSV() {
+async function getUsersWithoutOutgoingTransfersAndExportToCSV(): Promise<void> {
   try {
     const db = await Database.getInstance();
     const usersCollection = db.collection(USERS_COLLECTION);
@@ -240,7 +242,7 @@ async function getUsersWithoutOutgoingTransfersAndExportToCSV() {
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-async function exportUsersWithHandleEndingInDigitsToCSV() {
+async function exportUsersWithHandleEndingInDigitsToCSV(): Promise<void> {
   try {
     const db = await Database.getInstance();
     const usersCollection = db.collection(USERS_COLLECTION);
@@ -282,7 +284,7 @@ async function exportUsersWithHandleEndingInDigitsToCSV() {
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-async function convertDateAddedFieldToISODate() {
+async function convertDateAddedFieldToISODate(): Promise<void> {
   try {
     const db = await Database.getInstance();
     const collection = db.collection(USERS_COLLECTION);

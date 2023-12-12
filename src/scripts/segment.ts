@@ -16,7 +16,7 @@ import { SEGMENT_WRITE_KEY } from '../../secrets';
 // Example: sendUsersBatchRequest();
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-async function sendUsersBatchRequest() {
+async function sendUsersBatchRequest(): Promise<void> {
   const db = await Database.getInstance();
   const usersCollection = db.collection(USERS_COLLECTION);
 
@@ -67,7 +67,7 @@ async function sendUsersBatchRequest() {
 // Example: sendTransfersBatchRequest();
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-async function sendTransfersBatchRequest() {
+async function sendTransfersBatchRequest(): Promise<void> {
   const db = await Database.getInstance();
   const transfersCollection = db.collection(TRANSFERS_COLLECTION);
 

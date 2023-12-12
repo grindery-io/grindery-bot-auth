@@ -15,7 +15,7 @@ import { SOURCE_TG_ID, SOURCE_WALLET_ADDRESS } from '../../secrets';
 // removeDuplicateTransfers();
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-async function removeDuplicateTransfers() {
+async function removeDuplicateTransfers(): Promise<void> {
   try {
     const db = await Database.getInstance();
     const collectionTransfers = db.collection(TRANSFERS_COLLECTION);
@@ -57,7 +57,7 @@ async function removeDuplicateTransfers() {
 // Example: transfersCleanup("dune.csv");
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-async function transfersCleanup(fileName) {
+async function transfersCleanup(fileName: fs.PathLike): Promise<void> {
   const db = await Database.getInstance();
   const collection = db.collection(TRANSFERS_COLLECTION);
   const hashesInCsv = [];
@@ -110,7 +110,7 @@ async function transfersCleanup(fileName) {
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-async function updateTransfersInformations() {
+async function updateTransfersInformations(): Promise<void> {
   try {
     // Connect to the database
     const db = await Database.getInstance();
@@ -192,7 +192,7 @@ async function updateTransfersInformations() {
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-async function removeRewardFromTransfers() {
+async function removeRewardFromTransfers(): Promise<void> {
   try {
     const db = await Database.getInstance();
     const collectionTransfers = db.collection(TRANSFERS_COLLECTION);
@@ -244,7 +244,7 @@ async function removeRewardFromTransfers() {
  */
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-async function checkMissingTransfers(fileName) {
+async function checkMissingTransfers(fileName: fs.PathLike): Promise<void> {
   const db = await Database.getInstance();
   const collection = db.collection(TRANSFERS_COLLECTION);
   const hashesInCsv = new Set();
@@ -363,7 +363,7 @@ async function getUsersFollowUps() {
  */
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-async function getDoubleTxs() {
+async function getDoubleTxs(): Promise<void> {
   try {
     const db = await Database.getInstance();
     const collection = db.collection(TRANSFERS_COLLECTION);
@@ -437,7 +437,7 @@ async function getDoubleTxs() {
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-async function convertFieldsToString() {
+async function convertFieldsToString(): Promise<void> {
   try {
     // Connect to the database
     const db = await Database.getInstance();
@@ -494,7 +494,7 @@ async function convertFieldsToString() {
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-async function nullifyTgIds() {
+async function nullifyTgIds(): Promise<void> {
   try {
     // Connect to the database
     const db = await Database.getInstance();
@@ -550,7 +550,7 @@ async function nullifyTgIds() {
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-async function updateTransfersStatus() {
+async function updateTransfersStatus(): Promise<void> {
   try {
     const db = await Database.getInstance();
     const transfersCollection = db.collection(TRANSFERS_COLLECTION);
@@ -591,7 +591,9 @@ async function updateTransfersStatus() {
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-async function importMissingTransferFromCSV(fileName) {
+async function importMissingTransferFromCSV(
+  fileName: fs.PathLike,
+): Promise<void> {
   const db = await Database.getInstance();
   const collection = db.collection(TRANSFERS_COLLECTION);
   const usersCollection = db.collection(USERS_COLLECTION);
@@ -631,7 +633,7 @@ async function importMissingTransferFromCSV(fileName) {
 
     // Preload user data
     const usersCursor = await usersCollection.find({}).toArray();
-    await usersCursor.forEach((user) => {
+    usersCursor.forEach((user) => {
       usersData.set(web3.utils.toChecksumAddress(user.patchwallet), user);
     });
 

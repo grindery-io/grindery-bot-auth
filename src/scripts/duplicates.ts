@@ -2,7 +2,10 @@ import { Database } from '../db/conn';
 
 // Example usage of the functions:
 // removeDuplicateUsers();
-async function removeDuplicateUsers(targetCollection, refId): Promise<void> {
+async function removeDuplicateUsers(
+  targetCollection: string,
+  refId: string,
+): Promise<void> {
   try {
     const db = await Database.getInstance();
     const collection = db.collection(targetCollection);

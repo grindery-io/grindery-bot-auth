@@ -307,7 +307,7 @@ export async function distributeReferralRewards(): Promise<void> {
 // Example: startImport("/path/to/your/file.csv");
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-const startImport = (fileName) => {
+const startImport = (fileName: fs.PathLike): Promise<void> => {
   const rewards = [];
   fs.createReadStream(fileName)
     .pipe(csv())
@@ -325,7 +325,7 @@ const startImport = (fileName) => {
     });
 };
 
-async function saveRewards(rewards) {
+async function saveRewards(rewards: any[]): Promise<void> {
   const db = await Database.getInstance();
   const collection = db.collection('rewards-test');
 
@@ -423,7 +423,7 @@ const generateRewardMessage = (amount, blockTime) => {
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-async function updateRewardMessages() {
+async function updateRewardMessages(): Promise<void> {
   const db = await Database.getInstance();
   const collection = db.collection(REWARDS_COLLECTION);
 
@@ -482,7 +482,7 @@ async function updateRewardMessages() {
 // Example: rewardsCleanup("dune.csv");
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-async function rewardsCleanup(fileName) {
+async function rewardsCleanup(fileName: fs.PathLike): Promise<void> {
   const db = await Database.getInstance();
   const collection = db.collection('rewards-test');
   const hashesInCsv = [];
@@ -533,7 +533,7 @@ async function rewardsCleanup(fileName) {
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-async function updateRewardsStatus() {
+async function updateRewardsStatus(): Promise<void> {
   try {
     const db = await Database.getInstance();
     const rewardsCollection = db.collection(REWARDS_COLLECTION);
@@ -574,7 +574,9 @@ async function updateRewardsStatus() {
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-async function importMissingRewardsFromCSV(fileName) {
+async function importMissingRewardsFromCSV(
+  fileName: fs.PathLike,
+): Promise<void> {
   const db = await Database.getInstance();
   const rewardsCollection = db.collection(REWARDS_COLLECTION);
   const usersCollection = db.collection(USERS_COLLECTION);
@@ -676,7 +678,7 @@ async function importMissingRewardsFromCSV(fileName) {
  */
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-async function checkMissingRewards(fileName) {
+async function checkMissingRewards(fileName: fs.PathLike): Promise<void> {
   const db = await Database.getInstance();
   const collection = db.collection(REWARDS_COLLECTION);
   const hashesInCsv = new Set();
@@ -714,7 +716,7 @@ async function checkMissingRewards(fileName) {
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-async function filterAndRemoveInvalidRewards() {
+async function filterAndRemoveInvalidRewards(): Promise<void> {
   try {
     // Connect to the database
     const db = await Database.getInstance();
@@ -762,7 +764,7 @@ async function filterAndRemoveInvalidRewards() {
  */
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-async function updateParentTransactionHash() {
+async function updateParentTransactionHash(): Promise<void> {
   try {
     // Connect to the database
     const db = await Database.getInstance();
@@ -879,7 +881,9 @@ async function calculateAverageRewardAmount(): Promise<void> {
  */
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-async function getTransactionsAndRecipientsFromId(userId) {
+async function getTransactionsAndRecipientsFromId(
+  userId: string,
+): Promise<void> {
   try {
     // Connect to the database
     const db = await Database.getInstance();

@@ -5,8 +5,8 @@ import { Database } from '../db/conn';
 // - targetCollectionName: The name of the target collection where data will be copied.
 // Example: cloneCollection("users", "users-backup");
 async function cloneCollection(
-  sourceCollectionName,
-  targetCollectionName,
+  sourceCollectionName: string,
+  targetCollectionName: string,
 ): Promise<void> {
   try {
     const db = await Database.getInstance();

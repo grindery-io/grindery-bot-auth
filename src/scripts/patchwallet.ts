@@ -1,3 +1,4 @@
+import { Db } from 'mongodb';
 import { Database } from '../db/conn';
 import { USERS_COLLECTION } from '../utils/constants';
 import { getPatchWalletAddressFromTgId } from '../utils/patchwallet';
@@ -6,8 +7,8 @@ import { getPatchWalletAddressFromTgId } from '../utils/patchwallet';
 // Description: This function updates the PatchWallet addresses for users in the database.
 // It fetches users with an empty patchwallet field and updates it using data from getPatchWalletAddressFromTgId.
 // Example: updatePatchWalletAddresses();
-async function updatePatchWalletAddresses() {
-  let db;
+async function updatePatchWalletAddresses(): Promise<void> {
+  let db: Db;
   try {
     db = await Database.getInstance();
     const collectionUsers = db.collection(USERS_COLLECTION);
