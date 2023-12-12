@@ -2,7 +2,7 @@ import { createUserTelegram } from '../user';
 import { signup_utils } from './signup-reward';
 import { referral_utils } from './referral-reward';
 import { link_reward_utils } from './link-reward';
-import { RewardParams } from '../../types/webhook.types';
+import { RewardParams, createRewardParams } from '../../types/webhook.types';
 
 /**
  * Handles the processing of a new reward event.
@@ -28,23 +28,19 @@ export async function handleNewReward(params: RewardParams): Promise<boolean> {
   // Stops processing if user's patchwallet is missing.
   if (!user.patchwallet) return false;
 
+  const param_rewards = createRewardParams(params, user.patchwallet);
+
   // Handles the sign-up reward for the user.
   if (
     params.isSignupReward &&
-    !(await signup_utils.handleSignUpReward({
-      ...params,
-      patchwallet: user.patchwallet,
-    }))
+    !(await signup_utils.handleSignUpReward(param_rewards))
   )
     return false;
 
   // Handles the referral reward for the user.
   if (
     params.isReferralReward &&
-    !(await referral_utils.handleReferralReward({
-      ...params,
-      patchwallet: user.patchwallet,
-    }))
+    !(await referral_utils.handleReferralReward(param_rewards))
   )
     return false;
 
@@ -52,7 +48,7 @@ export async function handleNewReward(params: RewardParams): Promise<boolean> {
   if (
     params.isLinkReward &&
     params.referentUserTelegramID &&
-    !(await link_reward_utils.handleLinkReward(params))
+    !(await link_reward_utils.handleLinkReward(param_rewards))
   )
     return false;
 

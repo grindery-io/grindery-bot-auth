@@ -95,6 +95,28 @@ export type RewardParams = {
 };
 
 /**
+ * Creates reward parameters by merging the provided parameters with default values.
+ * @param params The parameters for the reward.
+ * @returns Reward parameters with default values for missing parameters.
+ */
+export function createRewardParams(
+  params: RewardParams,
+  patchwallet: string,
+): RewardParams {
+  return {
+    ...{
+      tokenAddress: G1_POLYGON_ADDRESS,
+      chainName: DEFAULT_CHAIN_NAME,
+      isSignupReward: false,
+      isReferralReward: false,
+      isLinkReward: false,
+    },
+    ...params,
+    patchwallet,
+  };
+}
+
+/**
  * Defines the structure for TransactionParams.
  */
 export type TransactionParams = {

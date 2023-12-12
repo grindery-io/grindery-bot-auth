@@ -1,6 +1,5 @@
 import { Database } from '../db/conn';
 import {
-  DEFAULT_CHAIN_NAME,
   REWARDS_COLLECTION,
   TRANSACTION_STATUS,
   TRANSFERS_COLLECTION,
@@ -17,7 +16,6 @@ import {
   FLOWXO_NEW_LINK_REWARD_WEBHOOK,
   FLOWXO_NEW_REFERRAL_REWARD_WEBHOOK,
   FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK,
-  G1_POLYGON_ADDRESS,
   SOURCE_TG_ID,
 } from '../../secrets';
 import { isSuccessfulTransaction } from './webhooks/utils';
@@ -89,10 +87,6 @@ export class SignUpRewardTelegram {
     this.status = undefined;
     this.txHash = undefined;
     this.userOpHash = undefined;
-
-    // Setting default token address and chain name if not provided
-    this.params.tokenAddress = params.tokenAddress ?? G1_POLYGON_ADDRESS; // Default token address
-    this.params.chainName = params.chainName ?? DEFAULT_CHAIN_NAME; // Default chain name
   }
 
   /**
@@ -557,10 +551,6 @@ export class LinkRewardTelegram {
     this.eventId = params.eventId;
     this.params = params;
 
-    // Setting default token address and chain name if not provided
-    this.params.tokenAddress = params.tokenAddress ?? G1_POLYGON_ADDRESS; // Default token address
-    this.params.chainName = params.chainName ?? DEFAULT_CHAIN_NAME; // Default chain name
-
     // Reward-specific details
     this.params.reason = 'referral_link'; // Default reason for the link reward
     this.params.amount = '10'; // Default amount for the link reward
@@ -798,9 +788,6 @@ export class IsolatedRewardTelegram {
     this.status = undefined;
     this.txHash = undefined;
     this.userOpHash = undefined;
-
-    this.tokenAddress = params.tokenAddress ?? G1_POLYGON_ADDRESS; // Default address if not provided
-    this.chainName = params.chainName ?? DEFAULT_CHAIN_NAME; // Default chain name if not provided
   }
 
   /**
