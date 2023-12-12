@@ -80,6 +80,12 @@ export type RewardParams = {
   chainName?: string;
   /** The Telegram user ID of the referent. */
   referentUserTelegramID?: string;
+  /** Specifies if there is a signup reward. */
+  isSignupReward?: boolean;
+  /** Specifies if there is a referral reward. */
+  isReferralReward?: boolean;
+  /** Specifies if there is a link reward. */
+  isLinkReward?: boolean;
 };
 
 /**

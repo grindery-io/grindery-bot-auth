@@ -30,6 +30,7 @@ export async function handleNewReward(params: RewardParams): Promise<boolean> {
 
   // Handles the sign-up reward for the user.
   if (
+    params.isSignupReward &&
     !(await signup_utils.handleSignUpReward({
       ...params,
       patchwallet: user.patchwallet,
@@ -39,6 +40,7 @@ export async function handleNewReward(params: RewardParams): Promise<boolean> {
 
   // Handles the referral reward for the user.
   if (
+    params.isReferralReward &&
     !(await referral_utils.handleReferralReward({
       ...params,
       patchwallet: user.patchwallet,
@@ -48,6 +50,7 @@ export async function handleNewReward(params: RewardParams): Promise<boolean> {
 
   // Handles the link reward for the user if a referent user Telegram ID is provided.
   if (
+    params.isLinkReward &&
     params.referentUserTelegramID &&
     !(await link_reward_utils.handleLinkReward(params))
   )
