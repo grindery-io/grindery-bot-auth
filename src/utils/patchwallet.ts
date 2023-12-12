@@ -5,7 +5,11 @@ import {
   getClientSecret,
 } from '../../secrets';
 import { getContract, scaleDecimals } from './web3';
-import { nativeTokenAddresses } from './constants';
+import {
+  DEFAULT_CHAIN_ID,
+  DEFAULT_CHAIN_NAME,
+  nativeTokenAddresses,
+} from './constants';
 import { PatchRawResult } from '../types/webhook.types';
 import { CHAIN_NAME_MAPPING } from './chains';
 
@@ -68,8 +72,8 @@ export async function sendTokens(
   amountEther: string,
   patchWalletAccessToken: string,
   tokenAddress: string = G1_POLYGON_ADDRESS,
-  chainName: string = 'matic',
-  chainId: string = 'eip155:137',
+  chainName: string = DEFAULT_CHAIN_NAME,
+  chainId: string = DEFAULT_CHAIN_ID,
 ): Promise<axios.AxiosResponse<PatchRawResult, AxiosError>> {
   // Determine data, value, and address based on the token type
   const [data, value, address] = nativeTokenAddresses.includes(tokenAddress)
@@ -142,7 +146,7 @@ export async function getTxStatus(
  * @param {string} to - Destination address for the token swap.
  * @param {string} value - Value to swap.
  * @param {string} data - Data for the swap transaction.
- * @param {string} chainName - Name of the chain (default: 'matic').
+ * @param {string} chainId - Chain ID (default: 'eip155:137').
  * @param {string} patchWalletAccessToken - Access token for the patch wallet authentication.
  * @returns {Promise<axios.AxiosResponse<PatchRawResult, AxiosError>>} - Promise resolving to the response from the PayMagic API.
  */
@@ -160,7 +164,7 @@ export async function swapTokens(
       userId: `grindery:${userTelegramID}`,
       chain: chainId
         ? CHAIN_NAME_MAPPING[chainId]
-        : CHAIN_NAME_MAPPING['eip155:137'],
+        : CHAIN_NAME_MAPPING[DEFAULT_CHAIN_ID],
       to: [to],
       value: [value],
       data: [data],

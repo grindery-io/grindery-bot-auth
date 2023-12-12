@@ -6,8 +6,6 @@ import {
   mockUserTelegramID,
   mockWallet,
   mockUserTelegramID1,
-  patchwalletResolverUrl,
-  segmentIdentifyUrl,
   getCollectionUsersMock,
 } from './utils';
 import { handleNewReward } from '../utils/webhooks/webhook';
@@ -20,18 +18,30 @@ import { signup_utils } from '../utils/webhooks/signup-reward';
 import { referral_utils } from '../utils/webhooks/referral-reward';
 import { link_reward_utils } from '../utils/webhooks/link-reward';
 import * as web3 from '../utils/web3';
+import { RewardParams } from '../types/webhook.types';
+import { Collection, Document } from 'mongodb';
+import {
+  PATCHWALLET_RESOLVER_URL,
+  SEGMENT_IDENTITY_URL,
+} from '../utils/constants';
 
 chai.use(chaiExclude);
 
 describe('handleReferralReward function', function () {
-  let sandbox;
+  let sandbox: Sinon.SinonSandbox;
   let axiosStub;
-  let signUpRewardStub;
-  let referralRewardStub;
-  let linkRewardStub;
-  let eventId;
-  let collectionUsersMock;
-  let contractStub;
+  let signUpRewardStub: Sinon.SinonStub<
+    [params: RewardParams],
+    Promise<boolean>
+  >;
+  let referralRewardStub: Sinon.SinonStub<
+    [params: RewardParams],
+    Promise<boolean>
+  >;
+  let linkRewardStub: Sinon.SinonStub<[params: RewardParams], Promise<boolean>>;
+  let eventId: string;
+  let collectionUsersMock: Collection<Document>;
+  let contractStub: { methods: any };
   let getContract;
 
   beforeEach(async function () {
@@ -39,7 +49,7 @@ describe('handleReferralReward function', function () {
 
     sandbox = Sinon.createSandbox();
     axiosStub = sandbox.stub(axios, 'post').callsFake(async (url: string) => {
-      if (url === patchwalletResolverUrl) {
+      if (url === PATCHWALLET_RESOLVER_URL) {
         return Promise.resolve({
           data: {
             users: [{ accountAddress: mockWallet }],
@@ -47,7 +57,7 @@ describe('handleReferralReward function', function () {
         });
       }
 
-      if (url === segmentIdentifyUrl) {
+      if (url === SEGMENT_IDENTITY_URL) {
         return Promise.resolve({
           result: 'success',
         });
@@ -418,7 +428,7 @@ describe('handleReferralReward function', function () {
 
     const segmentIdentityCall = axiosStub
       .getCalls()
-      .filter((e) => e.firstArg === segmentIdentifyUrl);
+      .filter((e) => e.firstArg === SEGMENT_IDENTITY_URL);
 
     chai
       .expect(segmentIdentityCall[0].args[1])
@@ -442,7 +452,7 @@ describe('handleReferralReward function', function () {
 
   it('Should return false with nothing in the database if PatchWallet address error', async function () {
     axiosStub
-      .withArgs(patchwalletResolverUrl)
+      .withArgs(PATCHWALLET_RESOLVER_URL)
       .rejects(new Error('Service not available'));
 
     const result = await handleNewReward({
@@ -463,7 +473,7 @@ describe('handleReferralReward function', function () {
 
   it('Should return true if error in Segment', async function () {
     axiosStub
-      .withArgs(segmentIdentifyUrl)
+      .withArgs(SEGMENT_IDENTITY_URL)
       .rejects(new Error('Service not available'));
 
     const result = await handleNewReward({

@@ -1,5 +1,8 @@
 import { Database } from '../../db/conn';
-import { TransactionParams } from '../../types/webhook.types';
+import {
+  TransactionParams,
+  createTransaction,
+} from '../../types/webhook.types';
 import { TRANSACTION_STATUS, USERS_COLLECTION } from '../constants';
 import { sendTelegramMessage } from '../telegram';
 import { TransferTelegram, createTransferTelegram } from '../transfers';
@@ -44,7 +47,10 @@ export async function handleNewTransaction(
     );
 
   // Create a transfer object
-  let transfer = await createTransferTelegram({ ...params, senderInformation });
+  // let transfer = await createTransferTelegram({ ...params, senderInformation });
+  let transfer = await createTransferTelegram(
+    createTransaction(params, senderInformation),
+  );
   if (!transfer) return false;
 
   transfer = transfer as TransferTelegram;

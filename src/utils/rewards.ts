@@ -1,5 +1,6 @@
 import { Database } from '../db/conn';
 import {
+  DEFAULT_CHAIN_NAME,
   REWARDS_COLLECTION,
   TRANSACTION_STATUS,
   TRANSFERS_COLLECTION,
@@ -90,10 +91,8 @@ export class SignUpRewardTelegram {
     this.userOpHash = undefined;
 
     // Setting default token address and chain name if not provided
-    this.params.tokenAddress = params.tokenAddress
-      ? params.tokenAddress
-      : G1_POLYGON_ADDRESS; // Default token address
-    this.params.chainName = params.chainName ? params.chainName : 'matic'; // Default chain name
+    this.params.tokenAddress = params.tokenAddress ?? G1_POLYGON_ADDRESS; // Default token address
+    this.params.chainName = params.chainName ?? DEFAULT_CHAIN_NAME; // Default chain name
   }
 
   /**
@@ -559,10 +558,8 @@ export class LinkRewardTelegram {
     this.params = params;
 
     // Setting default token address and chain name if not provided
-    this.params.tokenAddress = params.tokenAddress
-      ? params.tokenAddress
-      : G1_POLYGON_ADDRESS; // Default token address
-    this.params.chainName = params.chainName ? params.chainName : 'matic'; // Default chain name
+    this.params.tokenAddress = params.tokenAddress ?? G1_POLYGON_ADDRESS; // Default token address
+    this.params.chainName = params.chainName ?? DEFAULT_CHAIN_NAME; // Default chain name
 
     // Reward-specific details
     this.params.reason = 'referral_link'; // Default reason for the link reward
@@ -802,10 +799,8 @@ export class IsolatedRewardTelegram {
     this.txHash = undefined;
     this.userOpHash = undefined;
 
-    this.tokenAddress = params.tokenAddress
-      ? params.tokenAddress
-      : G1_POLYGON_ADDRESS; // Default address if not provided
-    this.chainName = params.chainName ? params.chainName : 'matic'; // Default chain name if not provided
+    this.tokenAddress = params.tokenAddress ?? G1_POLYGON_ADDRESS; // Default address if not provided
+    this.chainName = params.chainName ?? DEFAULT_CHAIN_NAME; // Default chain name if not provided
   }
 
   /**

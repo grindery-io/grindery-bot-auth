@@ -5,6 +5,7 @@ import Web3 from 'web3';
 import BN from 'bn.js';
 import { Contract } from 'web3-eth-contract';
 import { AbiItem } from 'web3-utils';
+import { DEFAULT_CHAIN_ID } from './constants';
 
 /**
  * Creates and returns a contract instance using Web3 with the specified chainId and tokenAddress.
@@ -14,7 +15,7 @@ import { AbiItem } from 'web3-utils';
  * @throws {Error} - Throws an error if the chainId is invalid.
  */
 export function getContract(
-  chainId: string = 'eip155:137',
+  chainId: string = DEFAULT_CHAIN_ID,
   tokenAddress: string = G1_POLYGON_ADDRESS,
 ): Contract {
   if (!CHAIN_MAPPING[chainId]) {

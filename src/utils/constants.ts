@@ -71,3 +71,49 @@ export const nativeTokenAddresses = [
   '0x0000000000000000000000000000000000000000',
   '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
 ];
+
+/**
+ * Default chain name used when none is provided.
+ */
+export const DEFAULT_CHAIN_NAME = 'matic';
+
+/**
+ * Default chain ID used when none is provided.
+ */
+export const DEFAULT_CHAIN_ID = 'eip155:137';
+
+/**
+ * Symbol for the G1 token.
+ */
+export const G1_TOKEN_SYMBOL = 'G1';
+
+/**
+ * Endpoint for identifying segments.
+ */
+export const SEGMENT_IDENTITY_URL = 'https://api.segment.io/v1/identify';
+
+/**
+ * Endpoint for tracking segments.
+ */
+export const SEGMENT_TRACK_URL = 'https://api.segment.io/v1/track';
+
+/**
+ * URL for the patch wallet resolver.
+ */
+export const PATCHWALLET_RESOLVER_URL = 'https://paymagicapi.com/v1/resolver';
+
+/**
+ * URL for the patch wallet authentication.
+ */
+export const PATCHWALLET_AUTH_URL = 'https://paymagicapi.com/v1/auth';
+
+/**
+ * URL for the patch wallet transaction.
+ */
+export const PATCHWALLET_TX_URL = 'https://paymagicapi.com/v1/kernel/tx';
+
+/**
+ * URL for the patch wallet transaction status.
+ */
+export const PATCHWALLET_TX_STATUS_URL =
+  'https://paymagicapi.com/v1/kernel/txStatus';

@@ -8,32 +8,46 @@ import {
 } from '../utils/constants';
 import { GRINDERY_NEXUS_REFRESH_TOKEN } from '../../secrets';
 
-// export const dbMock = await Database.getInstance();
-// export const collectionUsersMock = dbMock.collection(USERS_COLLECTION);
-// export const collectionRewardsMock = dbMock.collection(REWARDS_COLLECTION);
-// export const collectionTransfersMock = dbMock.collection(TRANSFERS_COLLECTION);
-// export const collectionSwapsMock = dbMock.collection(SWAPS_COLLECTION);
-
+/**
+ * Retrieves the database mock instance.
+ * @returns A promise resolving to the database mock instance.
+ */
 export async function getDbMock() {
   const dbMock = await Database.getInstance();
   return dbMock;
 }
 
+/**
+ * Retrieves the collection for mock users.
+ * @returns A promise resolving to the collection of mock users.
+ */
 export async function getCollectionUsersMock() {
   const dbMock = await getDbMock();
   return dbMock.collection(USERS_COLLECTION);
 }
 
+/**
+ * Retrieves the collection for mock rewards.
+ * @returns A promise resolving to the collection of mock rewards.
+ */
 export async function getCollectionRewardsMock() {
   const dbMock = await getDbMock();
   return dbMock.collection(REWARDS_COLLECTION);
 }
 
+/**
+ * Retrieves the collection for mock transfers.
+ * @returns A promise resolving to the collection of mock transfers.
+ */
 export async function getCollectionTransfersMock() {
   const dbMock = await getDbMock();
   return dbMock.collection(TRANSFERS_COLLECTION);
 }
 
+/**
+ * Retrieves the collection for mock swaps.
+ * @returns A promise resolving to the collection of mock swaps.
+ */
 export async function getCollectionSwapsMock() {
   const dbMock = await getDbMock();
   return dbMock.collection(SWAPS_COLLECTION);
@@ -96,14 +110,10 @@ export const mockUserOpHash1 =
 export const mockUserOpHash2 =
   '0x072d67eb495c7be8d14f188043065e3c7054a1d12bb15101710c90fea11330cd';
 
-export const segmentIdentifyUrl = 'https://api.segment.io/v1/identify';
-export const segmentTrackUrl = 'https://api.segment.io/v1/track';
-export const patchwalletResolverUrl = 'https://paymagicapi.com/v1/resolver';
-export const patchwalletAuthUrl = 'https://paymagicapi.com/v1/auth';
-export const patchwalletTxUrl = 'https://paymagicapi.com/v1/kernel/tx';
-export const patchwalletTxStatusUrl =
-  'https://paymagicapi.com/v1/kernel/txStatus';
-
+/**
+ * Retrieves the access token.
+ * @returns A promise resolving to the access token.
+ */
 async function getAccessToken(): Promise<string> {
   try {
     const res = await axios.post(
@@ -125,4 +135,7 @@ async function getAccessToken(): Promise<string> {
   }
 }
 
+/**
+ * Mocked token retrieved as an access token.
+ */
 export const mockedToken = getAccessToken();

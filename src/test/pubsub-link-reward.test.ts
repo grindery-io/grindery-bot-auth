@@ -8,10 +8,6 @@ import {
   mockAccessToken,
   mockTransactionHash,
   mockUserTelegramID1,
-  patchwalletTxUrl,
-  patchwalletResolverUrl,
-  patchwalletAuthUrl,
-  patchwalletTxStatusUrl,
   mockUserOpHash,
   mockTokenAddress,
   mockChainName,
@@ -24,19 +20,26 @@ import * as web3 from '../utils/web3';
 
 import chaiExclude from 'chai-exclude';
 import { v4 as uuidv4 } from 'uuid';
-import { TRANSACTION_STATUS } from '../utils/constants';
+import {
+  PATCHWALLET_AUTH_URL,
+  PATCHWALLET_RESOLVER_URL,
+  PATCHWALLET_TX_STATUS_URL,
+  PATCHWALLET_TX_URL,
+  TRANSACTION_STATUS,
+} from '../utils/constants';
 import { FLOWXO_NEW_LINK_REWARD_WEBHOOK, SOURCE_TG_ID } from '../../secrets';
 import { handleLinkReward } from '../utils/webhooks/link-reward';
+import { Collection, Document } from 'mongodb';
 
 chai.use(chaiExclude);
 
 describe('handleLinkReward function', async function () {
-  let sandbox;
+  let sandbox: Sinon.SinonSandbox;
   let axiosStub;
-  let rewardId;
-  let collectionUsersMock;
-  let collectionRewardsMock;
-  let contractStub;
+  let rewardId: string;
+  let collectionUsersMock: Collection<Document>;
+  let collectionRewardsMock: Collection<Document>;
+  let contractStub: { methods: any };
   let getContract;
 
   beforeEach(async function () {
@@ -45,7 +48,7 @@ describe('handleLinkReward function', async function () {
 
     sandbox = Sinon.createSandbox();
     axiosStub = sandbox.stub(axios, 'post').callsFake(async (url: string) => {
-      if (url === patchwalletAuthUrl) {
+      if (url === PATCHWALLET_AUTH_URL) {
         return Promise.resolve({
           data: {
             access_token: mockAccessToken,
@@ -53,7 +56,7 @@ describe('handleLinkReward function', async function () {
         });
       }
 
-      if (url === patchwalletTxUrl) {
+      if (url === PATCHWALLET_TX_URL) {
         return Promise.resolve({
           data: {
             txHash: mockTransactionHash,
@@ -61,7 +64,7 @@ describe('handleLinkReward function', async function () {
         });
       }
 
-      if (url === patchwalletTxStatusUrl) {
+      if (url === PATCHWALLET_TX_STATUS_URL) {
         return Promise.resolve({
           data: {
             txHash: mockTransactionHash,
@@ -70,7 +73,7 @@ describe('handleLinkReward function', async function () {
         });
       }
 
-      if (url === patchwalletResolverUrl) {
+      if (url === PATCHWALLET_RESOLVER_URL) {
         return Promise.resolve({
           data: {
             users: [{ accountAddress: mockWallet }],
@@ -133,7 +136,7 @@ describe('handleLinkReward function', async function () {
       });
 
       chai.expect(
-        axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+        axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
       ).to.be.undefined;
     });
 
@@ -200,7 +203,7 @@ describe('handleLinkReward function', async function () {
       });
 
       chai.expect(
-        axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+        axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
       ).to.be.undefined;
     });
 
@@ -283,7 +286,7 @@ describe('handleLinkReward function', async function () {
       });
 
       chai.expect(
-        axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+        axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
       ).to.be.undefined;
     });
 
@@ -368,7 +371,7 @@ describe('handleLinkReward function', async function () {
       });
 
       chai.expect(
-        axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+        axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
       ).to.be.undefined;
     });
 
@@ -436,7 +439,7 @@ describe('handleLinkReward function', async function () {
 
       chai
         .expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl)
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL)
             .args[1],
         )
         .to.deep.equal({
@@ -548,7 +551,7 @@ describe('handleLinkReward function', async function () {
   describe('PatchWallet transaction error', function () {
     it('Should return false if there is an error in the transaction', async function () {
       axiosStub
-        .withArgs(patchwalletTxUrl)
+        .withArgs(PATCHWALLET_TX_URL)
         .rejects(new Error('Service not available'));
 
       await collectionUsersMock.insertOne({
@@ -566,7 +569,7 @@ describe('handleLinkReward function', async function () {
 
     it('Should add pending reward in the database if there is an error in the transaction', async function () {
       axiosStub
-        .withArgs(patchwalletTxUrl)
+        .withArgs(PATCHWALLET_TX_URL)
         .rejects(new Error('Service not available'));
 
       await collectionUsersMock.insertOne({
@@ -605,7 +608,7 @@ describe('handleLinkReward function', async function () {
 
     it('Should not call FlowXO if there is an error in the transaction', async function () {
       axiosStub
-        .withArgs(patchwalletTxUrl)
+        .withArgs(PATCHWALLET_TX_URL)
         .rejects(new Error('Service not available'));
 
       await collectionUsersMock.insertOne({
@@ -628,7 +631,7 @@ describe('handleLinkReward function', async function () {
 
   describe('PatchWallet transaction without hash', function () {
     it('Should return false if there is no hash in PatchWallet response', async function () {
-      axiosStub.withArgs(patchwalletTxUrl).resolves({
+      axiosStub.withArgs(PATCHWALLET_TX_URL).resolves({
         data: {
           error: 'service non available',
         },
@@ -651,7 +654,7 @@ describe('handleLinkReward function', async function () {
     });
 
     it('Should add pending reward in the database if there is no hash in PatchWallet response', async function () {
-      axiosStub.withArgs(patchwalletTxUrl).resolves({
+      axiosStub.withArgs(PATCHWALLET_TX_URL).resolves({
         data: {
           error: 'service non available',
         },
@@ -692,7 +695,7 @@ describe('handleLinkReward function', async function () {
     });
 
     it('Should not call FlowXO if there is no hash in PatchWallet response', async function () {
-      axiosStub.withArgs(patchwalletTxUrl).resolves({
+      axiosStub.withArgs(PATCHWALLET_TX_URL).resolves({
         data: {
           error: 'service non available',
         },
@@ -727,7 +730,7 @@ describe('handleLinkReward function', async function () {
           patchwallet: mockWallet,
         });
 
-        axiosStub.withArgs(patchwalletTxUrl).resolves({
+        axiosStub.withArgs(PATCHWALLET_TX_URL).resolves({
           data: {
             txHash: '',
             userOpHash: mockUserOpHash,
@@ -833,7 +836,7 @@ describe('handleLinkReward function', async function () {
         });
 
         chai.expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
         ).to.be.undefined;
       });
 
@@ -922,7 +925,7 @@ describe('handleLinkReward function', async function () {
           userOpHash: mockUserOpHash,
         });
 
-        axiosStub.withArgs(patchwalletTxStatusUrl).resolves({
+        axiosStub.withArgs(PATCHWALLET_TX_STATUS_URL).resolves({
           data: {
             txHash: '',
             userOpHash: mockUserOpHash,
@@ -948,7 +951,7 @@ describe('handleLinkReward function', async function () {
         });
 
         chai.expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
         ).to.be.undefined;
       });
 
@@ -1022,7 +1025,7 @@ describe('handleLinkReward function', async function () {
         });
 
         axiosStub
-          .withArgs(patchwalletTxStatusUrl)
+          .withArgs(PATCHWALLET_TX_STATUS_URL)
           .rejects(new Error('Service not available'));
       });
 
@@ -1044,7 +1047,7 @@ describe('handleLinkReward function', async function () {
         });
 
         chai.expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
         ).to.be.undefined;
       });
 
@@ -1134,7 +1137,7 @@ describe('handleLinkReward function', async function () {
         });
 
         chai.expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
         ).to.be.undefined;
       });
 
@@ -1207,7 +1210,7 @@ describe('handleLinkReward function', async function () {
           dateAdded: new Date(Date.now() - 12 * 60 * 1000),
         });
 
-        axiosStub.withArgs(patchwalletTxStatusUrl).resolves({
+        axiosStub.withArgs(PATCHWALLET_TX_STATUS_URL).resolves({
           data: {
             txHash: '',
             userOpHash: mockUserOpHash,
@@ -1233,7 +1236,7 @@ describe('handleLinkReward function', async function () {
         });
 
         chai.expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
         ).to.be.undefined;
       });
 

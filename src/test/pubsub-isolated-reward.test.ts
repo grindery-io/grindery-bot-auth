@@ -7,12 +7,8 @@ import {
   mockWallet,
   mockAccessToken,
   mockTransactionHash,
-  patchwalletAuthUrl,
-  patchwalletTxUrl,
   mockUserOpHash,
-  patchwalletTxStatusUrl,
   mockUserTelegramID1,
-  patchwalletResolverUrl,
   mockTokenAddress,
   mockChainName,
   getCollectionUsersMock,
@@ -23,7 +19,14 @@ import axios from 'axios';
 
 import chaiExclude from 'chai-exclude';
 import { v4 as uuidv4 } from 'uuid';
-import { TRANSACTION_STATUS } from '../utils/constants';
+import {
+  DEFAULT_CHAIN_NAME,
+  PATCHWALLET_AUTH_URL,
+  PATCHWALLET_RESOLVER_URL,
+  PATCHWALLET_TX_STATUS_URL,
+  PATCHWALLET_TX_URL,
+  TRANSACTION_STATUS,
+} from '../utils/constants';
 import { handleIsolatedReward } from '../utils/webhooks/isolated-reward';
 import {
   FLOWXO_NEW_ISOLATED_REWARD_WEBHOOK,
@@ -31,15 +34,16 @@ import {
   SOURCE_TG_ID,
 } from '../../secrets';
 import * as web3 from '../utils/web3';
+import { Collection, Document } from 'mongodb';
 
 chai.use(chaiExclude);
 
 describe('handleIsolatedReward function', async function () {
-  let sandbox;
+  let sandbox: Sinon.SinonSandbox;
   let axiosStub;
-  let rewardId;
-  let collectionRewardsMock;
-  let contractStub;
+  let rewardId: string;
+  let collectionRewardsMock: Collection<Document>;
+  let contractStub: { methods: any };
   let getContract;
 
   beforeEach(async function () {
@@ -47,7 +51,7 @@ describe('handleIsolatedReward function', async function () {
 
     sandbox = Sinon.createSandbox();
     axiosStub = sandbox.stub(axios, 'post').callsFake(async (url: string) => {
-      if (url === patchwalletAuthUrl) {
+      if (url === PATCHWALLET_AUTH_URL) {
         return Promise.resolve({
           data: {
             access_token: mockAccessToken,
@@ -55,7 +59,7 @@ describe('handleIsolatedReward function', async function () {
         });
       }
 
-      if (url === patchwalletTxUrl) {
+      if (url === PATCHWALLET_TX_URL) {
         return Promise.resolve({
           data: {
             txHash: mockTransactionHash,
@@ -64,7 +68,7 @@ describe('handleIsolatedReward function', async function () {
         });
       }
 
-      if (url === patchwalletResolverUrl) {
+      if (url === PATCHWALLET_RESOLVER_URL) {
         return Promise.resolve({
           data: {
             users: [{ accountAddress: mockWallet }],
@@ -72,7 +76,7 @@ describe('handleIsolatedReward function', async function () {
         });
       }
 
-      if (url === patchwalletTxStatusUrl) {
+      if (url === PATCHWALLET_TX_STATUS_URL) {
         return Promise.resolve({
           data: {
             txHash: mockTransactionHash,
@@ -134,7 +138,7 @@ describe('handleIsolatedReward function', async function () {
 
       chai.expect(await collectionRewardsMock.find({}).toArray()).to.be.empty;
       chai.expect(
-        axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+        axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
       ).to.be.undefined;
       chai.expect(
         axiosStub
@@ -160,7 +164,7 @@ describe('handleIsolatedReward function', async function () {
 
       chai.expect(await collectionRewardsMock.find({}).toArray()).to.be.empty;
       chai.expect(
-        axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+        axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
       ).to.be.undefined;
       chai.expect(
         axiosStub
@@ -186,7 +190,7 @@ describe('handleIsolatedReward function', async function () {
 
       chai.expect(await collectionRewardsMock.find({}).toArray()).to.be.empty;
       chai.expect(
-        axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+        axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
       ).to.be.undefined;
       chai.expect(
         axiosStub
@@ -212,7 +216,7 @@ describe('handleIsolatedReward function', async function () {
 
       chai.expect(await collectionRewardsMock.find({}).toArray()).to.be.empty;
       chai.expect(
-        axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+        axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
       ).to.be.undefined;
       chai.expect(
         axiosStub
@@ -243,12 +247,12 @@ describe('handleIsolatedReward function', async function () {
 
       chai
         .expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl)
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL)
             .args[1],
         )
         .to.deep.equal({
           userId: `grindery:${SOURCE_TG_ID}`,
-          chain: 'matic',
+          chain: DEFAULT_CHAIN_NAME,
           to: [G1_POLYGON_ADDRESS],
           value: ['0x00'],
           delegatecall: 0,
@@ -273,12 +277,12 @@ describe('handleIsolatedReward function', async function () {
 
       chai
         .expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl)
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL)
             .args[1],
         )
         .to.deep.equal({
           userId: `grindery:${SOURCE_TG_ID}`,
-          chain: 'matic',
+          chain: DEFAULT_CHAIN_NAME,
           to: [G1_POLYGON_ADDRESS],
           value: ['0x00'],
           delegatecall: 0,
@@ -330,7 +334,7 @@ describe('handleIsolatedReward function', async function () {
       });
 
       chai.expect(
-        axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+        axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
       ).to.be.undefined;
     });
 
@@ -421,7 +425,7 @@ describe('handleIsolatedReward function', async function () {
       });
 
       chai.expect(
-        axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+        axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
       ).to.be.undefined;
     });
 
@@ -511,7 +515,7 @@ describe('handleIsolatedReward function', async function () {
       });
 
       chai.expect(
-        axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+        axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
       ).to.be.undefined;
     });
 
@@ -602,12 +606,12 @@ describe('handleIsolatedReward function', async function () {
 
       chai
         .expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl)
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL)
             .args[1],
         )
         .to.deep.equal({
           userId: `grindery:${SOURCE_TG_ID}`,
-          chain: 'matic',
+          chain: DEFAULT_CHAIN_NAME,
           to: [G1_POLYGON_ADDRESS],
           value: ['0x00'],
           delegatecall: 0,
@@ -729,12 +733,12 @@ describe('handleIsolatedReward function', async function () {
 
       chai
         .expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl)
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL)
             .args[1],
         )
         .to.deep.equal({
           userId: `grindery:${SOURCE_TG_ID}`,
-          chain: 'matic',
+          chain: DEFAULT_CHAIN_NAME,
           to: [G1_POLYGON_ADDRESS],
           value: ['0x00'],
           delegatecall: 0,
@@ -856,7 +860,7 @@ describe('handleIsolatedReward function', async function () {
       });
       chai
         .expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl)
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL)
             .args[1],
         )
         .to.deep.equal({
@@ -990,7 +994,7 @@ describe('handleIsolatedReward function', async function () {
   describe('PatchWallet transaction error', function () {
     it('Should return false if there is an error in the transaction', async function () {
       axiosStub
-        .withArgs(patchwalletTxUrl)
+        .withArgs(PATCHWALLET_TX_URL)
         .rejects(new Error('Service not available'));
       chai.expect(
         await handleIsolatedReward({
@@ -1009,7 +1013,7 @@ describe('handleIsolatedReward function', async function () {
 
     it('Should set isolated reward to pending in db if there is an error in the transaction', async function () {
       axiosStub
-        .withArgs(patchwalletTxUrl)
+        .withArgs(PATCHWALLET_TX_URL)
         .rejects(new Error('Service not available'));
       await handleIsolatedReward({
         eventId: rewardId,
@@ -1046,7 +1050,7 @@ describe('handleIsolatedReward function', async function () {
 
     it('Should not call FlowXO if there is an error in the transaction', async function () {
       axiosStub
-        .withArgs(patchwalletTxUrl)
+        .withArgs(PATCHWALLET_TX_URL)
         .rejects(new Error('Service not available'));
       await handleIsolatedReward({
         eventId: rewardId,
@@ -1069,7 +1073,7 @@ describe('handleIsolatedReward function', async function () {
 
   describe('PatchWallet transaction without hash field in response', function () {
     beforeEach(async function () {
-      axiosStub.withArgs(patchwalletTxUrl).resolves({
+      axiosStub.withArgs(PATCHWALLET_TX_URL).resolves({
         data: {
           error: 'service non available',
         },
@@ -1149,7 +1153,7 @@ describe('handleIsolatedReward function', async function () {
   describe('Get transaction hash via userOpHash if transaction hash is empty first', async function () {
     describe('Transaction hash is empty in tx PatchWallet endpoint', async function () {
       beforeEach(async function () {
-        axiosStub.withArgs(patchwalletTxUrl).resolves({
+        axiosStub.withArgs(PATCHWALLET_TX_URL).resolves({
           data: {
             txHash: '',
             userOpHash: mockUserOpHash,
@@ -1269,7 +1273,7 @@ describe('handleIsolatedReward function', async function () {
           amount: '34',
         });
         chai.expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
         ).to.be.undefined;
       });
 
@@ -1355,7 +1359,7 @@ describe('handleIsolatedReward function', async function () {
           status: TRANSACTION_STATUS.PENDING_HASH,
           userOpHash: mockUserOpHash,
         });
-        axiosStub.withArgs(patchwalletTxStatusUrl).resolves({
+        axiosStub.withArgs(PATCHWALLET_TX_STATUS_URL).resolves({
           data: {
             txHash: '',
             userOpHash: mockUserOpHash,
@@ -1391,7 +1395,7 @@ describe('handleIsolatedReward function', async function () {
           message: 'isolated message 1',
         });
         chai.expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
         ).to.be.undefined;
       });
 
@@ -1463,7 +1467,7 @@ describe('handleIsolatedReward function', async function () {
           message: 'isolated message 1',
         });
         axiosStub
-          .withArgs(patchwalletTxStatusUrl)
+          .withArgs(PATCHWALLET_TX_STATUS_URL)
           .rejects(new Error('Service not available'));
       });
 
@@ -1495,7 +1499,7 @@ describe('handleIsolatedReward function', async function () {
           message: 'isolated message 1',
         });
         chai.expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
         ).to.be.undefined;
       });
 
@@ -1594,7 +1598,7 @@ describe('handleIsolatedReward function', async function () {
           message: 'isolated message 1',
         });
         chai.expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
         ).to.be.undefined;
       });
 
@@ -1667,7 +1671,7 @@ describe('handleIsolatedReward function', async function () {
           amount: '34',
           message: 'isolated message 1',
         });
-        axiosStub.withArgs(patchwalletTxStatusUrl).resolves({
+        axiosStub.withArgs(PATCHWALLET_TX_STATUS_URL).resolves({
           data: {
             txHash: '',
             userOpHash: mockUserOpHash,
@@ -1702,7 +1706,7 @@ describe('handleIsolatedReward function', async function () {
           message: 'isolated message 1',
         });
         chai.expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
         ).to.be.undefined;
       });
 

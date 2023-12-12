@@ -90,12 +90,12 @@ export class UserTelegram {
   /**
    * Saves user data to the database.
    * @param {string} eventId - The event identifier.
-   * @returns {Promise<Object|undefined>} - The result of the database operation or `undefined` if the user is already in the database.
+   * @returns {Promise<void>} - The result of the database operation or `undefined` if the user is already in the database.
    */
-  async saveToDatabase(eventId: string): Promise<object | undefined> {
-    if (this.isInDatabase) return undefined;
+  async saveToDatabase(eventId: string): Promise<void> {
+    if (this.isInDatabase) return;
 
-    const user = await this.db.collection(USERS_COLLECTION).updateOne(
+    await this.db.collection(USERS_COLLECTION).updateOne(
       { userTelegramID: this.telegramID },
       {
         $set: {
@@ -111,20 +111,18 @@ export class UserTelegram {
     );
 
     console.log(`[${eventId}] ${this.telegramID} added to the user database.`);
-
-    return user;
   }
 
   /**
    * Saves user data to a segmentation system.
    * @param {string} eventId - The event identifier.
-   * @returns {Promise<Object|undefined>} - The result of the operation or `undefined` if the user is already in the database.
+   * @returns {Promise<void>} - The result of the operation or `undefined` if the user is already in the database.
    */
-  async saveToSegment(eventId: string): Promise<object | undefined> {
-    if (this.isInDatabase) return undefined;
+  async saveToSegment(eventId: string): Promise<void> {
+    if (this.isInDatabase) return;
 
     try {
-      const identitySegment = await addIdentitySegment({
+      await addIdentitySegment({
         userTelegramID: this.telegramID,
         responsePath: this.responsePath,
         userHandle: this.userHandle,
@@ -134,15 +132,11 @@ export class UserTelegram {
       });
 
       console.log(`[${eventId}] ${this.telegramID} added to Segment.`);
-
-      return identitySegment;
     } catch (error) {
       console.error(
         `[${eventId}] Error processing new user in Segment: ${error}`,
       );
     }
-
-    return undefined;
   }
 
   /**

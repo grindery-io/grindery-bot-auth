@@ -13,10 +13,7 @@ import {
 } from './patchwallet';
 import { addTrackSegment } from './segment';
 import axios from 'axios';
-import {
-  FLOWXO_NEW_TRANSACTION_WEBHOOK,
-  G1_POLYGON_ADDRESS,
-} from '../../secrets';
+import { FLOWXO_NEW_TRANSACTION_WEBHOOK } from '../../secrets';
 import { Db, Document, WithId } from 'mongodb';
 import { formatDate } from './time';
 import { TransactionParams } from '../types/webhook.types';
@@ -285,14 +282,6 @@ export class TransferTelegram {
     this.recipientWallet = undefined;
     this.txHash = undefined;
     this.userOpHash = undefined;
-
-    // Setting default values for specific parameters
-    this.params.chainId = params.chainId ? params.chainId : 'eip155:137'; // Default chain ID
-    this.params.tokenAddress = params.tokenAddress
-      ? params.tokenAddress
-      : G1_POLYGON_ADDRESS; // Default token address
-    this.params.chainName = params.chainName ? params.chainName : 'matic'; // Default chain name
-    this.params.tokenSymbol = params.tokenSymbol ? params.tokenSymbol : 'G1'; // Default token symbol
   }
 
   /**

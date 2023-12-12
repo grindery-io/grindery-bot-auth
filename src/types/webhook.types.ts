@@ -7,6 +7,12 @@ import {
 } from '../utils/rewards';
 import { TransferTelegram } from '../utils/transfers';
 import { SwapTelegram } from '../utils/swap';
+import {
+  DEFAULT_CHAIN_ID,
+  DEFAULT_CHAIN_NAME,
+  G1_TOKEN_SYMBOL,
+} from '../utils/constants';
+import { G1_POLYGON_ADDRESS } from '../../secrets';
 
 /**
  * Defines the structure for SwapParams.
@@ -113,6 +119,28 @@ export type TransactionParams = {
   /** Additional sender information with MongoDB document ID. */
   senderInformation?: WithId<Document>;
 };
+
+/**
+ * Creates a transaction by merging the provided parameters with default values.
+ * @param params The parameters for the transaction.
+ * @param senderInformation Additional sender information.
+ * @returns A transaction with default values for missing parameters.
+ */
+export function createTransaction(
+  params: TransactionParams,
+  senderInformation: WithId<Document>,
+): TransactionParams {
+  return {
+    ...{
+      tokenSymbol: G1_TOKEN_SYMBOL,
+      tokenAddress: G1_POLYGON_ADDRESS,
+      chainId: DEFAULT_CHAIN_ID,
+      chainName: DEFAULT_CHAIN_NAME,
+    },
+    ...params,
+    senderInformation,
+  };
+}
 
 /**
  * Type union for different reward types.

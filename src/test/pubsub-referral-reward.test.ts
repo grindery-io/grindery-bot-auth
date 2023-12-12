@@ -9,10 +9,6 @@ import {
   mockTransactionHash,
   mockUserTelegramID1,
   mockTransactionHash1,
-  patchwalletAuthUrl,
-  patchwalletTxUrl,
-  patchwalletResolverUrl,
-  patchwalletTxStatusUrl,
   mockUserOpHash,
   mockTransactionHash2,
   mockUserTelegramID2,
@@ -41,7 +37,14 @@ import axios from 'axios';
 
 import chaiExclude from 'chai-exclude';
 import { v4 as uuidv4 } from 'uuid';
-import { TRANSACTION_STATUS } from '../utils/constants';
+import {
+  DEFAULT_CHAIN_NAME,
+  PATCHWALLET_AUTH_URL,
+  PATCHWALLET_RESOLVER_URL,
+  PATCHWALLET_TX_STATUS_URL,
+  PATCHWALLET_TX_URL,
+  TRANSACTION_STATUS,
+} from '../utils/constants';
 import {
   FLOWXO_NEW_REFERRAL_REWARD_WEBHOOK,
   G1_POLYGON_ADDRESS,
@@ -49,17 +52,18 @@ import {
 } from '../../secrets';
 import { handleReferralReward } from '../utils/webhooks/referral-reward';
 import * as web3 from '../utils/web3';
+import { Collection, Document } from 'mongodb';
 
 chai.use(chaiExclude);
 
 describe('handleReferralReward function', function () {
-  let sandbox;
+  let sandbox: Sinon.SinonSandbox;
   let axiosStub;
-  let rewardId;
-  let collectionTransfersMock;
-  let collectionUsersMock;
-  let collectionRewardsMock;
-  let contractStub;
+  let rewardId: string;
+  let collectionTransfersMock: Collection<Document>;
+  let collectionUsersMock: Collection<Document>;
+  let collectionRewardsMock: Collection<Document>;
+  let contractStub: { methods: any };
   let getContract;
 
   beforeEach(async function () {
@@ -69,7 +73,7 @@ describe('handleReferralReward function', function () {
 
     sandbox = Sinon.createSandbox();
     axiosStub = sandbox.stub(axios, 'post').callsFake(async (url: string) => {
-      if (url === patchwalletAuthUrl) {
+      if (url === PATCHWALLET_AUTH_URL) {
         return Promise.resolve({
           data: {
             access_token: mockAccessToken,
@@ -77,7 +81,7 @@ describe('handleReferralReward function', function () {
         });
       }
 
-      if (url === patchwalletTxUrl) {
+      if (url === PATCHWALLET_TX_URL) {
         return Promise.resolve({
           data: {
             txHash: mockTransactionHash,
@@ -85,7 +89,7 @@ describe('handleReferralReward function', function () {
         });
       }
 
-      if (url === patchwalletTxStatusUrl) {
+      if (url === PATCHWALLET_TX_STATUS_URL) {
         return Promise.resolve({
           data: {
             txHash: mockTransactionHash,
@@ -94,7 +98,7 @@ describe('handleReferralReward function', function () {
         });
       }
 
-      if (url === patchwalletResolverUrl) {
+      if (url === PATCHWALLET_RESOLVER_URL) {
         return Promise.resolve({
           data: {
             users: [{ accountAddress: mockWallet }],
@@ -200,7 +204,7 @@ describe('handleReferralReward function', function () {
       });
 
       chai.expect(
-        axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+        axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
       ).to.be.undefined;
     });
 
@@ -309,7 +313,7 @@ describe('handleReferralReward function', function () {
       });
 
       chai.expect(
-        axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+        axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
       ).to.be.undefined;
     });
 
@@ -436,7 +440,7 @@ describe('handleReferralReward function', function () {
       });
 
       chai.expect(
-        axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+        axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
       ).to.be.undefined;
     });
 
@@ -561,7 +565,7 @@ describe('handleReferralReward function', function () {
       });
 
       chai.expect(
-        axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+        axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
       ).to.be.undefined;
     });
 
@@ -709,7 +713,7 @@ describe('handleReferralReward function', function () {
 
       const sendTokensCalls = axiosStub
         .getCalls()
-        .filter((e) => e.firstArg === patchwalletTxUrl);
+        .filter((e) => e.firstArg === PATCHWALLET_TX_URL);
 
       chai.expect(sendTokensCalls.length).to.equal(1);
       chai.expect(sendTokensCalls[0].args[1]).to.deep.equal({
@@ -913,12 +917,12 @@ describe('handleReferralReward function', function () {
 
       const sendTokensCalls = axiosStub
         .getCalls()
-        .filter((e) => e.firstArg === patchwalletTxUrl);
+        .filter((e) => e.firstArg === PATCHWALLET_TX_URL);
 
       chai.expect(sendTokensCalls.length).to.equal(1);
       chai.expect(sendTokensCalls[0].args[1]).to.deep.equal({
         userId: `grindery:${SOURCE_TG_ID}`,
-        chain: 'matic',
+        chain: DEFAULT_CHAIN_NAME,
         to: [G1_POLYGON_ADDRESS],
         value: ['0x00'],
         data: [
@@ -1099,12 +1103,12 @@ describe('handleReferralReward function', function () {
 
       const sendTokensCalls = axiosStub
         .getCalls()
-        .filter((e) => e.firstArg === patchwalletTxUrl);
+        .filter((e) => e.firstArg === PATCHWALLET_TX_URL);
 
       chai.expect(sendTokensCalls.length).to.equal(1);
       chai.expect(sendTokensCalls[0].args[1]).to.deep.equal({
         userId: `grindery:${SOURCE_TG_ID}`,
-        chain: 'matic',
+        chain: DEFAULT_CHAIN_NAME,
         to: [G1_POLYGON_ADDRESS],
         value: ['0x00'],
         data: [
@@ -1350,12 +1354,12 @@ describe('handleReferralReward function', function () {
 
       const sendTokensCalls = axiosStub
         .getCalls()
-        .filter((e) => e.firstArg === patchwalletTxUrl);
+        .filter((e) => e.firstArg === PATCHWALLET_TX_URL);
 
       chai.expect(sendTokensCalls.length).to.equal(1);
       chai.expect(sendTokensCalls[0].args[1]).to.deep.equal({
         userId: `grindery:${SOURCE_TG_ID}`,
-        chain: 'matic',
+        chain: DEFAULT_CHAIN_NAME,
         to: [G1_POLYGON_ADDRESS],
         value: ['0x00'],
         data: [
@@ -1515,12 +1519,12 @@ describe('handleReferralReward function', function () {
 
       const sendTokensCalls = axiosStub
         .getCalls()
-        .filter((e) => e.firstArg === patchwalletTxUrl);
+        .filter((e) => e.firstArg === PATCHWALLET_TX_URL);
 
       chai.expect(sendTokensCalls.length).to.equal(1);
       chai.expect(sendTokensCalls[0].args[1]).to.deep.equal({
         userId: `grindery:${SOURCE_TG_ID}`,
-        chain: 'matic',
+        chain: DEFAULT_CHAIN_NAME,
         to: [G1_POLYGON_ADDRESS],
         value: ['0x00'],
         data: [
@@ -1703,7 +1707,7 @@ describe('handleReferralReward function', function () {
 
     it('Should return false if there is an error during the token sending', async function () {
       axiosStub
-        .withArgs(patchwalletTxUrl)
+        .withArgs(PATCHWALLET_TX_URL)
         .rejects(new Error('Service not available'));
 
       chai.expect(
@@ -1720,7 +1724,7 @@ describe('handleReferralReward function', function () {
 
     it('Should insert reward as pending in the database if there is an error during the token sending', async function () {
       axiosStub
-        .withArgs(patchwalletTxUrl)
+        .withArgs(PATCHWALLET_TX_URL)
         .rejects(new Error('Service not available'));
 
       await handleReferralReward({
@@ -1757,7 +1761,7 @@ describe('handleReferralReward function', function () {
 
     it('Should not call FlowXO webhook if there is an error in the transaction', async function () {
       axiosStub
-        .withArgs(patchwalletTxUrl)
+        .withArgs(PATCHWALLET_TX_URL)
         .rejects(new Error('Service not available'));
 
       await handleReferralReward({
@@ -1819,7 +1823,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should return false if there is no hash in PatchWallet response', async function () {
-      axiosStub.withArgs(patchwalletTxUrl).resolves({
+      axiosStub.withArgs(PATCHWALLET_TX_URL).resolves({
         data: {
           error: 'service non available',
         },
@@ -1838,7 +1842,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should add a pending in the rewards in the database if there is no hash in PatchWallet response', async function () {
-      axiosStub.withArgs(patchwalletTxUrl).resolves({
+      axiosStub.withArgs(PATCHWALLET_TX_URL).resolves({
         data: {
           error: 'service non available',
         },
@@ -1877,7 +1881,7 @@ describe('handleReferralReward function', function () {
     });
 
     it('Should not call FlowXO webhook if there is no hash in PatchWallet response', async function () {
-      axiosStub.withArgs(patchwalletTxUrl).resolves({
+      axiosStub.withArgs(PATCHWALLET_TX_URL).resolves({
         data: {
           error: 'service non available',
         },
@@ -1903,7 +1907,7 @@ describe('handleReferralReward function', function () {
   describe('Get transaction hash via userOpHash if transaction hash is empty first', function () {
     describe('Transaction hash is empty in tx PatchWallet endpoint', async function () {
       beforeEach(async function () {
-        axiosStub.withArgs(patchwalletTxUrl).resolves({
+        axiosStub.withArgs(PATCHWALLET_TX_URL).resolves({
           data: {
             txHash: '',
             userOpHash: mockUserOpHash,
@@ -2111,7 +2115,7 @@ describe('handleReferralReward function', function () {
           patchwallet: mockWallet,
         });
         chai.expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
         ).to.be.undefined;
       });
       it('Should update the database with a success status if transaction hash is present in PatchWallet status endpoint', async function () {
@@ -2260,7 +2264,7 @@ describe('handleReferralReward function', function () {
             parentTransactionHash: mockTransactionHash,
           },
         ]);
-        axiosStub.withArgs(patchwalletTxStatusUrl).resolves({
+        axiosStub.withArgs(PATCHWALLET_TX_STATUS_URL).resolves({
           data: {
             txHash: '',
             userOpHash: mockUserOpHash,
@@ -2288,7 +2292,7 @@ describe('handleReferralReward function', function () {
           patchwallet: mockWallet,
         });
         chai.expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
         ).to.be.undefined;
       });
       it('Should not update database if transaction hash is not present in PatchWallet status endpoint', async function () {
@@ -2413,7 +2417,7 @@ describe('handleReferralReward function', function () {
           },
         ]);
         axiosStub
-          .withArgs(patchwalletTxStatusUrl)
+          .withArgs(PATCHWALLET_TX_STATUS_URL)
           .rejects(new Error('Service not available'));
       });
       it('Should return false if Error in PatchWallet get status endpoint', async function () {
@@ -2437,7 +2441,7 @@ describe('handleReferralReward function', function () {
           patchwallet: mockWallet,
         });
         chai.expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
         ).to.be.undefined;
       });
       it('Should not update database if Error in PatchWallet get status endpoint', async function () {
@@ -2580,7 +2584,7 @@ describe('handleReferralReward function', function () {
           patchwallet: mockWallet,
         });
         chai.expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
         ).to.be.undefined;
       });
       it('Should update reward database with a success status if transaction hash is pending_hash without userOpHash', async function () {
@@ -2705,7 +2709,7 @@ describe('handleReferralReward function', function () {
             dateAdded: new Date(Date.now() - 12 * 60 * 1000),
           },
         ]);
-        axiosStub.withArgs(patchwalletTxStatusUrl).resolves({
+        axiosStub.withArgs(PATCHWALLET_TX_STATUS_URL).resolves({
           data: {
             txHash: '',
             userOpHash: mockUserOpHash,
@@ -2733,7 +2737,7 @@ describe('handleReferralReward function', function () {
           patchwallet: mockWallet,
         });
         chai.expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
         ).to.be.undefined;
       });
       it('Should update reward database with a failure status after 10 min of trying to get status', async function () {

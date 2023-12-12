@@ -6,12 +6,7 @@ import {
   mockWallet,
   mockAccessToken,
   mockTransactionHash,
-  patchwalletResolverUrl,
-  patchwalletTxUrl,
-  patchwalletAuthUrl,
-  segmentTrackUrl,
   mockUserHandle,
-  patchwalletTxStatusUrl,
   mockUserOpHash,
   mockToSwap,
   mockDataSwap,
@@ -34,19 +29,28 @@ import Sinon from 'sinon';
 import axios from 'axios';
 
 import chaiExclude from 'chai-exclude';
-import { TRANSACTION_STATUS } from '../utils/constants';
+import {
+  DEFAULT_CHAIN_ID,
+  PATCHWALLET_AUTH_URL,
+  PATCHWALLET_RESOLVER_URL,
+  PATCHWALLET_TX_STATUS_URL,
+  PATCHWALLET_TX_URL,
+  SEGMENT_TRACK_URL,
+  TRANSACTION_STATUS,
+} from '../utils/constants';
 import { v4 as uuidv4 } from 'uuid';
 import { handleSwap } from '../utils/webhooks/swap';
 import { FLOWXO_NEW_SWAP_WEBHOOK } from '../../secrets';
+import { Collection, Document } from 'mongodb';
 
 chai.use(chaiExclude);
 
 describe('handleSwap function', async function () {
-  let sandbox;
+  let sandbox: Sinon.SinonSandbox;
   let axiosStub;
-  let swapId;
-  let collectionUsersMock;
-  let collectionSwapsMock;
+  let swapId: string;
+  let collectionUsersMock: Collection<Document>;
+  let collectionSwapsMock: Collection<Document>;
 
   beforeEach(async function () {
     collectionUsersMock = await getCollectionUsersMock();
@@ -54,7 +58,7 @@ describe('handleSwap function', async function () {
 
     sandbox = Sinon.createSandbox();
     axiosStub = sandbox.stub(axios, 'post').callsFake(async (url: string) => {
-      if (url === patchwalletResolverUrl) {
+      if (url === PATCHWALLET_RESOLVER_URL) {
         return Promise.resolve({
           data: {
             users: [{ accountAddress: mockWallet }],
@@ -62,7 +66,7 @@ describe('handleSwap function', async function () {
         });
       }
 
-      if (url === patchwalletTxUrl) {
+      if (url === PATCHWALLET_TX_URL) {
         return Promise.resolve({
           data: {
             txHash: mockTransactionHash,
@@ -70,7 +74,7 @@ describe('handleSwap function', async function () {
         });
       }
 
-      if (url === patchwalletTxStatusUrl) {
+      if (url === PATCHWALLET_TX_STATUS_URL) {
         return Promise.resolve({
           data: {
             txHash: mockTransactionHash,
@@ -79,7 +83,7 @@ describe('handleSwap function', async function () {
         });
       }
 
-      if (url === patchwalletAuthUrl) {
+      if (url === PATCHWALLET_AUTH_URL) {
         return Promise.resolve({
           data: {
             access_token: mockAccessToken,
@@ -93,7 +97,7 @@ describe('handleSwap function', async function () {
         });
       }
 
-      if (url == segmentTrackUrl) {
+      if (url == SEGMENT_TRACK_URL) {
         return Promise.resolve({
           result: 'success',
         });
@@ -222,7 +226,7 @@ describe('handleSwap function', async function () {
           event: 'Swap',
           properties: {
             eventId: swapId,
-            chainId: 'eip155:137',
+            chainId: DEFAULT_CHAIN_ID,
             userTelegramID: mockUserTelegramID,
             tokenIn: mockTokenIn,
             amountIn: mockAmountIn,
@@ -244,7 +248,7 @@ describe('handleSwap function', async function () {
       await handleSwap({
         value: mockAmountIn,
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         tokenIn: mockTokenIn,
         amountIn: mockAmountIn,
@@ -264,7 +268,7 @@ describe('handleSwap function', async function () {
 
       chai.expect(FlowXOCallArgs).excluding(['dateAdded']).to.deep.equal({
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         userName: mockUserName,
         userHandle: mockUserHandle,
@@ -305,7 +309,7 @@ describe('handleSwap function', async function () {
 
       chai
         .expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl)
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL)
             .args[1],
         )
         .to.deep.equal({
@@ -342,7 +346,7 @@ describe('handleSwap function', async function () {
         await handleSwap({
           value: mockAmountIn,
           eventId: swapId,
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,
@@ -361,7 +365,7 @@ describe('handleSwap function', async function () {
       await handleSwap({
         value: mockAmountIn,
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         tokenIn: mockTokenIn,
         amountIn: mockAmountIn,
@@ -375,7 +379,7 @@ describe('handleSwap function', async function () {
       });
 
       chai.expect(
-        axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+        axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
       ).to.be.undefined;
     });
 
@@ -383,7 +387,7 @@ describe('handleSwap function', async function () {
       await handleSwap({
         value: mockAmountIn,
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         tokenIn: mockTokenIn,
         amountIn: mockAmountIn,
@@ -411,7 +415,7 @@ describe('handleSwap function', async function () {
       await handleSwap({
         value: mockAmountIn,
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         tokenIn: mockTokenIn,
         amountIn: mockAmountIn,
@@ -435,7 +439,7 @@ describe('handleSwap function', async function () {
       await handleSwap({
         value: mockAmountIn,
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         tokenIn: mockTokenIn,
         amountIn: mockAmountIn,
@@ -476,7 +480,7 @@ describe('handleSwap function', async function () {
         await handleSwap({
           value: mockAmountIn,
           eventId: swapId,
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,
@@ -495,7 +499,7 @@ describe('handleSwap function', async function () {
       await handleSwap({
         value: mockAmountIn,
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         tokenIn: mockTokenIn,
         amountIn: mockAmountIn,
@@ -509,7 +513,7 @@ describe('handleSwap function', async function () {
       });
 
       chai.expect(
-        axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+        axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
       ).to.be.undefined;
     });
 
@@ -517,7 +521,7 @@ describe('handleSwap function', async function () {
       await handleSwap({
         value: mockAmountIn,
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         tokenIn: mockTokenIn,
         amountIn: mockAmountIn,
@@ -545,7 +549,7 @@ describe('handleSwap function', async function () {
       await handleSwap({
         value: mockAmountIn,
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         tokenIn: mockTokenIn,
         amountIn: mockAmountIn,
@@ -569,7 +573,7 @@ describe('handleSwap function', async function () {
       await handleSwap({
         value: mockAmountIn,
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         tokenIn: mockTokenIn,
         amountIn: mockAmountIn,
@@ -599,7 +603,7 @@ describe('handleSwap function', async function () {
         patchwallet: mockWallet,
       });
 
-      axiosStub.withArgs(patchwalletTxUrl).resolves({
+      axiosStub.withArgs(PATCHWALLET_TX_URL).resolves({
         data: {
           error: 'service non available',
         },
@@ -610,7 +614,7 @@ describe('handleSwap function', async function () {
       const result = await handleSwap({
         value: mockAmountIn,
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         tokenIn: mockTokenIn,
         amountIn: mockAmountIn,
@@ -630,7 +634,7 @@ describe('handleSwap function', async function () {
       await handleSwap({
         value: mockAmountIn,
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         tokenIn: mockTokenIn,
         amountIn: mockAmountIn,
@@ -649,7 +653,7 @@ describe('handleSwap function', async function () {
         .excluding(['_id', 'dateAdded'])
         .to.deep.equal([
           {
-            chainId: 'eip155:137',
+            chainId: DEFAULT_CHAIN_ID,
             userTelegramID: mockUserTelegramID,
             tokenIn: mockTokenIn,
             amountIn: mockAmountIn,
@@ -676,7 +680,7 @@ describe('handleSwap function', async function () {
       await handleSwap({
         value: mockAmountIn,
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         tokenIn: mockTokenIn,
         amountIn: mockAmountIn,
@@ -700,7 +704,7 @@ describe('handleSwap function', async function () {
       await handleSwap({
         value: mockAmountIn,
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         tokenIn: mockTokenIn,
         amountIn: mockAmountIn,
@@ -741,7 +745,7 @@ describe('handleSwap function', async function () {
     await handleSwap({
       value: mockAmountIn,
       eventId: swapId,
-      chainId: 'eip155:137',
+      chainId: DEFAULT_CHAIN_ID,
       userTelegramID: mockUserTelegramID,
       tokenIn: mockTokenIn,
       amountIn: mockAmountIn,
@@ -764,7 +768,7 @@ describe('handleSwap function', async function () {
       const result = await handleSwap({
         value: mockAmountIn,
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         tokenIn: mockTokenIn,
         amountIn: mockAmountIn,
@@ -784,7 +788,7 @@ describe('handleSwap function', async function () {
       await handleSwap({
         value: mockAmountIn,
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         tokenIn: mockTokenIn,
         amountIn: mockAmountIn,
@@ -807,7 +811,7 @@ describe('handleSwap function', async function () {
       await handleSwap({
         value: mockAmountIn,
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         tokenIn: mockTokenIn,
         amountIn: mockAmountIn,
@@ -821,7 +825,7 @@ describe('handleSwap function', async function () {
       });
 
       chai.expect(
-        axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+        axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
       ).to.be.undefined;
     });
 
@@ -829,7 +833,7 @@ describe('handleSwap function', async function () {
       await handleSwap({
         value: mockAmountIn,
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         tokenIn: mockTokenIn,
         amountIn: mockAmountIn,
@@ -853,7 +857,7 @@ describe('handleSwap function', async function () {
       await handleSwap({
         value: mockAmountIn,
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         tokenIn: mockTokenIn,
         amountIn: mockAmountIn,
@@ -877,7 +881,7 @@ describe('handleSwap function', async function () {
   describe('Error in PatchWallet transaction', async function () {
     beforeEach(async function () {
       axiosStub
-        .withArgs(patchwalletTxUrl)
+        .withArgs(PATCHWALLET_TX_URL)
         .rejects(new Error('Service not available'));
 
       await collectionUsersMock.insertOne({
@@ -893,7 +897,7 @@ describe('handleSwap function', async function () {
       const result = await handleSwap({
         value: mockAmountIn,
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         tokenIn: mockTokenIn,
         amountIn: mockAmountIn,
@@ -913,7 +917,7 @@ describe('handleSwap function', async function () {
       await handleSwap({
         value: mockAmountIn,
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         tokenIn: mockTokenIn,
         amountIn: mockAmountIn,
@@ -932,7 +936,7 @@ describe('handleSwap function', async function () {
         .excluding(['_id', 'dateAdded'])
         .to.deep.equal([
           {
-            chainId: 'eip155:137',
+            chainId: DEFAULT_CHAIN_ID,
             userTelegramID: mockUserTelegramID,
             tokenIn: mockTokenIn,
             amountIn: mockAmountIn,
@@ -959,7 +963,7 @@ describe('handleSwap function', async function () {
       await handleSwap({
         value: mockAmountIn,
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         tokenIn: mockTokenIn,
         amountIn: mockAmountIn,
@@ -983,7 +987,7 @@ describe('handleSwap function', async function () {
       await handleSwap({
         value: mockAmountIn,
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         tokenIn: mockTokenIn,
         amountIn: mockAmountIn,
@@ -1006,7 +1010,7 @@ describe('handleSwap function', async function () {
 
   describe('PatchWallet 470 error', async function () {
     beforeEach(async function () {
-      axiosStub.withArgs(patchwalletTxUrl).rejects({
+      axiosStub.withArgs(PATCHWALLET_TX_URL).rejects({
         response: {
           status: 470,
         },
@@ -1025,7 +1029,7 @@ describe('handleSwap function', async function () {
       const result = await handleSwap({
         value: mockAmountIn,
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         tokenIn: mockTokenIn,
         amountIn: mockAmountIn,
@@ -1045,7 +1049,7 @@ describe('handleSwap function', async function () {
       await handleSwap({
         value: mockAmountIn,
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         tokenIn: mockTokenIn,
         amountIn: mockAmountIn,
@@ -1064,7 +1068,7 @@ describe('handleSwap function', async function () {
         .excluding(['dateAdded', '_id'])
         .to.deep.equal([
           {
-            chainId: 'eip155:137',
+            chainId: DEFAULT_CHAIN_ID,
             userTelegramID: mockUserTelegramID,
             userName: mockUserName,
             userHandle: mockUserHandle,
@@ -1091,7 +1095,7 @@ describe('handleSwap function', async function () {
       await handleSwap({
         value: mockAmountIn,
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         tokenIn: mockTokenIn,
         amountIn: mockAmountIn,
@@ -1115,7 +1119,7 @@ describe('handleSwap function', async function () {
       await handleSwap({
         value: mockAmountIn,
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         tokenIn: mockTokenIn,
         amountIn: mockAmountIn,
@@ -1138,7 +1142,7 @@ describe('handleSwap function', async function () {
 
   describe('PatchWallet 400 error', async function () {
     beforeEach(async function () {
-      axiosStub.withArgs(patchwalletTxUrl).rejects({
+      axiosStub.withArgs(PATCHWALLET_TX_URL).rejects({
         response: {
           status: 400,
         },
@@ -1157,7 +1161,7 @@ describe('handleSwap function', async function () {
       const result = await handleSwap({
         value: mockAmountIn,
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         tokenIn: mockTokenIn,
         amountIn: mockAmountIn,
@@ -1177,7 +1181,7 @@ describe('handleSwap function', async function () {
       await handleSwap({
         value: mockAmountIn,
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         tokenIn: mockTokenIn,
         amountIn: mockAmountIn,
@@ -1196,7 +1200,7 @@ describe('handleSwap function', async function () {
         .excluding(['dateAdded', '_id'])
         .to.deep.equal([
           {
-            chainId: 'eip155:137',
+            chainId: DEFAULT_CHAIN_ID,
             userTelegramID: mockUserTelegramID,
             userName: mockUserName,
             userHandle: mockUserHandle,
@@ -1223,7 +1227,7 @@ describe('handleSwap function', async function () {
       await handleSwap({
         value: mockAmountIn,
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         tokenIn: mockTokenIn,
         amountIn: mockAmountIn,
@@ -1247,7 +1251,7 @@ describe('handleSwap function', async function () {
       await handleSwap({
         value: mockAmountIn,
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         tokenIn: mockTokenIn,
         amountIn: mockAmountIn,
@@ -1270,7 +1274,7 @@ describe('handleSwap function', async function () {
 
   describe('No hash in PatchWallet transaction', async function () {
     beforeEach(async function () {
-      axiosStub.withArgs(patchwalletTxUrl).resolves({
+      axiosStub.withArgs(PATCHWALLET_TX_URL).resolves({
         data: {
           error: 'service non available',
         },
@@ -1289,7 +1293,7 @@ describe('handleSwap function', async function () {
       const result = await handleSwap({
         value: mockAmountIn,
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         tokenIn: mockTokenIn,
         amountIn: mockAmountIn,
@@ -1309,7 +1313,7 @@ describe('handleSwap function', async function () {
       await handleSwap({
         value: mockAmountIn,
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         tokenIn: mockTokenIn,
         amountIn: mockAmountIn,
@@ -1328,7 +1332,7 @@ describe('handleSwap function', async function () {
         .excluding(['_id', 'dateAdded'])
         .to.deep.equal([
           {
-            chainId: 'eip155:137',
+            chainId: DEFAULT_CHAIN_ID,
             userTelegramID: mockUserTelegramID,
             tokenIn: mockTokenIn,
             amountIn: mockAmountIn,
@@ -1355,7 +1359,7 @@ describe('handleSwap function', async function () {
       await handleSwap({
         value: mockAmountIn,
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         tokenIn: mockTokenIn,
         amountIn: mockAmountIn,
@@ -1379,7 +1383,7 @@ describe('handleSwap function', async function () {
       await handleSwap({
         value: mockAmountIn,
         eventId: swapId,
-        chainId: 'eip155:137',
+        chainId: DEFAULT_CHAIN_ID,
         userTelegramID: mockUserTelegramID,
         tokenIn: mockTokenIn,
         amountIn: mockAmountIn,
@@ -1411,7 +1415,7 @@ describe('handleSwap function', async function () {
           responsePath: mockResponsePath,
         });
 
-        axiosStub.withArgs(patchwalletTxUrl).resolves({
+        axiosStub.withArgs(PATCHWALLET_TX_URL).resolves({
           data: {
             txHash: '',
             userOpHash: mockUserOpHash,
@@ -1423,7 +1427,7 @@ describe('handleSwap function', async function () {
         const result = await handleSwap({
           value: mockAmountIn,
           eventId: swapId,
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,
@@ -1443,7 +1447,7 @@ describe('handleSwap function', async function () {
         await handleSwap({
           value: mockAmountIn,
           eventId: swapId,
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,
@@ -1462,7 +1466,7 @@ describe('handleSwap function', async function () {
           .excluding(['_id', 'dateAdded'])
           .to.deep.equal([
             {
-              chainId: 'eip155:137',
+              chainId: DEFAULT_CHAIN_ID,
               userTelegramID: mockUserTelegramID,
               userName: mockUserName,
               userHandle: mockUserHandle,
@@ -1489,7 +1493,7 @@ describe('handleSwap function', async function () {
         await handleSwap({
           value: mockAmountIn,
           eventId: swapId,
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,
@@ -1521,7 +1525,7 @@ describe('handleSwap function', async function () {
         });
 
         await collectionSwapsMock.insertOne({
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,
@@ -1543,7 +1547,7 @@ describe('handleSwap function', async function () {
         const result = await handleSwap({
           value: mockAmountIn,
           eventId: swapId,
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,
@@ -1563,7 +1567,7 @@ describe('handleSwap function', async function () {
         await handleSwap({
           value: mockAmountIn,
           eventId: swapId,
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,
@@ -1577,7 +1581,7 @@ describe('handleSwap function', async function () {
         });
 
         chai.expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
         ).to.be.undefined;
       });
 
@@ -1585,7 +1589,7 @@ describe('handleSwap function', async function () {
         await handleSwap({
           value: mockAmountIn,
           eventId: swapId,
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,
@@ -1605,7 +1609,7 @@ describe('handleSwap function', async function () {
           .to.deep.equal([
             {
               transactionHash: mockTransactionHash,
-              chainId: 'eip155:137',
+              chainId: DEFAULT_CHAIN_ID,
               userTelegramID: mockUserTelegramID,
               userName: mockUserName,
               userHandle: mockUserHandle,
@@ -1631,7 +1635,7 @@ describe('handleSwap function', async function () {
         await handleSwap({
           value: mockAmountIn,
           eventId: swapId,
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,
@@ -1650,7 +1654,7 @@ describe('handleSwap function', async function () {
 
         chai.expect(FlowXOCallArgs).excluding(['dateAdded']).to.deep.equal({
           eventId: swapId,
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           userName: mockUserName,
           userHandle: mockUserHandle,
@@ -1687,7 +1691,7 @@ describe('handleSwap function', async function () {
         });
 
         await collectionSwapsMock.insertOne({
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,
@@ -1704,7 +1708,7 @@ describe('handleSwap function', async function () {
           userOpHash: mockUserOpHash,
         });
 
-        axiosStub.withArgs(patchwalletTxStatusUrl).resolves({
+        axiosStub.withArgs(PATCHWALLET_TX_STATUS_URL).resolves({
           data: {
             txHash: '',
             userOpHash: mockUserOpHash,
@@ -1716,7 +1720,7 @@ describe('handleSwap function', async function () {
         const result = await handleSwap({
           value: mockAmountIn,
           eventId: swapId,
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,
@@ -1736,7 +1740,7 @@ describe('handleSwap function', async function () {
         await handleSwap({
           value: mockAmountIn,
           eventId: swapId,
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,
@@ -1750,7 +1754,7 @@ describe('handleSwap function', async function () {
         });
 
         chai.expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
         ).to.be.undefined;
       });
 
@@ -1758,7 +1762,7 @@ describe('handleSwap function', async function () {
         await handleSwap({
           value: mockAmountIn,
           eventId: swapId,
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,
@@ -1777,7 +1781,7 @@ describe('handleSwap function', async function () {
           .excluding(['_id', 'dateAdded'])
           .to.deep.equal([
             {
-              chainId: 'eip155:137',
+              chainId: DEFAULT_CHAIN_ID,
               userTelegramID: mockUserTelegramID,
               userName: mockUserName,
               userHandle: mockUserHandle,
@@ -1804,7 +1808,7 @@ describe('handleSwap function', async function () {
         await handleSwap({
           value: mockAmountIn,
           eventId: swapId,
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,
@@ -1836,7 +1840,7 @@ describe('handleSwap function', async function () {
         });
 
         await collectionSwapsMock.insertOne({
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,
@@ -1854,7 +1858,7 @@ describe('handleSwap function', async function () {
         });
 
         axiosStub
-          .withArgs(patchwalletTxStatusUrl)
+          .withArgs(PATCHWALLET_TX_STATUS_URL)
           .rejects(new Error('Service not available'));
       });
 
@@ -1862,7 +1866,7 @@ describe('handleSwap function', async function () {
         const result = await handleSwap({
           value: mockAmountIn,
           eventId: swapId,
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,
@@ -1882,7 +1886,7 @@ describe('handleSwap function', async function () {
         await handleSwap({
           value: mockAmountIn,
           eventId: swapId,
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,
@@ -1896,7 +1900,7 @@ describe('handleSwap function', async function () {
         });
 
         chai.expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
         ).to.be.undefined;
       });
 
@@ -1904,7 +1908,7 @@ describe('handleSwap function', async function () {
         await handleSwap({
           value: mockAmountIn,
           eventId: swapId,
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,
@@ -1923,7 +1927,7 @@ describe('handleSwap function', async function () {
           .excluding(['_id', 'dateAdded'])
           .to.deep.equal([
             {
-              chainId: 'eip155:137',
+              chainId: DEFAULT_CHAIN_ID,
               userTelegramID: mockUserTelegramID,
               tokenIn: mockTokenIn,
               amountIn: mockAmountIn,
@@ -1946,7 +1950,7 @@ describe('handleSwap function', async function () {
         await handleSwap({
           value: mockAmountIn,
           eventId: swapId,
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,
@@ -1978,7 +1982,7 @@ describe('handleSwap function', async function () {
         });
 
         await collectionSwapsMock.insertOne({
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,
@@ -1995,7 +1999,7 @@ describe('handleSwap function', async function () {
           userOpHash: mockUserOpHash,
         });
 
-        axiosStub.withArgs(patchwalletTxStatusUrl).rejects({
+        axiosStub.withArgs(PATCHWALLET_TX_STATUS_URL).rejects({
           response: {
             status: 470,
           },
@@ -2006,7 +2010,7 @@ describe('handleSwap function', async function () {
         const result = await handleSwap({
           value: mockAmountIn,
           eventId: swapId,
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,
@@ -2026,7 +2030,7 @@ describe('handleSwap function', async function () {
         await handleSwap({
           value: mockAmountIn,
           eventId: swapId,
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,
@@ -2040,7 +2044,7 @@ describe('handleSwap function', async function () {
         });
 
         chai.expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
         ).to.be.undefined;
       });
 
@@ -2048,7 +2052,7 @@ describe('handleSwap function', async function () {
         await handleSwap({
           value: mockAmountIn,
           eventId: swapId,
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,
@@ -2067,7 +2071,7 @@ describe('handleSwap function', async function () {
           .excluding(['_id', 'dateAdded'])
           .to.deep.equal([
             {
-              chainId: 'eip155:137',
+              chainId: DEFAULT_CHAIN_ID,
               userTelegramID: mockUserTelegramID,
               userName: mockUserName,
               userHandle: mockUserHandle,
@@ -2094,7 +2098,7 @@ describe('handleSwap function', async function () {
         await handleSwap({
           value: mockAmountIn,
           eventId: swapId,
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,
@@ -2126,7 +2130,7 @@ describe('handleSwap function', async function () {
         });
 
         await collectionSwapsMock.insertOne({
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,
@@ -2147,7 +2151,7 @@ describe('handleSwap function', async function () {
         const result = await handleSwap({
           value: mockAmountIn,
           eventId: swapId,
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,
@@ -2167,7 +2171,7 @@ describe('handleSwap function', async function () {
         await handleSwap({
           value: mockAmountIn,
           eventId: swapId,
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,
@@ -2181,7 +2185,7 @@ describe('handleSwap function', async function () {
         });
 
         chai.expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
         ).to.be.undefined;
       });
 
@@ -2189,7 +2193,7 @@ describe('handleSwap function', async function () {
         await handleSwap({
           value: mockAmountIn,
           eventId: swapId,
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,
@@ -2208,7 +2212,7 @@ describe('handleSwap function', async function () {
           .excluding(['_id', 'dateAdded'])
           .to.deep.equal([
             {
-              chainId: 'eip155:137',
+              chainId: DEFAULT_CHAIN_ID,
               userTelegramID: mockUserTelegramID,
               userName: mockUserName,
               userHandle: mockUserHandle,
@@ -2235,7 +2239,7 @@ describe('handleSwap function', async function () {
         await handleSwap({
           value: mockAmountIn,
           eventId: swapId,
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,
@@ -2267,7 +2271,7 @@ describe('handleSwap function', async function () {
         });
 
         await collectionSwapsMock.insertOne({
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,
@@ -2284,7 +2288,7 @@ describe('handleSwap function', async function () {
           dateAdded: new Date(Date.now() - 12 * 60 * 1000),
         });
 
-        axiosStub.withArgs(patchwalletTxStatusUrl).resolves({
+        axiosStub.withArgs(PATCHWALLET_TX_STATUS_URL).resolves({
           data: {
             txHash: '',
             userOpHash: mockUserOpHash,
@@ -2296,7 +2300,7 @@ describe('handleSwap function', async function () {
         const result = await handleSwap({
           value: mockAmountIn,
           eventId: swapId,
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,
@@ -2316,7 +2320,7 @@ describe('handleSwap function', async function () {
         await handleSwap({
           value: mockAmountIn,
           eventId: swapId,
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,
@@ -2330,7 +2334,7 @@ describe('handleSwap function', async function () {
         });
 
         chai.expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
         ).to.be.undefined;
       });
 
@@ -2338,7 +2342,7 @@ describe('handleSwap function', async function () {
         await handleSwap({
           value: mockAmountIn,
           eventId: swapId,
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,
@@ -2357,7 +2361,7 @@ describe('handleSwap function', async function () {
           .excluding(['_id', 'dateAdded'])
           .to.deep.equal([
             {
-              chainId: 'eip155:137',
+              chainId: DEFAULT_CHAIN_ID,
               userTelegramID: mockUserTelegramID,
               userName: mockUserName,
               userHandle: mockUserHandle,
@@ -2384,7 +2388,7 @@ describe('handleSwap function', async function () {
         await handleSwap({
           value: mockAmountIn,
           eventId: swapId,
-          chainId: 'eip155:137',
+          chainId: DEFAULT_CHAIN_ID,
           userTelegramID: mockUserTelegramID,
           tokenIn: mockTokenIn,
           amountIn: mockAmountIn,

@@ -1,5 +1,10 @@
 import { Database } from '../db/conn';
-import { SWAPS_COLLECTION, TRANSACTION_STATUS } from './constants';
+import {
+  DEFAULT_CHAIN_ID,
+  DEFAULT_CHAIN_NAME,
+  SWAPS_COLLECTION,
+  TRANSACTION_STATUS,
+} from './constants';
 import { Db, Document, WithId } from 'mongodb';
 import {
   getPatchWalletAccessToken,
@@ -72,12 +77,8 @@ export class SwapTelegram {
   constructor(params: SwapParams) {
     this.eventId = params.eventId;
     this.params = params;
-    this.params.chainId = this.params.chainId
-      ? this.params.chainId
-      : 'eip155:137';
-    this.params.chainName = this.params.chainName
-      ? this.params.chainName
-      : 'matic';
+    this.params.chainId = this.params.chainId ?? DEFAULT_CHAIN_ID;
+    this.params.chainName = this.params.chainName ?? DEFAULT_CHAIN_NAME;
 
     this.isInDatabase = false;
     this.tx = undefined;

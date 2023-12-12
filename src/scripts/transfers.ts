@@ -4,6 +4,8 @@ import fs from 'fs';
 import csv from 'csv-parser';
 import web3 from 'web3';
 import {
+  DEFAULT_CHAIN_ID,
+  G1_TOKEN_SYMBOL,
   REWARDS_COLLECTION,
   TRANSFERS_COLLECTION,
   USERS_COLLECTION,
@@ -691,8 +693,8 @@ async function importMissingTransferFromCSV(
             insertOne: {
               document: {
                 TxId: transactionHash.substring(1, 8),
-                chainId: 'eip155:137',
-                tokenSymbol: 'g1',
+                chainId: DEFAULT_CHAIN_ID,
+                tokenSymbol: G1_TOKEN_SYMBOL,
                 tokenAddress: SOURCE_WALLET_ADDRESS,
                 senderTgId: senderTgId ? senderTgId.toString() : undefined,
                 senderWallet: web3.utils.toChecksumAddress(senderWallet),

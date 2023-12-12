@@ -7,12 +7,7 @@ import {
   mockWallet,
   mockAccessToken,
   mockTransactionHash,
-  patchwalletResolverUrl,
-  patchwalletTxUrl,
-  patchwalletAuthUrl,
-  segmentTrackUrl,
   mockUserHandle,
-  patchwalletTxStatusUrl,
   mockUserOpHash,
   mockChainName,
   mockTokenAddress,
@@ -23,7 +18,16 @@ import {
 import Sinon from 'sinon';
 import axios from 'axios';
 import chaiExclude from 'chai-exclude';
-import { TRANSACTION_STATUS, nativeTokenAddresses } from '../utils/constants';
+import {
+  G1_TOKEN_SYMBOL,
+  PATCHWALLET_AUTH_URL,
+  PATCHWALLET_RESOLVER_URL,
+  PATCHWALLET_TX_STATUS_URL,
+  PATCHWALLET_TX_URL,
+  SEGMENT_TRACK_URL,
+  TRANSACTION_STATUS,
+  nativeTokenAddresses,
+} from '../utils/constants';
 import { v4 as uuidv4 } from 'uuid';
 import { handleNewTransaction } from '../utils/webhooks/transaction';
 import {
@@ -31,16 +35,17 @@ import {
   G1_POLYGON_ADDRESS,
 } from '../../secrets';
 import * as web3 from '../utils/web3';
+import { Collection, Document } from 'mongodb';
 
 chai.use(chaiExclude);
 
 describe('handleNewTransaction function', async function () {
-  let sandbox;
+  let sandbox: Sinon.SinonSandbox;
   let axiosStub;
-  let txId;
-  let collectionUsersMock;
-  let collectionTransfersMock;
-  let contractStub;
+  let txId: string;
+  let collectionUsersMock: Collection<Document>;
+  let collectionTransfersMock: Collection<Document>;
+  let contractStub: { methods: any };
   let getContract;
 
   beforeEach(async function () {
@@ -49,7 +54,7 @@ describe('handleNewTransaction function', async function () {
 
     sandbox = Sinon.createSandbox();
     axiosStub = sandbox.stub(axios, 'post').callsFake(async (url: string) => {
-      if (url === patchwalletResolverUrl) {
+      if (url === PATCHWALLET_RESOLVER_URL) {
         return Promise.resolve({
           data: {
             users: [{ accountAddress: mockWallet }],
@@ -57,7 +62,7 @@ describe('handleNewTransaction function', async function () {
         });
       }
 
-      if (url === patchwalletTxUrl) {
+      if (url === PATCHWALLET_TX_URL) {
         return Promise.resolve({
           data: {
             txHash: mockTransactionHash,
@@ -65,7 +70,7 @@ describe('handleNewTransaction function', async function () {
         });
       }
 
-      if (url === patchwalletTxStatusUrl) {
+      if (url === PATCHWALLET_TX_STATUS_URL) {
         return Promise.resolve({
           data: {
             txHash: mockTransactionHash,
@@ -74,7 +79,7 @@ describe('handleNewTransaction function', async function () {
         });
       }
 
-      if (url === patchwalletAuthUrl) {
+      if (url === PATCHWALLET_AUTH_URL) {
         return Promise.resolve({
           data: {
             access_token: mockAccessToken,
@@ -88,7 +93,7 @@ describe('handleNewTransaction function', async function () {
         });
       }
 
-      if (url == segmentTrackUrl) {
+      if (url == SEGMENT_TRACK_URL) {
         return Promise.resolve({
           result: 'success',
         });
@@ -166,7 +171,7 @@ describe('handleNewTransaction function', async function () {
           {
             eventId: txId,
             chainId: mockChainId,
-            tokenSymbol: 'G1',
+            tokenSymbol: G1_TOKEN_SYMBOL,
             tokenAddress: mockTokenAddress,
             senderTgId: mockUserTelegramID,
             senderWallet: mockWallet,
@@ -193,12 +198,12 @@ describe('handleNewTransaction function', async function () {
 
       chai
         .expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl)
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL)
             .args[1],
         )
         .to.deep.equal({
           userId: `grindery:${mockUserTelegramID}`,
-          chain: 'matic',
+          chain: mockChainName,
           to: [G1_POLYGON_ADDRESS],
           value: ['0x00'],
           data: [
@@ -220,12 +225,12 @@ describe('handleNewTransaction function', async function () {
 
       chai
         .expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl)
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL)
             .args[1],
         )
         .to.deep.equal({
           userId: `grindery:${mockUserTelegramID}`,
-          chain: 'matic',
+          chain: mockChainName,
           to: [mockWallet],
           value: [web3.scaleDecimals('100', 18)],
           data: ['0x'],
@@ -286,8 +291,8 @@ describe('handleNewTransaction function', async function () {
 
       chai.expect(FlowXOCallArgs).excluding(['dateAdded']).to.deep.equal({
         senderResponsePath: mockResponsePath,
-        chainId: 'eip155:137',
-        tokenSymbol: 'G1',
+        chainId: mockChainId,
+        tokenSymbol: G1_TOKEN_SYMBOL,
         tokenAddress: G1_POLYGON_ADDRESS,
         senderTgId: mockUserTelegramID,
         senderWallet: mockWallet,
@@ -332,7 +337,7 @@ describe('handleNewTransaction function', async function () {
           {
             eventId: txId,
             chainId: mockChainId,
-            tokenSymbol: 'G1',
+            tokenSymbol: G1_TOKEN_SYMBOL,
             tokenAddress: mockTokenAddress,
             senderTgId: mockUserTelegramID,
             senderWallet: mockWallet,
@@ -359,12 +364,12 @@ describe('handleNewTransaction function', async function () {
 
       chai
         .expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl)
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL)
             .args[1],
         )
         .to.deep.equal({
           userId: `grindery:${mockUserTelegramID}`,
-          chain: 'matic',
+          chain: mockChainName,
           to: [G1_POLYGON_ADDRESS],
           value: ['0x00'],
           data: [
@@ -386,12 +391,12 @@ describe('handleNewTransaction function', async function () {
 
       chai
         .expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl)
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL)
             .args[1],
         )
         .to.deep.equal({
           userId: `grindery:${mockUserTelegramID}`,
-          chain: 'matic',
+          chain: mockChainName,
           to: [mockWallet],
           value: ['10300000000000000000'],
           data: ['0x'],
@@ -436,7 +441,7 @@ describe('handleNewTransaction function', async function () {
       });
 
       chai.expect(
-        axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+        axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
       ).to.be.undefined;
     });
 
@@ -525,7 +530,7 @@ describe('handleNewTransaction function', async function () {
       });
 
       chai.expect(
-        axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+        axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
       ).to.be.undefined;
     });
 
@@ -588,7 +593,7 @@ describe('handleNewTransaction function', async function () {
         patchwallet: mockWallet,
       });
 
-      axiosStub.withArgs(patchwalletTxUrl).resolves({
+      axiosStub.withArgs(PATCHWALLET_TX_URL).resolves({
         data: {
           error: 'service non available',
         },
@@ -620,8 +625,8 @@ describe('handleNewTransaction function', async function () {
         .to.deep.equal([
           {
             eventId: txId,
-            chainId: 'eip155:137',
-            tokenSymbol: 'G1',
+            chainId: mockChainId,
+            tokenSymbol: G1_TOKEN_SYMBOL,
             tokenAddress: G1_POLYGON_ADDRESS,
             senderTgId: mockUserTelegramID,
             senderWallet: mockWallet,
@@ -732,7 +737,7 @@ describe('handleNewTransaction function', async function () {
       });
 
       chai.expect(
-        axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+        axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
       ).to.be.undefined;
     });
 
@@ -770,7 +775,7 @@ describe('handleNewTransaction function', async function () {
   describe('Error in PatchWallet get address', async function () {
     beforeEach(async function () {
       axiosStub
-        .withArgs(patchwalletResolverUrl)
+        .withArgs(PATCHWALLET_RESOLVER_URL)
         .rejects(new Error('Service not available'));
 
       await collectionUsersMock.insertOne({
@@ -813,7 +818,7 @@ describe('handleNewTransaction function', async function () {
       });
 
       chai.expect(
-        axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+        axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
       ).to.be.undefined;
     });
 
@@ -850,7 +855,7 @@ describe('handleNewTransaction function', async function () {
 
   it('Should return true if error in Segment Webhook', async function () {
     axiosStub
-      .withArgs(segmentTrackUrl)
+      .withArgs(SEGMENT_TRACK_URL)
       .rejects(new Error('Service not available'));
 
     await collectionUsersMock.insertOne({
@@ -897,7 +902,7 @@ describe('handleNewTransaction function', async function () {
   describe('Error in PatchWallet transaction', async function () {
     beforeEach(async function () {
       axiosStub
-        .withArgs(patchwalletTxUrl)
+        .withArgs(PATCHWALLET_TX_URL)
         .rejects(new Error('Service not available'));
 
       await collectionUsersMock.insertOne({
@@ -934,8 +939,8 @@ describe('handleNewTransaction function', async function () {
         .to.deep.equal([
           {
             eventId: txId,
-            chainId: 'eip155:137',
-            tokenSymbol: 'G1',
+            chainId: mockChainId,
+            tokenSymbol: G1_TOKEN_SYMBOL,
             tokenAddress: G1_POLYGON_ADDRESS,
             senderTgId: mockUserTelegramID,
             senderWallet: mockWallet,
@@ -984,7 +989,7 @@ describe('handleNewTransaction function', async function () {
 
   describe('PatchWallet 470 error', async function () {
     beforeEach(async function () {
-      axiosStub.withArgs(patchwalletTxUrl).rejects({
+      axiosStub.withArgs(PATCHWALLET_TX_URL).rejects({
         response: {
           status: 470,
         },
@@ -1024,8 +1029,8 @@ describe('handleNewTransaction function', async function () {
         .to.deep.equal([
           {
             eventId: txId,
-            chainId: 'eip155:137',
-            tokenSymbol: 'G1',
+            chainId: mockChainId,
+            tokenSymbol: G1_TOKEN_SYMBOL,
             tokenAddress: G1_POLYGON_ADDRESS,
             senderTgId: mockUserTelegramID,
             senderWallet: mockWallet,
@@ -1074,7 +1079,7 @@ describe('handleNewTransaction function', async function () {
 
   describe('No hash in PatchWallet transaction', async function () {
     beforeEach(async function () {
-      axiosStub.withArgs(patchwalletTxUrl).resolves({
+      axiosStub.withArgs(PATCHWALLET_TX_URL).resolves({
         data: {
           error: 'service non available',
         },
@@ -1114,8 +1119,8 @@ describe('handleNewTransaction function', async function () {
         .to.deep.equal([
           {
             eventId: txId,
-            chainId: 'eip155:137',
-            tokenSymbol: 'G1',
+            chainId: mockChainId,
+            tokenSymbol: G1_TOKEN_SYMBOL,
             tokenAddress: G1_POLYGON_ADDRESS,
             senderTgId: mockUserTelegramID,
             senderWallet: mockWallet,
@@ -1173,7 +1178,7 @@ describe('handleNewTransaction function', async function () {
           responsePath: mockResponsePath,
         });
 
-        axiosStub.withArgs(patchwalletTxUrl).resolves({
+        axiosStub.withArgs(PATCHWALLET_TX_URL).resolves({
           data: {
             txHash: '',
             userOpHash: mockUserOpHash,
@@ -1206,8 +1211,8 @@ describe('handleNewTransaction function', async function () {
           .to.deep.equal([
             {
               eventId: txId,
-              chainId: 'eip155:137',
-              tokenSymbol: 'G1',
+              chainId: mockChainId,
+              tokenSymbol: G1_TOKEN_SYMBOL,
               tokenAddress: G1_POLYGON_ADDRESS,
               senderTgId: mockUserTelegramID,
               senderWallet: mockWallet,
@@ -1251,8 +1256,8 @@ describe('handleNewTransaction function', async function () {
 
         await collectionTransfersMock.insertOne({
           eventId: txId,
-          chainId: 'eip155:137',
-          tokenSymbol: 'G1',
+          chainId: mockChainId,
+          tokenSymbol: G1_TOKEN_SYMBOL,
           tokenAddress: G1_POLYGON_ADDRESS,
           senderTgId: mockUserTelegramID,
           senderWallet: mockWallet,
@@ -1286,7 +1291,7 @@ describe('handleNewTransaction function', async function () {
         });
 
         chai.expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
         ).to.be.undefined;
       });
 
@@ -1304,8 +1309,8 @@ describe('handleNewTransaction function', async function () {
           .to.deep.equal([
             {
               eventId: txId,
-              chainId: 'eip155:137',
-              tokenSymbol: 'G1',
+              chainId: mockChainId,
+              tokenSymbol: G1_TOKEN_SYMBOL,
               tokenAddress: G1_POLYGON_ADDRESS,
               senderTgId: mockUserTelegramID,
               senderWallet: mockWallet,
@@ -1335,8 +1340,8 @@ describe('handleNewTransaction function', async function () {
 
         chai.expect(FlowXOCallArgs).excluding(['dateAdded']).to.deep.equal({
           senderResponsePath: mockResponsePath,
-          chainId: 'eip155:137',
-          tokenSymbol: 'G1',
+          chainId: mockChainId,
+          tokenSymbol: G1_TOKEN_SYMBOL,
           tokenAddress: G1_POLYGON_ADDRESS,
           senderTgId: mockUserTelegramID,
           senderWallet: mockWallet,
@@ -1367,8 +1372,8 @@ describe('handleNewTransaction function', async function () {
 
         await collectionTransfersMock.insertOne({
           eventId: txId,
-          chainId: 'eip155:137',
-          tokenSymbol: 'G1',
+          chainId: mockChainId,
+          tokenSymbol: G1_TOKEN_SYMBOL,
           tokenAddress: G1_POLYGON_ADDRESS,
           senderTgId: mockUserTelegramID,
           senderWallet: mockWallet,
@@ -1381,7 +1386,7 @@ describe('handleNewTransaction function', async function () {
           userOpHash: mockUserOpHash,
         });
 
-        axiosStub.withArgs(patchwalletTxStatusUrl).resolves({
+        axiosStub.withArgs(PATCHWALLET_TX_STATUS_URL).resolves({
           data: {
             txHash: '',
             userOpHash: mockUserOpHash,
@@ -1409,7 +1414,7 @@ describe('handleNewTransaction function', async function () {
         });
 
         chai.expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
         ).to.be.undefined;
       });
 
@@ -1427,8 +1432,8 @@ describe('handleNewTransaction function', async function () {
           .to.deep.equal([
             {
               eventId: txId,
-              chainId: 'eip155:137',
-              tokenSymbol: 'G1',
+              chainId: mockChainId,
+              tokenSymbol: G1_TOKEN_SYMBOL,
               tokenAddress: G1_POLYGON_ADDRESS,
               senderTgId: mockUserTelegramID,
               senderWallet: mockWallet,
@@ -1472,8 +1477,8 @@ describe('handleNewTransaction function', async function () {
 
         await collectionTransfersMock.insertOne({
           eventId: txId,
-          chainId: 'eip155:137',
-          tokenSymbol: 'G1',
+          chainId: mockChainId,
+          tokenSymbol: G1_TOKEN_SYMBOL,
           tokenAddress: G1_POLYGON_ADDRESS,
           senderTgId: mockUserTelegramID,
           senderWallet: mockWallet,
@@ -1487,7 +1492,7 @@ describe('handleNewTransaction function', async function () {
         });
 
         axiosStub
-          .withArgs(patchwalletTxStatusUrl)
+          .withArgs(PATCHWALLET_TX_STATUS_URL)
           .rejects(new Error('Service not available'));
       });
 
@@ -1511,7 +1516,7 @@ describe('handleNewTransaction function', async function () {
         });
 
         chai.expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
         ).to.be.undefined;
       });
 
@@ -1529,8 +1534,8 @@ describe('handleNewTransaction function', async function () {
           .to.deep.equal([
             {
               eventId: txId,
-              chainId: 'eip155:137',
-              tokenSymbol: 'G1',
+              chainId: mockChainId,
+              tokenSymbol: G1_TOKEN_SYMBOL,
               tokenAddress: G1_POLYGON_ADDRESS,
               senderTgId: mockUserTelegramID,
               senderWallet: mockWallet,
@@ -1573,8 +1578,8 @@ describe('handleNewTransaction function', async function () {
 
         await collectionTransfersMock.insertOne({
           eventId: txId,
-          chainId: 'eip155:137',
-          tokenSymbol: 'G1',
+          chainId: mockChainId,
+          tokenSymbol: G1_TOKEN_SYMBOL,
           tokenAddress: G1_POLYGON_ADDRESS,
           senderTgId: mockUserTelegramID,
           senderWallet: mockWallet,
@@ -1587,7 +1592,7 @@ describe('handleNewTransaction function', async function () {
           userOpHash: mockUserOpHash,
         });
 
-        axiosStub.withArgs(patchwalletTxStatusUrl).rejects({
+        axiosStub.withArgs(PATCHWALLET_TX_STATUS_URL).rejects({
           response: {
             status: 470,
           },
@@ -1614,7 +1619,7 @@ describe('handleNewTransaction function', async function () {
         });
 
         chai.expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
         ).to.be.undefined;
       });
 
@@ -1632,8 +1637,8 @@ describe('handleNewTransaction function', async function () {
           .to.deep.equal([
             {
               eventId: txId,
-              chainId: 'eip155:137',
-              tokenSymbol: 'G1',
+              chainId: mockChainId,
+              tokenSymbol: G1_TOKEN_SYMBOL,
               tokenAddress: G1_POLYGON_ADDRESS,
               senderTgId: mockUserTelegramID,
               senderWallet: mockWallet,
@@ -1677,8 +1682,8 @@ describe('handleNewTransaction function', async function () {
 
         await collectionTransfersMock.insertOne({
           eventId: txId,
-          chainId: 'eip155:137',
-          tokenSymbol: 'G1',
+          chainId: mockChainId,
+          tokenSymbol: G1_TOKEN_SYMBOL,
           tokenAddress: G1_POLYGON_ADDRESS,
           senderTgId: mockUserTelegramID,
           senderWallet: mockWallet,
@@ -1711,7 +1716,7 @@ describe('handleNewTransaction function', async function () {
         });
 
         chai.expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
         ).to.be.undefined;
       });
 
@@ -1729,8 +1734,8 @@ describe('handleNewTransaction function', async function () {
           .to.deep.equal([
             {
               eventId: txId,
-              chainId: 'eip155:137',
-              tokenSymbol: 'G1',
+              chainId: mockChainId,
+              tokenSymbol: G1_TOKEN_SYMBOL,
               tokenAddress: G1_POLYGON_ADDRESS,
               senderTgId: mockUserTelegramID,
               senderWallet: mockWallet,
@@ -1774,8 +1779,8 @@ describe('handleNewTransaction function', async function () {
 
         await collectionTransfersMock.insertOne({
           eventId: txId,
-          chainId: 'eip155:137',
-          tokenSymbol: 'G1',
+          chainId: mockChainId,
+          tokenSymbol: G1_TOKEN_SYMBOL,
           tokenAddress: G1_POLYGON_ADDRESS,
           senderTgId: mockUserTelegramID,
           senderWallet: mockWallet,
@@ -1788,7 +1793,7 @@ describe('handleNewTransaction function', async function () {
           dateAdded: new Date(Date.now() - 12 * 60 * 1000),
         });
 
-        axiosStub.withArgs(patchwalletTxStatusUrl).resolves({
+        axiosStub.withArgs(PATCHWALLET_TX_STATUS_URL).resolves({
           data: {
             txHash: '',
             userOpHash: mockUserOpHash,
@@ -1816,7 +1821,7 @@ describe('handleNewTransaction function', async function () {
         });
 
         chai.expect(
-          axiosStub.getCalls().find((e) => e.firstArg === patchwalletTxUrl),
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
         ).to.be.undefined;
       });
 
@@ -1834,8 +1839,8 @@ describe('handleNewTransaction function', async function () {
           .to.deep.equal([
             {
               eventId: txId,
-              chainId: 'eip155:137',
-              tokenSymbol: 'G1',
+              chainId: mockChainId,
+              tokenSymbol: G1_TOKEN_SYMBOL,
               tokenAddress: G1_POLYGON_ADDRESS,
               senderTgId: mockUserTelegramID,
               senderWallet: mockWallet,
