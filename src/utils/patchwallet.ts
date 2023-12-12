@@ -8,6 +8,10 @@ import { getContract, scaleDecimals } from './web3';
 import {
   DEFAULT_CHAIN_ID,
   DEFAULT_CHAIN_NAME,
+  PATCHWALLET_AUTH_URL,
+  PATCHWALLET_RESOLVER_URL,
+  PATCHWALLET_TX_STATUS_URL,
+  PATCHWALLET_TX_URL,
   nativeTokenAddresses,
 } from './constants';
 import { PatchRawResult } from '../types/webhook.types';
@@ -21,7 +25,7 @@ import { CHAIN_NAME_MAPPING } from './chains';
 export async function getPatchWalletAccessToken(): Promise<string> {
   return (
     await axios.post(
-      'https://paymagicapi.com/v1/auth',
+      PATCHWALLET_AUTH_URL,
       {
         client_id: await getClientId(),
         client_secret: await getClientSecret(),
@@ -44,7 +48,7 @@ export async function getPatchWalletAddressFromTgId(
 ): Promise<string> {
   return (
     await axios.post(
-      'https://paymagicapi.com/v1/resolver',
+      PATCHWALLET_RESOLVER_URL,
       {
         userIds: `grindery:${tgId}`,
       },
@@ -98,7 +102,7 @@ export async function sendTokens(
 
   // Send the tokens using PayMagic API
   return await axios.post(
-    'https://paymagicapi.com/v1/kernel/tx',
+    PATCHWALLET_TX_URL,
     {
       userId: `grindery:${senderTgId}`,
       chain: chainName,
@@ -127,7 +131,7 @@ export async function getTxStatus(
   userOpHash: string,
 ): Promise<axios.AxiosResponse<PatchRawResult, AxiosError>> {
   return await axios.post(
-    'https://paymagicapi.com/v1/kernel/txStatus',
+    PATCHWALLET_TX_STATUS_URL,
     {
       userOpHash: userOpHash,
     },
@@ -159,7 +163,7 @@ export async function swapTokens(
   patchWalletAccessToken: string,
 ): Promise<axios.AxiosResponse<PatchRawResult, AxiosError>> {
   return await axios.post(
-    'https://paymagicapi.com/v1/kernel/tx',
+    PATCHWALLET_TX_URL,
     {
       userId: `grindery:${userTelegramID}`,
       chain: chainId

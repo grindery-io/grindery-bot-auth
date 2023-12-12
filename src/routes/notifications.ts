@@ -7,6 +7,7 @@ import {
   GRINDERY_ACCOUNT_WORKSPACE_KEY,
   WALLET_NOTIFICATION_WEBHOOK_URL,
 } from '../../secrets';
+import { PATCHWALLET_RESOLVER_URL } from '../utils/constants';
 
 const NexusClient = grinderyClient;
 
@@ -84,12 +85,9 @@ router.post('/wallet', async (req, res) => {
 
     let address = req.body.address;
     if (!address) {
-      const patchWalletResponse = await axios.post(
-        'https://paymagicapi.com/v1/resolver',
-        {
-          userIds: `tel:${req.body.phone}`,
-        },
-      );
+      const patchWalletResponse = await axios.post(PATCHWALLET_RESOLVER_URL, {
+        userIds: `tel:${req.body.phone}`,
+      });
       address = patchWalletResponse.data.users[0].accountAddress;
     }
 

@@ -1,5 +1,6 @@
 import axios, { AxiosError } from 'axios';
 import { SEGMENT_KEY } from '../../secrets';
+import { SEGMENT_IDENTITY_URL, SEGMENT_TRACK_URL } from './constants';
 
 /**
  * Adds an identity segment using the provided user data.
@@ -15,7 +16,7 @@ export async function addIdentitySegment(user: {
   dateAdded: Date;
 }): Promise<axios.AxiosResponse<any, AxiosError>> {
   return await axios.post(
-    'https://api.segment.io/v1/identify',
+    SEGMENT_IDENTITY_URL,
     {
       userId: user.userTelegramID,
       traits: {
@@ -57,7 +58,7 @@ export async function addTrackSegment(params: {
   chainId: string;
 }): Promise<axios.AxiosResponse<any, AxiosError>> {
   return await axios.post(
-    'https://api.segment.io/v1/track',
+    SEGMENT_TRACK_URL,
     {
       userId: params.userTelegramID,
       event: 'Transfer',
@@ -113,7 +114,7 @@ export async function addTrackSwapSegment(params: {
   tokenOutSymbol: string;
 }): Promise<axios.AxiosResponse<any, AxiosError>> {
   return await axios.post(
-    'https://api.segment.io/v1/track',
+    SEGMENT_TRACK_URL,
     {
       userId: params.userTelegramID,
       event: 'Swap',

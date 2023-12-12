@@ -1,5 +1,6 @@
 import express from 'express';
 import axios from 'axios';
+import { PATCHWALLET_RESOLVER_URL } from '../utils/constants';
 
 const router = express.Router();
 
@@ -105,12 +106,9 @@ router.get('/callback', async (req, res) => {
     }
 
     // Get user PatchWallet address
-    const patchWalletResponse = await axios.post(
-      'https://paymagicapi.com/v1/resolver',
-      {
-        userIds: `grindery:${decodeState.user_id}`,
-      },
-    );
+    const patchWalletResponse = await axios.post(PATCHWALLET_RESOLVER_URL, {
+      userIds: `grindery:${decodeState.user_id}`,
+    });
 
     const patchwalletAddress = patchWalletResponse.data.users[0].accountAddress;
 

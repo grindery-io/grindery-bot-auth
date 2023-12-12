@@ -216,7 +216,7 @@ describe('handleSwap function', async function () {
 
       const segmentIdentityCall = axiosStub
         .getCalls()
-        .filter((e) => e.firstArg === 'https://api.segment.io/v1/track');
+        .filter((e) => e.firstArg === SEGMENT_TRACK_URL);
 
       chai
         .expect(segmentIdentityCall[0].args[1])
@@ -453,9 +453,7 @@ describe('handleSwap function', async function () {
       });
 
       chai.expect(
-        axiosStub
-          .getCalls()
-          .find((e) => e.firstArg === 'https://api.segment.io/v1/track'),
+        axiosStub.getCalls().find((e) => e.firstArg === SEGMENT_TRACK_URL),
       ).to.be.undefined;
     });
   });
@@ -587,9 +585,7 @@ describe('handleSwap function', async function () {
       });
 
       chai.expect(
-        axiosStub
-          .getCalls()
-          .find((e) => e.firstArg === 'https://api.segment.io/v1/track'),
+        axiosStub.getCalls().find((e) => e.firstArg === SEGMENT_TRACK_URL),
       ).to.be.undefined;
     });
   });
@@ -717,9 +713,7 @@ describe('handleSwap function', async function () {
         tokenOutSymbol: mockTokenOutSymbol,
       });
       chai.expect(
-        axiosStub
-          .getCalls()
-          .find((e) => e.firstArg === 'https://api.segment.io/v1/track'),
+        axiosStub.getCalls().find((e) => e.firstArg === SEGMENT_TRACK_URL),
       ).to.be.undefined;
     });
   });
@@ -871,9 +865,7 @@ describe('handleSwap function', async function () {
       });
 
       chai.expect(
-        axiosStub
-          .getCalls()
-          .find((e) => e.firstArg === 'https://api.segment.io/v1/track'),
+        axiosStub.getCalls().find((e) => e.firstArg === SEGMENT_TRACK_URL),
       ).to.be.undefined;
     });
   });
@@ -1001,9 +993,7 @@ describe('handleSwap function', async function () {
       });
 
       chai.expect(
-        axiosStub
-          .getCalls()
-          .find((e) => e.firstArg === 'https://api.segment.io/v1/track'),
+        axiosStub.getCalls().find((e) => e.firstArg === SEGMENT_TRACK_URL),
       ).to.be.undefined;
     });
   });
@@ -1133,9 +1123,7 @@ describe('handleSwap function', async function () {
       });
 
       chai.expect(
-        axiosStub
-          .getCalls()
-          .find((e) => e.firstArg === 'https://api.segment.io/v1/track'),
+        axiosStub.getCalls().find((e) => e.firstArg === SEGMENT_TRACK_URL),
       ).to.be.undefined;
     });
   });
@@ -1265,9 +1253,7 @@ describe('handleSwap function', async function () {
       });
 
       chai.expect(
-        axiosStub
-          .getCalls()
-          .find((e) => e.firstArg === 'https://api.segment.io/v1/track'),
+        axiosStub.getCalls().find((e) => e.firstArg === SEGMENT_TRACK_URL),
       ).to.be.undefined;
     });
   });
@@ -1397,9 +1383,7 @@ describe('handleSwap function', async function () {
       });
 
       chai.expect(
-        axiosStub
-          .getCalls()
-          .find((e) => e.firstArg === 'https://api.segment.io/v1/track'),
+        axiosStub.getCalls().find((e) => e.firstArg === SEGMENT_TRACK_URL),
       ).to.be.undefined;
     });
   });
