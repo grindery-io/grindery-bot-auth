@@ -59,6 +59,25 @@ export type SwapParams = {
 };
 
 /**
+ * Creates swap parameters by merging the provided parameters with default values.
+ * @param params The parameters for the swap.
+ * @returns Swap parameters with default values for missing parameters.
+ */
+export function createSwapParams(
+  params: SwapParams,
+  userInformation: WithId<Document>,
+): SwapParams {
+  return {
+    ...{
+      chainId: DEFAULT_CHAIN_ID,
+      chainName: DEFAULT_CHAIN_NAME,
+    },
+    ...params,
+    userInformation,
+  };
+}
+
+/**
  * Defines the structure for RewardParams.
  */
 export type RewardParams = {

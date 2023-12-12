@@ -9,7 +9,7 @@ import {
   updateTxHash,
   updateUserOpHash,
 } from './utils';
-import { SwapParams } from '../../types/webhook.types';
+import { SwapParams, createSwapParams } from '../../types/webhook.types';
 
 /**
  * Handles the swap process based on provided parameters.
@@ -34,7 +34,9 @@ export async function handleSwap(params: SwapParams): Promise<boolean> {
   }
 
   // Create a swap instance using createSwapTelegram function with provided parameters and user information
-  const swap = await createSwapTelegram({ ...params, userInformation });
+  const swap = await createSwapTelegram(
+    createSwapParams(params, userInformation),
+  );
 
   // If the swap status indicates success or failure, return true indicating handled status
   if (isSuccessfulTransaction(swap.status) || isFailedTransaction(swap.status))
