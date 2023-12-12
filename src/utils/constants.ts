@@ -49,6 +49,21 @@ export const REWARDS_TESTS_COLLECTION = 'rewards-test';
 export const WALLET_USERS_TESTS_COLLECTION = 'wallet-users-test';
 
 /**
+ * BigQuery Table ID for storing users.
+ */
+export const USERS_TABLE_ID = 'users';
+
+/**
+ * BigQuery Table ID for storing transfers.
+ */
+export const TRANSFERS_TABLE_ID = 'transfer';
+
+/**
+ * BigQuery Table ID for storing wallet users.
+ */
+export const WALLET_USERS_TABLE_ID = 'wallet_users';
+
+/**
  * Different transaction statuses.
  */
 export const TRANSACTION_STATUS = {

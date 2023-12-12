@@ -3,8 +3,11 @@ import { Database } from '../db/conn';
 import { BigQuery } from '@google-cloud/bigquery';
 import {
   TRANSFERS_COLLECTION,
+  TRANSFERS_TABLE_ID,
   USERS_COLLECTION,
+  USERS_TABLE_ID,
   WALLET_USERS_COLLECTION,
+  WALLET_USERS_TABLE_ID,
 } from '../utils/constants';
 import web3 from 'web3';
 
@@ -14,7 +17,6 @@ const datasetId = 'telegram';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 const importUsers = async (): Promise<void> => {
-  const tableId = 'users';
   const db = await Database.getInstance();
   const collection = db.collection(USERS_COLLECTION);
 
@@ -29,7 +31,7 @@ const importUsers = async (): Promise<void> => {
   const batchSize = 3000;
   let importedCount = 0;
 
-  const existingPatchwallets = await getExistingPatchwallets(tableId);
+  const existingPatchwallets = await getExistingPatchwallets(USERS_TABLE_ID);
 
   for (let i = 0; i < allUsers.length; i += batchSize) {
     console.log(
@@ -74,7 +76,7 @@ const importUsers = async (): Promise<void> => {
 
       await bigqueryClient
         .dataset(datasetId)
-        .table(tableId)
+        .table(USERS_TABLE_ID)
         .insert(bigQueryData);
     }
 
@@ -87,7 +89,6 @@ const importUsers = async (): Promise<void> => {
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 const importTransfers = async (): Promise<void> => {
-  const tableId = 'transfer';
   const db = await Database.getInstance();
   const collection = db.collection(TRANSFERS_COLLECTION);
 
@@ -101,7 +102,9 @@ const importTransfers = async (): Promise<void> => {
   const batchSize = 10000;
   let insertedCount = 0;
 
-  const existingTransactionHashes = await getExistingTransactionHashes(tableId);
+  const existingTransactionHashes = await getExistingTransactionHashes(
+    TRANSFERS_TABLE_ID,
+  );
   console.log('BIGQUERY - existingTransactionHashes');
 
   for (let i = 0; i < allTransfers.length; i += batchSize) {
@@ -154,7 +157,7 @@ const importTransfers = async (): Promise<void> => {
 
       await bigqueryClient
         .dataset(datasetId)
-        .table(tableId)
+        .table(TRANSFERS_TABLE_ID)
         .insert(bigQueryData);
     }
 
@@ -165,7 +168,6 @@ const importTransfers = async (): Promise<void> => {
 };
 
 export const importUsersLast4Hours = async (): Promise<void> => {
-  const tableId = 'users';
   const db = await Database.getInstance();
   const collection = db.collection(USERS_COLLECTION);
 
@@ -179,7 +181,7 @@ export const importUsersLast4Hours = async (): Promise<void> => {
   const countRecentUsers = await recentUsers.count();
 
   const existingPatchwallets = await getExistingPatchwalletsLast24Hours(
-    tableId,
+    USERS_TABLE_ID,
     startDate,
     endDate,
   );
@@ -229,7 +231,7 @@ export const importUsersLast4Hours = async (): Promise<void> => {
 
       await bigqueryClient
         .dataset(datasetId)
-        .table(tableId)
+        .table(USERS_TABLE_ID)
         .insert(transformedUserData);
 
       console.log(
@@ -248,7 +250,6 @@ export const importUsersLast4Hours = async (): Promise<void> => {
 };
 
 export const importTransfersLast4Hours = async (): Promise<void> => {
-  const tableId = 'transfer';
   const db = await Database.getInstance();
   const collection = db.collection(TRANSFERS_COLLECTION);
 
@@ -264,7 +265,11 @@ export const importTransfersLast4Hours = async (): Promise<void> => {
   const countRecentTransfers = await allTransfers.count();
 
   const existingTransactionHashes =
-    await getExistingTransactionHashesLast24Hours(tableId, startDate, endDate);
+    await getExistingTransactionHashesLast24Hours(
+      TRANSFERS_TABLE_ID,
+      startDate,
+      endDate,
+    );
 
   let hasTransfers = false;
   let index = 0;
@@ -319,7 +324,7 @@ export const importTransfersLast4Hours = async (): Promise<void> => {
 
       await bigqueryClient
         .dataset(datasetId)
-        .table(tableId)
+        .table(TRANSFERS_TABLE_ID)
         .insert(bigQueryData);
 
       console.log(
@@ -351,7 +356,6 @@ export const importTransfersLast4Hours = async (): Promise<void> => {
 export const importOrUpdateWalletUsersLast2Hours = async (): Promise<void> => {
   const db = await Database.getInstance();
   const walletUsersCollection = db.collection(WALLET_USERS_COLLECTION);
-  const tableId = 'wallet_users';
 
   const startDate = new Date();
   startDate.setHours(startDate.getHours() - 2); // Set to 2 hours ago
@@ -389,7 +393,7 @@ export const importOrUpdateWalletUsersLast2Hours = async (): Promise<void> => {
 
       if (walletExistsInBigQuery) {
         const query = `
-          UPDATE ${datasetId}.${tableId}
+          UPDATE ${datasetId}.${WALLET_USERS_TABLE_ID}
           SET
             webAppOpened = @webAppOpened,
             webAppOpenedFirstDate = @webAppOpenedFirstDate,
@@ -420,7 +424,7 @@ export const importOrUpdateWalletUsersLast2Hours = async (): Promise<void> => {
       } else {
         await bigqueryClient
           .dataset(datasetId)
-          .table(tableId)
+          .table(WALLET_USERS_TABLE_ID)
           .insert(walletFormatted);
 
         console.log(
@@ -490,11 +494,9 @@ async function getExistingTransactionHashesLast24Hours(
 }
 
 async function checkWalletInBigQuery(userTelegramID: string): Promise<boolean> {
-  const tableId = 'wallet_users';
-
   const query = `
     SELECT userTelegramID
-    FROM ${datasetId}.${tableId}
+    FROM ${datasetId}.${WALLET_USERS_TABLE_ID}
     WHERE userTelegramID = '${userTelegramID}'
   `;
   const [rows] = await bigqueryClient.query(query);
