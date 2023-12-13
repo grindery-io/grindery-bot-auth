@@ -115,6 +115,11 @@ export async function getApiKey(): Promise<string> {
 }
 
 /**
+ * Retrieves the API key for Linea.
+ */
+export const API_KEY_LINEA = process.env.API_KEY_LINEA || '';
+
+/**
  * Retrieves the Atlas URI.
  */
 export async function getAtlasUri(): Promise<string> {

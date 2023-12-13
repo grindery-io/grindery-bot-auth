@@ -1,7 +1,7 @@
 import axios from 'axios';
 import jwt_decode from 'jwt-decode';
 import { webcrypto } from 'crypto';
-import { getApiKey, getBotToken } from '../../secrets';
+import { API_KEY_LINEA, getApiKey, getBotToken } from '../../secrets';
 
 /**
  * Validates a token by making a request to an external service.
@@ -91,6 +91,28 @@ export const authenticateApiKey = async (req, res, next) => {
     });
   }
   if (apiKey !== `Bearer ${await getApiKey()}`) {
+    return res.status(401).send({
+      msg: 'Invalid API key',
+    });
+  }
+  next();
+};
+
+/**
+ * Middleware to authenticate requests using an API key.
+ * @param req - The request object.
+ * @param res - The response object.
+ * @param next - The next middleware function.
+ * @returns void
+ */
+export const authenticateApiKeyLinea = async (req, res, next) => {
+  const apiKey = req.headers['authorization'];
+  if (!apiKey) {
+    return res.status(401).send({
+      msg: 'Missing API key in headers',
+    });
+  }
+  if (apiKey !== `Bearer ${API_KEY_LINEA}`) {
     return res.status(401).send({
       msg: 'Invalid API key',
     });
