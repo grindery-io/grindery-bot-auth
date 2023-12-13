@@ -353,12 +353,16 @@ export const importOrUpdateWalletUsersLast2Hours = async (): Promise<void> => {
   const walletUsersCollection = db.collection(WALLET_USERS_COLLECTION);
   const tableId = 'wallet_users';
 
-  const startDate = new Date();
-  startDate.setHours(startDate.getHours() - 2); // Set to 2 hours ago
+  const startDate = new Date(new Date().toISOString());
+  startDate.setUTCHours(startDate.getUTCHours() - 2); // Set to 2 hours ago
 
   const recentWallets = walletUsersCollection.find({
     webAppOpenedLastDate: { $gte: startDate },
   });
+
+  console.log(
+    `BIGQUERY - Wallet Users recent count (${await recentWallets.count()})`,
+  );
 
   let hasWallets = false;
   while (await recentWallets.hasNext()) {
@@ -383,11 +387,15 @@ export const importOrUpdateWalletUsersLast2Hours = async (): Promise<void> => {
           ? wallet.telegramSessionSavedDate
           : null,
         dateAdded: wallet.dateAdded ? wallet.dateAdded : null,
-        balance: wallet.balance ? wallet.balance : null,
+        balance: wallet.balance ? JSON.stringify(wallet.balance) : null,
         debug: wallet.debug ? JSON.stringify(wallet.debug) : null,
       };
 
       if (walletExistsInBigQuery) {
+        console.log(
+          `BIGQUERY - Wallet User Telegram ID (${walletFormatted.userTelegramID}) exist`,
+        );
+
         const query = `
           UPDATE ${datasetId}.${tableId}
           SET
@@ -409,15 +417,23 @@ export const importOrUpdateWalletUsersLast2Hours = async (): Promise<void> => {
             webAppOpenedFirstDate: 'STRING',
             webAppOpenedLastDate: 'STRING',
             telegramSessionSavedDate: 'STRING',
-            balance: 'STRING',
             dateAdded: 'STRING',
+            balance: 'STRING',
             debug: 'STRING',
             userTelegramID: 'STRING',
           },
         };
 
         await bigqueryClient.query(options);
+        console.log(
+          `BIGQUERY - Wallet User Telegram ID (${walletFormatted.userTelegramID}) updated in BigQuery`,
+        );
       } else {
+        console.log(
+          `BIGQUERY - Wallet User Telegram ID (${walletFormatted.userTelegramID}) does not exist`,
+        );
+        console.log(walletFormatted);
+
         await bigqueryClient
           .dataset(datasetId)
           .table(tableId)
