@@ -1,6 +1,9 @@
-import { RewardParams } from '../../types/webhook.types';
-import { TRANSACTION_STATUS } from '../constants';
-import { LinkRewardTelegram, createLinkRewardTelegram } from '../rewards';
+import { RewardParams } from '../types/webhook.types';
+import { TRANSACTION_STATUS } from '../utils/constants';
+import {
+  IsolatedRewardTelegram,
+  createIsolatedRewardTelegram,
+} from '../utils/rewards';
 import {
   getStatusRewards,
   isPendingTransactionHash,
@@ -10,20 +13,32 @@ import {
 } from './utils';
 
 /**
- * Handles the processing of a link reward based on specified parameters.
- * @param params - The parameters required for the link reward.
+ * Handles the processing of an isolated reward based on specified parameters.
+ * @param params - The parameters required for the reward.
  * @returns A promise resolving to a boolean value.
- *          - Returns `true` if the link reward handling is completed or conditions are not met.
- *          - Returns `false` if an error occurs during the link reward processing.
+ *          - Returns `true` if the reward handling is completed or conditions are not met.
+ *          - Returns `false` if an error occurs during the reward processing.
  */
-export async function handleLinkReward(params: RewardParams): Promise<boolean> {
+export async function handleIsolatedReward(
+  params: RewardParams,
+): Promise<boolean> {
   try {
-    let reward = await createLinkRewardTelegram(params);
+    if (
+      !params.userTelegramID ||
+      !params.eventId ||
+      !params.amount ||
+      !params.reason
+    ) {
+      return true;
+    }
 
-    if (reward == false) return true;
+    let reward = await createIsolatedRewardTelegram(params);
 
-    reward = reward as LinkRewardTelegram;
+    if (!reward) return true;
 
+    reward = reward as IsolatedRewardTelegram;
+
+    // Check if this event already exists
     let txReward;
 
     // Handle pending hash status
@@ -44,6 +59,7 @@ export async function handleLinkReward(params: RewardParams): Promise<boolean> {
     // Check for txReward and send transaction if not present
     if (!txReward && (txReward = await reward.sendTx()).isError) return false;
 
+    // Update transaction hash and perform additional actions
     if (txReward && txReward.txHash) {
       updateTxHash(reward, txReward.txHash);
       await Promise.all([
@@ -65,12 +81,9 @@ export async function handleLinkReward(params: RewardParams): Promise<boolean> {
     return false;
   } catch (error) {
     console.error(
-      `[${params.eventId}] Error processing link reward event: ${error}`,
+      `[${params.eventId}] Error processing ${params.reason} reward event: ${error}`,
     );
   }
+
   return true;
 }
-
-export const link_reward_utils = {
-  handleLinkReward,
-};

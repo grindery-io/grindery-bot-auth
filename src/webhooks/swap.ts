@@ -1,6 +1,6 @@
-import { TRANSACTION_STATUS, USERS_COLLECTION } from '../constants';
-import { Database } from '../../db/conn';
-import { createSwapTelegram } from '../swap';
+import { TRANSACTION_STATUS, USERS_COLLECTION } from '../utils/constants';
+import { Database } from '../db/conn';
+import { createSwapTelegram } from '../utils/swap';
 import {
   isFailedTransaction,
   isPendingTransactionHash,
@@ -9,7 +9,7 @@ import {
   updateTxHash,
   updateUserOpHash,
 } from './utils';
-import { SwapParams, createSwapParams } from '../../types/webhook.types';
+import { SwapParams, createSwapParams } from '../types/webhook.types';
 
 /**
  * Handles the swap process based on provided parameters.

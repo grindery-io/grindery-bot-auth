@@ -5,7 +5,7 @@ import {
   isPendingTransactionHash,
   isPositiveFloat,
   isSuccessfulTransaction,
-} from '../utils/webhooks/utils';
+} from '../webhooks/utils';
 
 describe('Transaction Status Functions', async function () {
   describe('isSuccessfulTransaction', async function () {

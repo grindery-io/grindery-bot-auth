@@ -1,11 +1,8 @@
-import { Database } from '../../db/conn';
-import {
-  TransactionParams,
-  createTransaction,
-} from '../../types/webhook.types';
-import { TRANSACTION_STATUS, USERS_COLLECTION } from '../constants';
-import { sendTelegramMessage } from '../telegram';
-import { TransferTelegram, createTransferTelegram } from '../transfers';
+import { Database } from '../db/conn';
+import { TransactionParams, createTransaction } from '../types/webhook.types';
+import { TRANSACTION_STATUS, USERS_COLLECTION } from '../utils/constants';
+import { sendTelegramMessage } from '../utils/telegram';
+import { TransferTelegram, createTransferTelegram } from '../utils/transfers';
 import {
   isFailedTransaction,
   isPendingTransactionHash,

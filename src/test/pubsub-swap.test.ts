@@ -39,7 +39,7 @@ import {
   TRANSACTION_STATUS,
 } from '../utils/constants';
 import { v4 as uuidv4 } from 'uuid';
-import { handleSwap } from '../utils/webhooks/swap';
+import { handleSwap } from '../webhooks/swap';
 import { FLOWXO_NEW_SWAP_WEBHOOK } from '../../secrets';
 import { Collection, Document } from 'mongodb';
 

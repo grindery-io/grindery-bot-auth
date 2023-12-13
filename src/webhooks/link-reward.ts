@@ -1,6 +1,6 @@
-import { RewardParams } from '../../types/webhook.types';
-import { TRANSACTION_STATUS } from '../constants';
-import { SignUpRewardTelegram, createSignUpRewardTelegram } from '../rewards';
+import { RewardParams } from '../types/webhook.types';
+import { TRANSACTION_STATUS } from '../utils/constants';
+import { LinkRewardTelegram, createLinkRewardTelegram } from '../utils/rewards';
 import {
   getStatusRewards,
   isPendingTransactionHash,
@@ -10,23 +10,19 @@ import {
 } from './utils';
 
 /**
- * Handles the processing of a sign-up reward based on specified parameters.
- * @param params - The parameters required for the sign-up reward.
+ * Handles the processing of a link reward based on specified parameters.
+ * @param params - The parameters required for the link reward.
  * @returns A promise resolving to a boolean value.
- *          - Returns `true` if the sign-up reward handling is completed or conditions are not met.
- *          - Returns `false` if an error occurs during the sign-up reward processing.
+ *          - Returns `true` if the link reward handling is completed or conditions are not met.
+ *          - Returns `false` if an error occurs during the link reward processing.
  */
-export async function handleSignUpReward(
-  params: RewardParams,
-): Promise<boolean> {
+export async function handleLinkReward(params: RewardParams): Promise<boolean> {
   try {
-    // Create a sign-up reward object
-    let reward = await createSignUpRewardTelegram(params);
+    let reward = await createLinkRewardTelegram(params);
 
-    // If reward already exists, return true
-    if (!reward) return true;
+    if (reward == false) return true;
 
-    reward = reward as SignUpRewardTelegram;
+    reward = reward as LinkRewardTelegram;
 
     let txReward;
 
@@ -48,7 +44,6 @@ export async function handleSignUpReward(
     // Check for txReward and send transaction if not present
     if (!txReward && (txReward = await reward.sendTx()).isError) return false;
 
-    // Update transaction hash and perform additional actions
     if (txReward && txReward.txHash) {
       updateTxHash(reward, txReward.txHash);
       await Promise.all([
@@ -69,15 +64,13 @@ export async function handleSignUpReward(
     }
     return false;
   } catch (error) {
-    // Handle error
     console.error(
-      `[${params.eventId}] Error processing sign up reward event: ${error}`,
+      `[${params.eventId}] Error processing link reward event: ${error}`,
     );
   }
-
   return true;
 }
 
-export const signup_utils = {
-  handleSignUpReward,
+export const link_reward_utils = {
+  handleLinkReward,
 };

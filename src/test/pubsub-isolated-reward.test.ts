@@ -27,7 +27,7 @@ import {
   PATCHWALLET_TX_URL,
   TRANSACTION_STATUS,
 } from '../utils/constants';
-import { handleIsolatedReward } from '../utils/webhooks/isolated-reward';
+import { handleIsolatedReward } from '../webhooks/isolated-reward';
 import {
   FLOWXO_NEW_ISOLATED_REWARD_WEBHOOK,
   G1_POLYGON_ADDRESS,

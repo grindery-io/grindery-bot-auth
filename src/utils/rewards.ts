@@ -18,7 +18,7 @@ import {
   FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK,
   SOURCE_TG_ID,
 } from '../../secrets';
-import { isSuccessfulTransaction } from './webhooks/utils';
+import { isSuccessfulTransaction } from '../webhooks/utils';
 import { Db, Document, FindCursor, WithId } from 'mongodb';
 import { PatchResult, RewardParams } from '../types/webhook.types';
 

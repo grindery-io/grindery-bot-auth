@@ -29,7 +29,7 @@ import {
   nativeTokenAddresses,
 } from '../utils/constants';
 import { v4 as uuidv4 } from 'uuid';
-import { handleNewTransaction } from '../utils/webhooks/transaction';
+import { handleNewTransaction } from '../webhooks/transaction';
 import {
   FLOWXO_NEW_TRANSACTION_WEBHOOK,
   G1_POLYGON_ADDRESS,

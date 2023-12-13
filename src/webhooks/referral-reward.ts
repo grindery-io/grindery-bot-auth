@@ -1,44 +1,48 @@
-import { RewardParams } from '../../types/webhook.types';
-import { TRANSACTION_STATUS } from '../constants';
-import {
-  IsolatedRewardTelegram,
-  createIsolatedRewardTelegram,
-} from '../rewards';
+import { RewardParams } from '../types/webhook.types';
+import { TRANSACTION_STATUS } from '../utils/constants';
+import { createReferralRewardTelegram } from '../utils/rewards';
 import {
   getStatusRewards,
   isPendingTransactionHash,
+  isSuccessfulTransaction,
   isTreatmentDurationExceeded,
   updateTxHash,
   updateUserOpHash,
 } from './utils';
 
 /**
- * Handles the processing of an isolated reward based on specified parameters.
- * @param params - The parameters required for the reward.
+ * Handles the processing of a referral reward based on specified parameters.
+ * @param params - The parameters required for the referral reward.
  * @returns A promise resolving to a boolean value.
- *          - Returns `true` if the reward handling is completed or conditions are not met.
- *          - Returns `false` if an error occurs during the reward processing.
+ *          - Returns `true` if the referral reward handling is completed or conditions are not met.
+ *          - Returns `false` if an error occurs during the referral reward processing.
  */
-export async function handleIsolatedReward(
+export async function handleReferralReward(
   params: RewardParams,
 ): Promise<boolean> {
   try {
+    const reward = await createReferralRewardTelegram(params);
+
+    if (!(await reward.setParentTx())) return true;
+    if (!(await reward.getReferent())) return true;
+
+    await reward.getRewardSameFromDatabase();
+
     if (
-      !params.userTelegramID ||
-      !params.eventId ||
-      !params.amount ||
-      !params.reason
+      isSuccessfulTransaction(reward.status) ||
+      (await reward.getRewardFromDatabaseWithOtherEventId())
     ) {
+      console.log(
+        `[${params.eventId}] referral reward already distributed or in process of distribution elsewhere for ${reward.referent.userTelegramID} concerning new user ${params.userTelegramID}`,
+      );
       return true;
     }
 
-    let reward = await createIsolatedRewardTelegram(params);
+    await reward.updateReferentWallet();
 
-    if (!reward) return true;
+    if (!reward.tx)
+      await reward.updateInDatabase(TRANSACTION_STATUS.PENDING, new Date());
 
-    reward = reward as IsolatedRewardTelegram;
-
-    // Check if this event already exists
     let txReward;
 
     // Handle pending hash status
@@ -67,7 +71,7 @@ export async function handleIsolatedReward(
         reward.saveToFlowXO(),
       ]).catch((error) =>
         console.error(
-          `[${params.eventId}] Error processing FlowXO webhook during sign up reward: ${error}`,
+          `[${params.eventId}] Error processing FlowXO webhook during referral reward: ${error}`,
         ),
       );
       return true;
@@ -81,9 +85,13 @@ export async function handleIsolatedReward(
     return false;
   } catch (error) {
     console.error(
-      `[${params.eventId}] Error processing ${params.reason} reward event: ${error}`,
+      `[${params.eventId}] Error processing referral reward event: ${error}`,
     );
   }
 
   return true;
 }
+
+export const referral_utils = {
+  handleReferralReward,
+};
