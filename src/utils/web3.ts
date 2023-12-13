@@ -1,6 +1,6 @@
 import { G1_POLYGON_ADDRESS } from '../../secrets';
 import { CHAIN_MAPPING } from './chains';
-import ERC20 from '../routes/abi/ERC20.json';
+import ERC20 from '../abi/ERC20.json';
 import Web3 from 'web3';
 import BN from 'bn.js';
 import { Contract } from 'web3-eth-contract';
