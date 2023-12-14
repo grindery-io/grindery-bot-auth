@@ -4,29 +4,21 @@ import {
   getClientId,
   getClientSecret,
 } from '../../secrets';
-import {
-  getContract,
-  getHedgeyBatchPlannerContract,
-  scaleDecimals,
-} from './web3';
+import { getContract, scaleDecimals } from './web3';
 import {
   DEFAULT_CHAIN_ID,
   DEFAULT_CHAIN_NAME,
-  GRINDERY_VESTING_ADMIN,
   HEDGEY_BATCHPLANNER_ADDRESS,
-  HEDGEY_LOCKUP_LOCKER,
-  HEDGEY_VESTING_LOCKER,
-  IDO_START_DATE,
   PATCHWALLET_AUTH_URL,
   PATCHWALLET_RESOLVER_URL,
   PATCHWALLET_TX_STATUS_URL,
   PATCHWALLET_TX_URL,
-  TOKEN_LOCK_TERM,
   nativeTokenAddresses,
 } from './constants';
 import { PatchRawResult } from '../types/webhook.types';
 import { CHAIN_NAME_MAPPING } from './chains';
-import { HedgeyPlanParams, HedgeyRecipientParams } from '../types/hedgey.types';
+import { HedgeyRecipientParams } from '../types/hedgey.types';
+import { getData, getPlans } from './vesting';
 
 /**
  * Retrieves the Patch Wallet access token by making a POST request to the authentication endpoint.
@@ -215,25 +207,7 @@ export async function hedgeyLockTokens(
   chainName: string = DEFAULT_CHAIN_NAME,
   chainId: string = DEFAULT_CHAIN_ID,
 ): Promise<axios.AxiosResponse<PatchRawResult, AxiosError>> {
-  // Populate the remaining fields for each plan and calculate rates
-  const startDate = Math.round(IDO_START_DATE.getTime() / 1000); // Could use Date.now() instead of constant
-  let totalAmount = 0;
-
-  const plans = (await Promise.all(
-    recipients.map(async (plan) => {
-      totalAmount += Number(plan.amount);
-      return [
-        plan.recipientAddress,
-        scaleDecimals(
-          plan.amount,
-          await getContract(chainId, tokenAddress).methods.decimals().call(),
-        ),
-        startDate,
-        startDate, // No cliff
-        Math.ceil(Number(plan.amount) / TOKEN_LOCK_TERM), // Rate is tokens unlocked per second
-      ] as HedgeyPlanParams;
-    }),
-  )) as HedgeyPlanParams[];
+  const plans = await getPlans(recipients);
 
   // Lock the tokens using PayMagic API
   return await axios.post(
@@ -243,33 +217,13 @@ export async function hedgeyLockTokens(
       chain: chainName,
       to: [HEDGEY_BATCHPLANNER_ADDRESS],
       value: ['0x00'],
-      data: useVesting
-        ? [
-            getHedgeyBatchPlannerContract(chainId)
-              .methods['batchVestingPlans'](
-                HEDGEY_VESTING_LOCKER,
-                tokenAddress,
-                totalAmount,
-                plans,
-                1, // Period: Linear
-                GRINDERY_VESTING_ADMIN,
-                true,
-                4, // Vesting (fixed Hedgey constant)
-              )
-              .encodeABI(),
-          ]
-        : [
-            getHedgeyBatchPlannerContract(chainId)
-              .methods['batchLockingPlans'](
-                HEDGEY_LOCKUP_LOCKER,
-                tokenAddress,
-                totalAmount,
-                plans,
-                1, // Period: Linear
-                5, // Investor Lockups (fixed Hedgey constant)
-              )
-              .encodeABI(),
-          ],
+      data: await getData(
+        useVesting,
+        chainId,
+        tokenAddress,
+        plans.totalAmount,
+        plans.plans,
+      ),
       delegatecall: 0,
       auth: '',
     },

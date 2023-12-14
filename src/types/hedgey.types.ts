@@ -23,7 +23,7 @@ export type HedgeyPlanParams = [
   /** The cliff date. */
   number,
   /** The rate of distribution. */
-  number,
+  string,
 ];
 
 /**
