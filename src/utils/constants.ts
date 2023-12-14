@@ -143,7 +143,7 @@ export const PATCHWALLET_TX_STATUS_URL =
 /**
  * Start date for the IDO.
  */
-export const IDO_START_DATE = new Date(2024, 0, 1);
+export const IDO_START_DATE = new Date(Date.UTC(2024, 0, 1));
 
 /**
  * Length of time to lock the tokens (in seconds).
