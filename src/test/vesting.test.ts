@@ -3,8 +3,43 @@ import { getData, getPlans } from '../utils/vesting';
 import { mockTokenAddress, mockWallet } from './utils';
 import { HedgeyPlanParams } from '../types/hedgey.types';
 import { DEFAULT_CHAIN_ID } from '../utils/constants';
+import Sinon from 'sinon';
+import * as web3 from '../utils/web3';
 
 describe('Vesting functions', async function () {
+  let sandbox: Sinon.SinonSandbox;
+  let contractStub: { methods: any };
+  let getContract;
+
+  beforeEach(async function () {
+    sandbox = Sinon.createSandbox();
+
+    contractStub = {
+      methods: {
+        decimals: sandbox.stub().resolves('18'),
+        transfer: sandbox.stub().returns({
+          encodeABI: sandbox
+            .stub()
+            .returns(
+              '0xa9059cbb00000000000000000000000095222290dd7278aa3ddd389cc1e1d165cc4bafe50000000000000000000000000000000000000000000000000000000000000064',
+            ),
+        }),
+      },
+    };
+    contractStub.methods.decimals = sandbox.stub().returns({
+      call: sandbox.stub().resolves('18'),
+    });
+    getContract = () => {
+      return contractStub;
+    };
+
+    sandbox.stub(web3, 'getContract').callsFake(getContract);
+  });
+
+  afterEach(function () {
+    sandbox.restore();
+  });
+
   describe('getPlans function', async function () {
     const recipients = [
       {
