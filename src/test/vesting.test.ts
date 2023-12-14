@@ -2,7 +2,7 @@ import chai from 'chai';
 import { getData, getPlans } from '../utils/vesting';
 import { mockTokenAddress, mockWallet } from './utils';
 import { HedgeyPlanParams } from '../types/hedgey.types';
-import { DEFAULT_CHAIN_ID } from '../utils/constants';
+import { DEFAULT_CHAIN_ID, IDO_START_DATE } from '../utils/constants';
 import Sinon from 'sinon';
 import * as web3 from '../utils/web3';
 
@@ -68,15 +68,15 @@ describe('Vesting functions', async function () {
           [
             '0xRecipient1',
             '100000000000000000000',
-            Math.round(1704063600000 / 1000),
-            Math.round(1704063600000 / 1000),
+            Math.round(IDO_START_DATE.getTime() / 1000),
+            Math.round(IDO_START_DATE.getTime() / 1000),
             Math.ceil(Number('100000000000000000000') / 31536000).toString(),
           ],
           [
             '0xRecipient2',
             '200000000000000000000',
-            Math.round(1704063600000 / 1000),
-            Math.round(1704063600000 / 1000),
+            Math.round(IDO_START_DATE.getTime() / 1000),
+            Math.round(IDO_START_DATE.getTime() / 1000),
             Math.ceil(Number('200000000000000000000') / 31536000).toString(),
           ],
         ],
