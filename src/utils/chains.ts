@@ -90,6 +90,7 @@ export const CHAIN_MAPPING = {
   'eip155:338': CHAINSTACK('nd-326-373-985', CHAINSTACK_API_KEY_2),
   'eip155:44787': LAVANET('alfajores/rpc', 'alfajores/rpc-http'),
   'eip155:9000': LAVANET('evmost/json-rpc', 'evmost/json-rpc-http'),
+  'eip155:59144': ANKR('linea'),
 };
 
 export const CHAIN_NAME_MAPPING = {

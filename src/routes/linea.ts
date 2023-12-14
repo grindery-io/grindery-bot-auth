@@ -4,6 +4,7 @@ import { SWAPS_COLLECTION } from '../utils/constants';
 import { Database } from '../db/conn';
 import axios from 'axios';
 import { ANKR_KEY } from '../../secrets';
+import { getContract } from '../utils/web3';
 
 const router = express.Router();
 
@@ -38,27 +39,17 @@ router.get('/swaps', authenticateApiKeyLinea, async (req, res) => {
     }
 
     const promises = Object.keys(swapSummary).map(async (tokenAddress) => {
-      const tokenDecimalsRes = await axios.post(
-        `https://rpc.ankr.com/multichain/${ANKR_KEY || ''}`,
-        {
-          jsonrpc: '2.0',
-          method: 'ankr_getTokenDecimals',
-          params: {
-            blockchain: 'linea',
-            contractAddress: tokenAddress,
-          },
-          id: new Date().toString(),
-        },
-        {
-          headers: { 'Content-Type': 'application/json' },
-        },
-      );
-
-      const tokenDecimals =
-        tokenDecimalsRes.data?.result?.decimals ||
-        swapSummary[tokenAddress].decimals ||
-        18; // Defaulting to 18 if not obtained
-      swapSummary[tokenAddress].decimals = tokenDecimals;
+      try {
+        swapSummary[tokenAddress] = {
+          decimals: parseInt(
+            await getContract('eip155:59144', tokenAddress)
+              .methods.decimals()
+              .call(),
+          ),
+        };
+      } catch (err) {
+        swapSummary[tokenAddress] = { decimals: 18 };
+      }
     });
 
     await Promise.all(promises);
