@@ -5,6 +5,7 @@ import {
   TRANSFERS_COLLECTION,
   USERS_COLLECTION,
   SWAPS_COLLECTION,
+  VESTING_COLLECTION,
 } from '../utils/constants';
 import { GRINDERY_NEXUS_REFRESH_TOKEN } from '../../secrets';
 
@@ -42,6 +43,15 @@ export async function getCollectionRewardsMock() {
 export async function getCollectionTransfersMock() {
   const dbMock = await getDbMock();
   return dbMock.collection(TRANSFERS_COLLECTION);
+}
+
+/**
+ * Retrieves the collection for mock vestings.
+ * @returns A promise resolving to the collection of mock vestings.
+ */
+export async function getCollectionVestingsMock() {
+  const dbMock = await getDbMock();
+  return dbMock.collection(VESTING_COLLECTION);
 }
 
 /**

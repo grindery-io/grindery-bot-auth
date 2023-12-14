@@ -17,6 +17,7 @@ import { FLOWXO_NEW_TRANSACTION_WEBHOOK } from '../../secrets';
 import { Db, Document, WithId } from 'mongodb';
 import { formatDate } from './time';
 import { TransactionParams } from '../types/webhook.types';
+import { isPositiveFloat } from '../webhooks/utils';
 
 /**
  * Retrieves incoming transactions for a user from the database.
@@ -446,7 +447,7 @@ export class TransferTelegram {
         `[${this.eventId}] transaction from ${this.params.senderInformation.userTelegramID} to ${this.params.recipientTgId} for ${this.params.amount} - Error processing PatchWallet token sending: ${error}`,
       );
       // Return true if the amount is not a valid number or the error status is 470, marking the transaction as failed
-      return !/^\d+$/.test(this.params.amount) ||
+      return !isPositiveFloat(this.params.amount) ||
         error?.response?.status === 470
         ? (console.warn(
             `Potentially invalid amount: ${this.params.amount}, dropping`,

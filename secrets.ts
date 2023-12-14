@@ -194,6 +194,13 @@ export const FLOWXO_NEW_TRANSACTION_WEBHOOK =
   process.env.FLOWXO_NEW_TRANSACTION_WEBHOOK || '';
 
 /**
+ * The FlowXO new vesting webhook.
+ * Fallback: an empty string if not defined in the environment.
+ */
+export const FLOWXO_NEW_VESTING_WEBHOOK =
+  process.env.FLOWXO_NEW_VESTING_WEBHOOK || '';
+
+/**
  * The FlowXO new link reward webhook.
  * Fallback: an empty string if not defined in the environment.
  */

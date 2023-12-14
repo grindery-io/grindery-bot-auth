@@ -127,8 +127,5 @@ export function getHedgeyBatchPlannerContract(
   if (!CHAIN_MAPPING[chainId]) {
     throw new Error('Invalid chain: ' + chainId);
   }
-
-  return new new Web3(CHAIN_MAPPING[chainId][1]).eth.Contract(
-    HedgeyBatchPlanner as AbiItem[],
-  );
+  return new new Web3().eth.Contract(HedgeyBatchPlanner as AbiItem[]);
 }

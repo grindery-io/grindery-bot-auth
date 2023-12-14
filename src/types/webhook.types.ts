@@ -13,6 +13,7 @@ import {
   G1_TOKEN_SYMBOL,
 } from '../utils/constants';
 import { G1_POLYGON_ADDRESS } from '../../secrets';
+import { VestingTelegram } from '../utils/vesting';
 
 /**
  * Defines the structure for SwapParams.
@@ -202,7 +203,11 @@ export type Reward =
  * @typeparam TransferTelegram Type for Telegram transfers.
  * @typeparam SwapTelegram Type for Telegram swaps.
  */
-export type TelegramOperations = Reward | TransferTelegram | SwapTelegram;
+export type TelegramOperations =
+  | Reward
+  | TransferTelegram
+  | SwapTelegram
+  | VestingTelegram;
 
 /**
  * Represents the result of a wallet patch operation.

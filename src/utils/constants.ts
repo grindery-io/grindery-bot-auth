@@ -1,3 +1,5 @@
+import { SOURCE_WALLET_ADDRESS } from '../../secrets';
+
 /**
  * Collection name for storing transfers.
  */
@@ -7,6 +9,11 @@ export const WITHDRAW_WHITELIST_COLLECTION = 'withdraws-whitelist';
  * Collection name for storing transfers.
  */
 export const TRANSFERS_COLLECTION = 'transfers';
+
+/**
+ * Collection name for storing vestings.
+ */
+export const VESTING_COLLECTION = 'vestings';
 
 /**
  * Collection name for storing users.
@@ -146,7 +153,7 @@ export const TOKEN_LOCK_TERM = 31536000;
 /**
  * Default vesting admin address for Hedgey vesting locks.
  */
-export const GRINDERY_VESTING_ADMIN = ''; // REQUIRED, multisig wallet is recommended
+export const GRINDERY_VESTING_ADMIN = SOURCE_WALLET_ADDRESS; // REQUIRED, multisig wallet is recommended
 
 // HEDGEY - DO NOT CHANGE THESE //
 

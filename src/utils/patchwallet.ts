@@ -221,47 +221,14 @@ export async function hedgeyLockTokens(
 
   const plans = recipients.map((plan) => {
     totalAmount += Number(plan.amount);
-
-    return {
-      ...plan,
-      start: startDate,
-      cliff: startDate, // No cliff
-      rate: Math.ceil(Number(plan.amount) / TOKEN_LOCK_TERM), // Rate is tokens unlocked per second
-    } as HedgeyPlanParams;
-  });
-
-  // Determine data, value, and address based on vesting or lockup
-  const [data, value, address] = [
-    useVesting
-      ? [
-          getHedgeyBatchPlannerContract(chainId)
-            .methods['batchVestingPlans'](
-              HEDGEY_VESTING_LOCKER,
-              tokenAddress,
-              totalAmount,
-              plans,
-              1, // Period: Linear
-              GRINDERY_VESTING_ADMIN,
-              true,
-              4, // Vesting (fixed Hedgey constant)
-            )
-            .encodeABI(),
-        ]
-      : [
-          getHedgeyBatchPlannerContract(chainId)
-            .methods['batchLockingPlans'](
-              HEDGEY_LOCKUP_LOCKER,
-              tokenAddress,
-              totalAmount,
-              plans,
-              1, // Period: Linear
-              5, // Investor Lockups (fixed Hedgey constant)
-            )
-            .encodeABI(),
-        ],
-    ['0x00'],
-    HEDGEY_BATCHPLANNER_ADDRESS,
-  ];
+    return [
+      plan.recipientAddress,
+      Number(plan.amount),
+      startDate,
+      startDate, // No cliff
+      Math.ceil(Number(plan.amount) / TOKEN_LOCK_TERM), // Rate is tokens unlocked per second
+    ] as HedgeyPlanParams;
+  }) as HedgeyPlanParams[];
 
   // Lock the tokens using PayMagic API
   return await axios.post(
@@ -269,9 +236,35 @@ export async function hedgeyLockTokens(
     {
       userId: `grindery:${senderTgId}`,
       chain: chainName,
-      to: [address],
-      value: value,
-      data: data,
+      to: [HEDGEY_BATCHPLANNER_ADDRESS],
+      value: ['0x00'],
+      data: useVesting
+        ? [
+            getHedgeyBatchPlannerContract(chainId)
+              .methods['batchVestingPlans'](
+                HEDGEY_VESTING_LOCKER,
+                tokenAddress,
+                totalAmount,
+                plans,
+                1, // Period: Linear
+                GRINDERY_VESTING_ADMIN,
+                true,
+                4, // Vesting (fixed Hedgey constant)
+              )
+              .encodeABI(),
+          ]
+        : [
+            getHedgeyBatchPlannerContract(chainId)
+              .methods['batchLockingPlans'](
+                HEDGEY_LOCKUP_LOCKER,
+                tokenAddress,
+                totalAmount,
+                plans,
+                1, // Period: Linear
+                5, // Investor Lockups (fixed Hedgey constant)
+              )
+              .encodeABI(),
+          ],
       delegatecall: 0,
       auth: '',
     },
