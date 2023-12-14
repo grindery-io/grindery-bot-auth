@@ -17,7 +17,7 @@ export type HedgeyPlanParams = [
   /** The address of the recipient. */
   string,
   /** The amount of tokens. */
-  number,
+  string,
   /** The start date. */
   number,
   /** The cliff date. */

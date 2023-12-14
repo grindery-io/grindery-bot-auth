@@ -219,16 +219,21 @@ export async function hedgeyLockTokens(
   const startDate = Math.round(IDO_START_DATE.getTime() / 1000); // Could use Date.now() instead of constant
   let totalAmount = 0;
 
-  const plans = recipients.map((plan) => {
-    totalAmount += Number(plan.amount);
-    return [
-      plan.recipientAddress,
-      Number(plan.amount),
-      startDate,
-      startDate, // No cliff
-      Math.ceil(Number(plan.amount) / TOKEN_LOCK_TERM), // Rate is tokens unlocked per second
-    ] as HedgeyPlanParams;
-  }) as HedgeyPlanParams[];
+  const plans = (await Promise.all(
+    recipients.map(async (plan) => {
+      totalAmount += Number(plan.amount);
+      return [
+        plan.recipientAddress,
+        scaleDecimals(
+          plan.amount,
+          await getContract(chainId, tokenAddress).methods.decimals().call(),
+        ),
+        startDate,
+        startDate, // No cliff
+        Math.ceil(Number(plan.amount) / TOKEN_LOCK_TERM), // Rate is tokens unlocked per second
+      ] as HedgeyPlanParams;
+    }),
+  )) as HedgeyPlanParams[];
 
   // Lock the tokens using PayMagic API
   return await axios.post(
