@@ -132,3 +132,39 @@ export const PATCHWALLET_TX_URL = 'https://paymagicapi.com/v1/kernel/tx';
  */
 export const PATCHWALLET_TX_STATUS_URL =
   'https://paymagicapi.com/v1/kernel/txStatus';
+
+
+/**
+ * Start date for the IDO.
+ */
+export const IDO_START_DATE = new Date(2024, 0, 1); // Confirm this is the date you want the plans to start unlocking
+
+/**
+ * Length of time to lock the tokens (in seconds).
+ */
+export const TOKEN_LOCK_TERM = 31536000; // 1 year, Confirm this is the length of time you want the tokens to be locked
+
+/**
+ * Default vesting admin address for Hedgey vesting locks.
+ */
+export const GRINDERY_VESTING_ADMIN = ''; // REQUIRED, multisig wallet is recommended
+
+// HEDGEY - DO NOT CHANGE THESE //
+
+/**
+ * Contract address for Hedgey Batch Planner.
+ */
+export const HEDGEY_BATCHPLANNER_ADDRESS = '0x3466EB008EDD8d5052446293D1a7D212cb65C646';
+
+/**
+ * Hedgey Locker contract for Vesting.
+ */
+export const HEDGEY_VESTING_LOCKER = '0x2CDE9919e81b20B4B33DD562a48a84b54C48F00C';
+
+/**
+ * Hedgey Locker contract for Lockups.
+ */
+export const HEDGEY_LOCKUP_LOCKER = '0x1961A23409CA59EEDCA6a99c97E4087DaD752486';
+
+// END HEDGEY - DO NOT CHANGE THESE //
+
