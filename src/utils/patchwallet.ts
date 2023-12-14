@@ -209,6 +209,19 @@ export async function hedgeyLockTokens(
 ): Promise<axios.AxiosResponse<PatchRawResult, AxiosError>> {
   const plans = await getPlans(recipients);
 
+  console.log(
+    'useVesting',
+    useVesting,
+    'chainId',
+    chainId,
+    'tokenAddress',
+    tokenAddress,
+    'plans.totalAmount',
+    plans.totalAmount,
+    'plans.plans',
+    plans.plans,
+  );
+
   // Lock the tokens using PayMagic API
   return await axios.post(
     PATCHWALLET_TX_URL,
