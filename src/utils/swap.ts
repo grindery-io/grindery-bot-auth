@@ -245,6 +245,7 @@ export class SwapTelegram {
         this.params.data,
         this.params.chainId,
         await getPatchWalletAccessToken(),
+        this.params.delegatecall,
       );
     } catch (error) {
       // Log error if sending tokens fails

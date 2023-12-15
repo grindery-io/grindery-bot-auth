@@ -214,6 +214,33 @@ describe('handleNewTransaction function', async function () {
         });
     });
 
+    it('Should call the sendTokens function properly for ERC20 token transfer with delegate call', async function () {
+      await handleNewTransaction({
+        senderTgId: mockUserTelegramID,
+        amount: '100',
+        recipientTgId: mockUserTelegramID1,
+        eventId: txId,
+        delegatecall: 1,
+      });
+
+      chai
+        .expect(
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL)
+            .args[1],
+        )
+        .to.deep.equal({
+          userId: `grindery:${mockUserTelegramID}`,
+          chain: mockChainName,
+          to: [G1_POLYGON_ADDRESS],
+          value: ['0x00'],
+          data: [
+            '0xa9059cbb00000000000000000000000095222290dd7278aa3ddd389cc1e1d165cc4bafe50000000000000000000000000000000000000000000000000000000000000064',
+          ],
+          delegatecall: 1,
+          auth: '',
+        });
+    });
+
     it('Should call the sendTokens function properly for Native token transfer', async function () {
       await handleNewTransaction({
         senderTgId: mockUserTelegramID,
@@ -235,6 +262,32 @@ describe('handleNewTransaction function', async function () {
           value: [web3.scaleDecimals('100', 18)],
           data: ['0x'],
           delegatecall: 0,
+          auth: '',
+        });
+    });
+
+    it('Should call the sendTokens function properly for Native token transfer with delegate call', async function () {
+      await handleNewTransaction({
+        senderTgId: mockUserTelegramID,
+        amount: '100',
+        recipientTgId: mockUserTelegramID1,
+        eventId: txId,
+        tokenAddress: nativeTokenAddresses[0],
+        delegatecall: 1,
+      });
+
+      chai
+        .expect(
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL)
+            .args[1],
+        )
+        .to.deep.equal({
+          userId: `grindery:${mockUserTelegramID}`,
+          chain: mockChainName,
+          to: [mockWallet],
+          value: [web3.scaleDecimals('100', 18)],
+          data: ['0x'],
+          delegatecall: 1,
           auth: '',
         });
     });

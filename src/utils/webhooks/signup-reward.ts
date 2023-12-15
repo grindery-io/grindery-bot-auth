@@ -1,4 +1,4 @@
-import { RewardParams } from '../../types/webhook.types';
+import { RewardParams, createRewardParams } from '../../types/webhook.types';
 import { TRANSACTION_STATUS } from '../constants';
 import { SignUpRewardTelegram, createSignUpRewardTelegram } from '../rewards';
 import {
@@ -21,7 +21,9 @@ export async function handleSignUpReward(
 ): Promise<boolean> {
   try {
     // Create a sign-up reward object
-    let reward = await createSignUpRewardTelegram(params);
+    let reward = await createSignUpRewardTelegram(
+      createRewardParams(params, params.patchwallet),
+    );
 
     // If reward already exists, return true
     if (!reward) return true;

@@ -56,6 +56,12 @@ export type SwapParams = {
   amount?: string;
   /** The Telegram user ID of the sender. */
   senderTgId?: string;
+  /**
+   * Represents whether the transaction is a delegate call.
+   * - `0` for non-delegate call
+   * - `1` for delegate call
+   */
+  delegatecall?: 0 | 1;
 };
 
 /**
@@ -71,6 +77,7 @@ export function createSwapParams(
     ...{
       chainId: DEFAULT_CHAIN_ID,
       chainName: DEFAULT_CHAIN_NAME,
+      delegatecall: 0,
     },
     ...params,
     userInformation,
@@ -111,6 +118,12 @@ export type RewardParams = {
   isReferralReward?: boolean;
   /** Specifies if there is a link reward. */
   isLinkReward?: boolean;
+  /**
+   * Represents whether the transaction is a delegate call.
+   * - `0` for non-delegate call
+   * - `1` for delegate call
+   */
+  delegatecall?: 0 | 1;
 };
 
 /**
@@ -129,6 +142,7 @@ export function createRewardParams(
       isSignupReward: false,
       isReferralReward: false,
       isLinkReward: false,
+      delegatecall: 0,
     },
     ...params,
     patchwallet,
@@ -159,6 +173,12 @@ export type TransactionParams = {
   tokenSymbol?: string;
   /** Additional sender information with MongoDB document ID. */
   senderInformation?: WithId<Document>;
+  /**
+   * Represents whether the transaction is a delegate call.
+   * - `0` for non-delegate call
+   * - `1` for delegate call
+   */
+  delegatecall?: 0 | 1;
 };
 
 /**
@@ -177,6 +197,7 @@ export function createTransaction(
       tokenAddress: G1_POLYGON_ADDRESS,
       chainId: DEFAULT_CHAIN_ID,
       chainName: DEFAULT_CHAIN_NAME,
+      delegatecall: 0,
     },
     ...params,
     senderInformation,

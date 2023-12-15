@@ -1,4 +1,4 @@
-import { RewardParams } from '../../types/webhook.types';
+import { RewardParams, createRewardParams } from '../../types/webhook.types';
 import { TRANSACTION_STATUS } from '../constants';
 import {
   IsolatedRewardTelegram,
@@ -32,7 +32,9 @@ export async function handleIsolatedReward(
       return true;
     }
 
-    let reward = await createIsolatedRewardTelegram(params);
+    let reward = await createIsolatedRewardTelegram(
+      createRewardParams(params, params.patchwallet),
+    );
 
     if (!reward) return true;
 

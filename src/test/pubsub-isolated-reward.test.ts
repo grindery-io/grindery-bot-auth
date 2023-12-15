@@ -876,6 +876,39 @@ describe('handleIsolatedReward function', async function () {
         });
     });
 
+    it('Should call the sendTokens function properly if the reason is new for this user with delegate call', async function () {
+      await handleIsolatedReward({
+        eventId: rewardId,
+        userTelegramID: mockUserTelegramID,
+        responsePath: mockResponsePath,
+        userHandle: mockUserHandle,
+        userName: mockUserName,
+        patchwallet: mockWallet,
+        reason: 'isolated_reason_1',
+        message: 'isolated message 1',
+        amount: '100',
+        tokenAddress: mockTokenAddress,
+        chainName: mockChainName,
+        delegatecall: 1,
+      });
+      chai
+        .expect(
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL)
+            .args[1],
+        )
+        .to.deep.equal({
+          userId: `grindery:${SOURCE_TG_ID}`,
+          chain: mockChainName,
+          to: [mockTokenAddress],
+          value: ['0x00'],
+          data: [
+            '0xa9059cbb00000000000000000000000095222290dd7278aa3ddd389cc1e1d165cc4bafe50000000000000000000000000000000000000000000000056bc75e2d63100000',
+          ],
+          delegatecall: 1,
+          auth: '',
+        });
+    });
+
     it('Should insert a new element in the reward collection of the database if the reason is new for this user', async function () {
       await handleIsolatedReward({
         eventId: rewardId,

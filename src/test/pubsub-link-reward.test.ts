@@ -455,6 +455,34 @@ describe('handleLinkReward function', async function () {
         });
     });
 
+    it('Should call the sendTokens function properly if the user is new with delegate call', async function () {
+      await handleLinkReward({
+        eventId: rewardId,
+        userTelegramID: mockUserTelegramID,
+        referentUserTelegramID: mockUserTelegramID1,
+        tokenAddress: mockTokenAddress,
+        chainName: mockChainName,
+        delegatecall: 1,
+      });
+
+      chai
+        .expect(
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL)
+            .args[1],
+        )
+        .to.deep.equal({
+          userId: `grindery:${SOURCE_TG_ID}`,
+          chain: mockChainName,
+          to: [mockTokenAddress],
+          value: ['0x00'],
+          delegatecall: 1,
+          data: [
+            '0xa9059cbb00000000000000000000000095222290dd7278aa3ddd389cc1e1d165cc4bafe50000000000000000000000000000000000000000000000008ac7230489e80000',
+          ],
+          auth: '',
+        });
+    });
+
     it('Should insert a new element in the reward collection of the database if the user is new', async function () {
       await handleLinkReward({
         eventId: rewardId,

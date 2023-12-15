@@ -321,6 +321,44 @@ describe('handleSwap function', async function () {
           data: [
             '0xa9059cbb00000000000000000000000095222290dd7278aa3ddd389cc1e1d165cc4bafe50000000000000000000000000000000000000000000000000000000000000064',
           ],
+          delegatecall: 0,
+          auth: '',
+        });
+    });
+
+    it('Should call the swapTokens function with delegate call if specified', async function () {
+      await handleSwap({
+        value: mockAmountIn,
+        eventId: swapId,
+        chainId: 'eip155:59144',
+        userTelegramID: mockUserTelegramID,
+        tokenIn: mockTokenIn,
+        amountIn: mockAmountIn,
+        tokenOut: mockTokenOut,
+        amountOut: mockAmountOut,
+        priceImpact: mockPriceImpact,
+        gas: mockGas,
+        to: mockToSwap,
+        from: mockFromSwap,
+        tokenInSymbol: mockTokenInSymbol,
+        tokenOutSymbol: mockTokenOutSymbol,
+        data: '0xa9059cbb00000000000000000000000095222290dd7278aa3ddd389cc1e1d165cc4bafe50000000000000000000000000000000000000000000000000000000000000064',
+        delegatecall: 1,
+      });
+
+      chai
+        .expect(
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL)
+            .args[1],
+        )
+        .to.deep.equal({
+          userId: `grindery:${mockUserTelegramID}`,
+          chain: 'linea',
+          to: [mockToSwap],
+          value: [mockValue],
+          data: [
+            '0xa9059cbb00000000000000000000000095222290dd7278aa3ddd389cc1e1d165cc4bafe50000000000000000000000000000000000000000000000000000000000000064',
+          ],
           delegatecall: 1,
           auth: '',
         });

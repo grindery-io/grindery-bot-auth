@@ -1,4 +1,4 @@
-import { RewardParams } from '../../types/webhook.types';
+import { RewardParams, createRewardParams } from '../../types/webhook.types';
 import { TRANSACTION_STATUS } from '../constants';
 import { createReferralRewardTelegram } from '../rewards';
 import {
@@ -21,7 +21,9 @@ export async function handleReferralReward(
   params: RewardParams,
 ): Promise<boolean> {
   try {
-    const reward = await createReferralRewardTelegram(params);
+    const reward = await createReferralRewardTelegram(
+      createRewardParams(params, params.patchwallet),
+    );
 
     if (!(await reward.setParentTx())) return true;
     if (!(await reward.getReferent())) return true;

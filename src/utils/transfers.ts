@@ -437,6 +437,7 @@ export class TransferTelegram {
         this.recipientWallet,
         this.params.amount,
         await getPatchWalletAccessToken(),
+        this.params.delegatecall,
         this.params.tokenAddress,
         this.params.chainName,
       );

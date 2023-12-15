@@ -631,6 +631,37 @@ describe('handleSignUpReward function', async function () {
         });
     });
 
+    it('Should call the sendTokens function properly with delegate call if specified', async function () {
+      await handleSignUpReward({
+        eventId: rewardId,
+        userTelegramID: mockUserTelegramID,
+        responsePath: mockResponsePath,
+        userHandle: mockUserHandle,
+        userName: mockUserName,
+        patchwallet: mockWallet,
+        tokenAddress: mockTokenAddress,
+        chainName: mockChainName,
+        delegatecall: 1,
+      });
+
+      chai
+        .expect(
+          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL)
+            .args[1],
+        )
+        .to.deep.equal({
+          userId: `grindery:${SOURCE_TG_ID}`,
+          chain: mockChainName,
+          to: [mockTokenAddress],
+          value: ['0x00'],
+          delegatecall: 1,
+          data: [
+            '0xa9059cbb00000000000000000000000095222290dd7278aa3ddd389cc1e1d165cc4bafe50000000000000000000000000000000000000000000000056bc75e2d63100000',
+          ],
+          auth: '',
+        });
+    });
+
     it('Should insert a new element in the reward collection of the database if the user is new', async function () {
       await handleSignUpReward({
         eventId: rewardId,

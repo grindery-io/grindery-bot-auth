@@ -1,4 +1,4 @@
-import { RewardParams } from '../../types/webhook.types';
+import { RewardParams, createRewardParams } from '../../types/webhook.types';
 import { TRANSACTION_STATUS } from '../constants';
 import { LinkRewardTelegram, createLinkRewardTelegram } from '../rewards';
 import {
@@ -18,7 +18,9 @@ import {
  */
 export async function handleLinkReward(params: RewardParams): Promise<boolean> {
   try {
-    let reward = await createLinkRewardTelegram(params);
+    let reward = await createLinkRewardTelegram(
+      createRewardParams(params, params.patchwallet),
+    );
 
     if (reward == false) return true;
 

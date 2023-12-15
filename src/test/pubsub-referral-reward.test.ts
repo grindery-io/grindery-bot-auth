@@ -1119,6 +1119,35 @@ describe('handleReferralReward function', function () {
       });
     });
 
+    it('Should call the sendTokens function only once properly with delegate call if specified and if transactions to be rewarded', async function () {
+      await handleReferralReward({
+        eventId: rewardId,
+        userTelegramID: mockUserTelegramID,
+        responsePath: mockResponsePath,
+        userHandle: mockUserHandle,
+        userName: mockUserName,
+        patchwallet: mockWallet,
+        delegatecall: 1,
+      });
+
+      const sendTokensCalls = axiosStub
+        .getCalls()
+        .filter((e) => e.firstArg === PATCHWALLET_TX_URL);
+
+      chai.expect(sendTokensCalls.length).to.equal(1);
+      chai.expect(sendTokensCalls[0].args[1]).to.deep.equal({
+        userId: `grindery:${SOURCE_TG_ID}`,
+        chain: DEFAULT_CHAIN_NAME,
+        to: [G1_POLYGON_ADDRESS],
+        value: ['0x00'],
+        data: [
+          '0xa9059cbb000000000000000000000000594cfcaa67bc8789d17d39eb5f1dfc7dd95242cd000000000000000000000000000000000000000000000002b5e3af16b1880000',
+        ],
+        delegatecall: 1,
+        auth: '',
+      });
+    });
+
     it('Should add success reward in database if transactions to be rewarded', async function () {
       await handleReferralReward({
         eventId: rewardId,

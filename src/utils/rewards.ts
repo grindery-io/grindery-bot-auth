@@ -204,6 +204,7 @@ export class SignUpRewardTelegram {
         this.params.patchwallet,
         this.params.amount,
         await getPatchWalletAccessToken(),
+        this.params.delegatecall,
         this.params.tokenAddress,
         this.params.chainName,
       );
@@ -475,6 +476,7 @@ export class ReferralRewardTelegram {
         this.referent.patchwallet,
         this.params.amount,
         await getPatchWalletAccessToken(),
+        this.params.delegatecall,
         this.params.tokenAddress,
         this.params.chainName,
       );
@@ -704,6 +706,7 @@ export class LinkRewardTelegram {
         this.referent.patchwallet,
         this.params.amount,
         await getPatchWalletAccessToken(),
+        this.params.delegatecall,
         this.params.tokenAddress,
         this.params.chainName,
       );
@@ -908,6 +911,7 @@ export class IsolatedRewardTelegram {
         this.params.patchwallet,
         this.params.amount,
         await getPatchWalletAccessToken(),
+        this.params.delegatecall,
         this.tokenAddress,
         this.chainName,
       );
