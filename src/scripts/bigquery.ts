@@ -167,6 +167,59 @@ const importTransfers = async (): Promise<void> => {
   process.exit(0);
 };
 
+export const importWalletUsers = async (): Promise<void> => {
+  const db = await Database.getInstance();
+  const collection = db.collection(WALLET_USERS_COLLECTION);
+
+  // Get all users from the database
+  const allWalletUsers = await collection.find({}).toArray();
+
+  if (allWalletUsers.length === 0) {
+    console.log('BIGQUERY - No wallet users found in MongoDB.');
+    process.exit(0);
+  }
+
+  const batchSize = 3000;
+  let importedCount = 0;
+
+  for (let i = 0; i < allWalletUsers.length; i += batchSize) {
+    console.log(
+      `BIGQUERY - importedCount ${importedCount} i ${i} allWalletUsers ${allWalletUsers.length}`,
+    );
+    const batch = allWalletUsers.slice(i, i + batchSize);
+
+    if (batch.length !== 0) {
+      const bigQueryData = batch.map((wallet) => {
+        return {
+          userTelegramID: wallet.userTelegramID ? wallet.userTelegramID : null,
+          webAppOpened: wallet.webAppOpened ? wallet.webAppOpened : null,
+          webAppOpenedFirstDate: wallet.webAppOpenedFirstDate
+            ? wallet.webAppOpenedFirstDate
+            : null,
+          webAppOpenedLastDate: wallet.webAppOpenedLastDate
+            ? wallet.webAppOpenedLastDate
+            : null,
+          telegramSessionSavedDate: wallet.telegramSessionSavedDate
+            ? wallet.telegramSessionSavedDate
+            : null,
+          dateAdded: wallet.dateAdded ? wallet.dateAdded : null,
+          balance: wallet.balance ? JSON.stringify(wallet.balance) : null,
+          debug: wallet.debug ? JSON.stringify(wallet.debug) : null,
+        };
+      });
+
+      await bigqueryClient
+        .dataset(datasetId)
+        .table(WALLET_USERS_TABLE_ID)
+        .insert(bigQueryData);
+    }
+
+    importedCount += batch.length;
+  }
+
+  process.exit(0);
+};
+
 export const importUsersLast4Hours = async (): Promise<void> => {
   const db = await Database.getInstance();
   const collection = db.collection(USERS_COLLECTION);
