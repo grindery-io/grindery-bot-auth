@@ -15,6 +15,7 @@ import {
   getGxBeforeMVU,
   getGxFromG1,
   getGxFromUSD,
+  getTotalUSD,
 } from '../utils/g1gx';
 import { minutesUntilJanFirst2024 } from '../utils/time';
 
@@ -220,13 +221,15 @@ describe('G1 to GX util functions', async function () {
       chai.expect(result).to.equal(expectedGxAfterMVUWithTimeEffect);
     });
 
-    it('Should return the same value as getGxAfterMVU when time left is 0', async function () {
+    it('Should return the same value as getGxAfterMVU when time left is time left is equal minutesUntilJanFirst2024', async function () {
       const usdQuantity = 100;
       const g1Quantity = 50;
       const mvu = 10;
       const timeLeft = minutesUntilJanFirst2024();
 
-      const expectedGxAfterMVU = getGxAfterMVU(usdQuantity, g1Quantity, mvu);
+      const expectedGxAfterMVU =
+        getGxAfterMVU(usdQuantity, g1Quantity, mvu) *
+        TIME_EFFECT_INITIAL_FACTOR;
       const result = getGxAfterMVUWithTimeEffect(
         usdQuantity,
         g1Quantity,
@@ -235,20 +238,27 @@ describe('G1 to GX util functions', async function () {
       );
       chai.expect(result).to.equal(expectedGxAfterMVU);
     });
+  });
 
-    // it('Should return 0 when both USD and G1 quantities are 0', async function () {
-    //   const usdQuantity = 0;
-    //   const g1Quantity = 0;
-    //   const mvu = 0;
-    //   const timeLeft = 0; // Assuming Jan 1, 2024
+  describe('getTotalUSD function', async function () {
+    it('Should return the correct total USD based on the calculated GX after MVU with time effect', async function () {
+      const usdQuantity = 100;
+      const g1Quantity = 50;
+      const mvu = 10;
+      const timeLeft = 5000;
 
-    //   const result = getGxAfterMVUWithTimeEffect(
-    //     usdQuantity,
-    //     g1Quantity,
-    //     mvu,
-    //     timeLeft,
-    //   );
-    //   chai.expect(result).to.equal(0);
-    // });
+      const expectedGxAfterMVU = getGxAfterMVU(usdQuantity, g1Quantity, mvu);
+
+      const maxDifference = Math.max(minutesUntilJanFirst2024() - timeLeft, 0);
+      const expectedGxAfterMVUWithTimeEffect =
+        expectedGxAfterMVU *
+        (TIME_EFFECT_INITIAL_FACTOR -
+          TIME_EFFECT_DECAYING_SLOPE * maxDifference);
+
+      const result = getTotalUSD(usdQuantity, g1Quantity, mvu, timeLeft);
+      chai
+        .expect(result)
+        .to.equal(expectedGxAfterMVUWithTimeEffect / EXCHANGE_RATE_GX_USD);
+    });
   });
 });
