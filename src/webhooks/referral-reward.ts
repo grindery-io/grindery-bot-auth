@@ -1,6 +1,6 @@
-import { RewardParams, createRewardParams } from '../../types/webhook.types';
-import { TRANSACTION_STATUS } from '../constants';
-import { createReferralRewardTelegram } from '../rewards';
+import { RewardParams, createRewardParams } from '../types/webhook.types';
+import { TRANSACTION_STATUS } from '../utils/constants';
+import { createReferralRewardTelegram } from '../utils/rewards';
 import {
   getStatusRewards,
   isPendingTransactionHash,

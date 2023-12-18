@@ -1,8 +1,8 @@
-import { createUserTelegram } from '../user';
+import { createUserTelegram } from '../utils/user';
 import { signup_utils } from './signup-reward';
 import { referral_utils } from './referral-reward';
 import { link_reward_utils } from './link-reward';
-import { RewardParams, createRewardParams } from '../../types/webhook.types';
+import { RewardParams, createRewardParams } from '../types/webhook.types';
 
 /**
  * Handles the processing of a new reward event.

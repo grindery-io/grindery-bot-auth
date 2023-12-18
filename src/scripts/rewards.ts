@@ -98,6 +98,7 @@ export async function distributeSignupRewards(): Promise<void> {
               user.patchwallet,
               '100',
               patchWalletAccessToken,
+              0,
             );
 
             // Record successful transactions in rewards collection
@@ -254,6 +255,7 @@ export async function distributeReferralRewards(): Promise<void> {
             rewardWallet,
             rewardAmount,
             patchWalletAccessToken,
+            0,
           );
 
           await rewardsCollection.insertOne({

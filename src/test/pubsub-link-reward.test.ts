@@ -28,7 +28,7 @@ import {
   TRANSACTION_STATUS,
 } from '../utils/constants';
 import { FLOWXO_NEW_LINK_REWARD_WEBHOOK, SOURCE_TG_ID } from '../../secrets';
-import { handleLinkReward } from '../utils/webhooks/link-reward';
+import { handleLinkReward } from '../webhooks/link-reward';
 import { Collection, Document } from 'mongodb';
 
 chai.use(chaiExclude);

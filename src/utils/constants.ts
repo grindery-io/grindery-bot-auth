@@ -1,3 +1,5 @@
+import { SOURCE_WALLET_ADDRESS } from '../../secrets';
+
 /**
  * Collection name for storing transfers.
  */
@@ -7,6 +9,11 @@ export const WITHDRAW_WHITELIST_COLLECTION = 'withdraws-whitelist';
  * Collection name for storing transfers.
  */
 export const TRANSFERS_COLLECTION = 'transfers';
+
+/**
+ * Collection name for storing vestings.
+ */
+export const VESTING_COLLECTION = 'vestings';
 
 /**
  * Collection name for storing users.
@@ -132,3 +139,38 @@ export const PATCHWALLET_TX_URL = 'https://paymagicapi.com/v1/kernel/tx';
  */
 export const PATCHWALLET_TX_STATUS_URL =
   'https://paymagicapi.com/v1/kernel/txStatus';
+
+/**
+ * Start date for the IDO.
+ */
+export const IDO_START_DATE = new Date(Date.UTC(2024, 0, 1));
+
+/**
+ * Length of time to lock the tokens (in seconds).
+ */
+export const TOKEN_LOCK_TERM = 31536000;
+
+/**
+ * Default vesting admin address for Hedgey vesting locks.
+ */
+export const GRINDERY_VESTING_ADMIN = SOURCE_WALLET_ADDRESS; // REQUIRED, multisig wallet is recommended
+
+// HEDGEY - DO NOT CHANGE THESE //
+
+/**
+ * Contract address for Hedgey Batch Planner.
+ */
+export const HEDGEY_BATCHPLANNER_ADDRESS =
+  '0x3466EB008EDD8d5052446293D1a7D212cb65C646';
+
+/**
+ * Hedgey Locker contract for Vesting.
+ */
+export const HEDGEY_VESTING_LOCKER =
+  '0x2CDE9919e81b20B4B33DD562a48a84b54C48F00C';
+
+/**
+ * Hedgey Locker contract for Lockups.
+ */
+export const HEDGEY_LOCKUP_LOCKER =
+  '0x1961A23409CA59EEDCA6a99c97E4087DaD752486';

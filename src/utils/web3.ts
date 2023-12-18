@@ -1,11 +1,12 @@
 import { G1_POLYGON_ADDRESS } from '../../secrets';
 import { CHAIN_MAPPING } from './chains';
-import ERC20 from '../routes/abi/ERC20.json';
+import ERC20 from '../abi/ERC20.json';
 import Web3 from 'web3';
 import BN from 'bn.js';
 import { Contract } from 'web3-eth-contract';
 import { AbiItem } from 'web3-utils';
 import { DEFAULT_CHAIN_ID } from './constants';
+import HedgeyBatchPlanner from '../abi/HedgeyBatchPlanner.json';
 
 /**
  * Creates and returns a contract instance using Web3 with the specified chainId and tokenAddress.
@@ -112,4 +113,19 @@ export function scaleDecimals(etherInput: string, decimals: number): string {
       ? new BN(whole).mul(base).add(new BN(fraction)).mul(new BN(-1))
       : new BN(whole).mul(base).add(new BN(fraction))
   ).toString(10);
+}
+
+/**
+ * Creates and returns a contract instance of the Hedgey Batch Planner.
+ * @param {string} chainId - Chain ID (default: 'eip155:137').
+ * @returns {Contract} - Web3 contract instance.
+ * @throws {Error} - Throws an error if the chainId is invalid.
+ */
+export function getHedgeyBatchPlannerContract(
+  chainId: string = DEFAULT_CHAIN_ID,
+): Contract {
+  if (!CHAIN_MAPPING[chainId]) {
+    throw new Error('Invalid chain: ' + chainId);
+  }
+  return new new Web3().eth.Contract(HedgeyBatchPlanner as AbiItem[]);
 }

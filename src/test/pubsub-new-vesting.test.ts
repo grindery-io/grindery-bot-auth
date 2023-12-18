@@ -3,7 +3,6 @@ import {
   mockResponsePath,
   mockUserName,
   mockUserTelegramID,
-  mockUserTelegramID1,
   mockWallet,
   mockAccessToken,
   mockTransactionHash,
@@ -13,55 +12,44 @@ import {
   mockTokenAddress,
   mockChainId,
   getCollectionUsersMock,
-  getCollectionTransfersMock,
+  getCollectionVestingsMock,
+  mockWallet1,
 } from './utils';
 import Sinon from 'sinon';
 import axios from 'axios';
 import chaiExclude from 'chai-exclude';
 import {
   G1_TOKEN_SYMBOL,
+  HEDGEY_BATCHPLANNER_ADDRESS,
   PATCHWALLET_AUTH_URL,
-  PATCHWALLET_RESOLVER_URL,
   PATCHWALLET_TX_STATUS_URL,
   PATCHWALLET_TX_URL,
   SEGMENT_TRACK_URL,
   TRANSACTION_STATUS,
-  nativeTokenAddresses,
 } from '../utils/constants';
 import { v4 as uuidv4 } from 'uuid';
-import { handleNewTransaction } from '../webhooks/transaction';
-import {
-  FLOWXO_NEW_TRANSACTION_WEBHOOK,
-  G1_POLYGON_ADDRESS,
-} from '../../secrets';
+import { FLOWXO_NEW_VESTING_WEBHOOK, G1_POLYGON_ADDRESS } from '../../secrets';
 import * as web3 from '../utils/web3';
 import { Collection, Document } from 'mongodb';
+import { handleNewVesting } from '../webhooks/vesting';
 
 chai.use(chaiExclude);
 
-describe('handleNewTransaction function', async function () {
+describe('handleNewVesting function', async function () {
   let sandbox: Sinon.SinonSandbox;
   let axiosStub;
   let txId: string;
   let collectionUsersMock: Collection<Document>;
-  let collectionTransfersMock: Collection<Document>;
+  let collectionVestingsMock: Collection<Document>;
   let contractStub: { methods: any };
   let getContract;
 
   beforeEach(async function () {
     collectionUsersMock = await getCollectionUsersMock();
-    collectionTransfersMock = await getCollectionTransfersMock();
+    collectionVestingsMock = await getCollectionVestingsMock();
 
     sandbox = Sinon.createSandbox();
     axiosStub = sandbox.stub(axios, 'post').callsFake(async (url: string) => {
-      if (url === PATCHWALLET_RESOLVER_URL) {
-        return Promise.resolve({
-          data: {
-            users: [{ accountAddress: mockWallet }],
-          },
-        });
-      }
-
       if (url === PATCHWALLET_TX_URL) {
         return Promise.resolve({
           data: {
@@ -87,7 +75,13 @@ describe('handleNewTransaction function', async function () {
         });
       }
 
-      if (url == FLOWXO_NEW_TRANSACTION_WEBHOOK) {
+      if (url == FLOWXO_NEW_VESTING_WEBHOOK) {
+        return Promise.resolve({
+          result: 'success',
+        });
+      }
+
+      if (url == FLOWXO_NEW_VESTING_WEBHOOK) {
         return Promise.resolve({
           result: 'success',
         });
@@ -129,7 +123,7 @@ describe('handleNewTransaction function', async function () {
     sandbox.restore();
   });
 
-  describe('Normal process to handle a transaction', async function () {
+  describe('Normal process to handle a vesting', async function () {
     beforeEach(async function () {
       await collectionUsersMock.insertOne({
         userTelegramID: mockUserTelegramID,
@@ -142,27 +136,28 @@ describe('handleNewTransaction function', async function () {
 
     it('Should return true', async function () {
       chai.expect(
-        await handleNewTransaction({
+        await handleNewVesting({
           senderTgId: mockUserTelegramID,
-          amount: '100',
-          recipientTgId: mockUserTelegramID1,
+          recipients: [{ recipientAddress: mockWallet, amount: '100' }],
           eventId: txId,
         }),
       ).to.be.true;
     });
 
     it('Should populate transfers database', async function () {
-      await handleNewTransaction({
+      await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [
+          { recipientAddress: mockWallet, amount: '100' },
+          { recipientAddress: mockWallet1, amount: '15' },
+        ],
         eventId: txId,
         chainId: mockChainId,
         tokenAddress: mockTokenAddress,
         chainName: mockChainName,
       });
 
-      const transfers = await collectionTransfersMock.find({}).toArray();
+      const transfers = await collectionVestingsMock.find({}).toArray();
 
       chai
         .expect(transfers)
@@ -177,9 +172,10 @@ describe('handleNewTransaction function', async function () {
             senderWallet: mockWallet,
             senderName: mockUserName,
             senderHandle: mockUserHandle,
-            recipientTgId: mockUserTelegramID1,
-            recipientWallet: mockWallet,
-            tokenAmount: '100',
+            recipients: [
+              { recipientAddress: mockWallet, amount: '100' },
+              { recipientAddress: mockWallet1, amount: '15' },
+            ],
             transactionHash: mockTransactionHash,
             status: TRANSACTION_STATUS.SUCCESS,
             userOpHash: null,
@@ -188,11 +184,10 @@ describe('handleNewTransaction function', async function () {
       chai.expect(transfers[0].dateAdded).to.be.a('date');
     });
 
-    it('Should call the sendTokens function properly for ERC20 token transfer', async function () {
-      await handleNewTransaction({
+    it('Should call the sendTokens function properly for ERC20 token vesting', async function () {
+      await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [{ recipientAddress: mockWallet, amount: '100' }],
         eventId: txId,
       });
 
@@ -204,99 +199,23 @@ describe('handleNewTransaction function', async function () {
         .to.deep.equal({
           userId: `grindery:${mockUserTelegramID}`,
           chain: mockChainName,
-          to: [G1_POLYGON_ADDRESS],
+          to: [HEDGEY_BATCHPLANNER_ADDRESS],
           value: ['0x00'],
           data: [
-            '0xa9059cbb00000000000000000000000095222290dd7278aa3ddd389cc1e1d165cc4bafe50000000000000000000000000000000000000000000000000000000000000064',
+            '0xae6253530000000000000000000000001961a23409ca59eedca6a99c97e4087dad752486000000000000000000000000e36bd65609c08cd17b53520293523cf4560533d00000000000000000000000000000000000000000000000056bc75e2d6310000000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000005000000000000000000000000000000000000000000000000000000000000000100000000000000000000000095222290dd7278aa3ddd389cc1e1d165cc4bafe50000000000000000000000000000000000000000000000056bc75e2d6310000000000000000000000000000000000000000000000000000000000000659200800000000000000000000000000000000000000000000000000000000065920080000000000000000000000000000000000000000000000000000002e24d16b5a9',
           ],
           delegatecall: 0,
           auth: '',
         });
     });
 
-    it('Should call the sendTokens function properly for ERC20 token transfer with delegate call', async function () {
-      await handleNewTransaction({
+    it('Should populate the segment vesting properly', async function () {
+      await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
-        eventId: txId,
-        delegatecall: 1,
-      });
-
-      chai
-        .expect(
-          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL)
-            .args[1],
-        )
-        .to.deep.equal({
-          userId: `grindery:${mockUserTelegramID}`,
-          chain: mockChainName,
-          to: [G1_POLYGON_ADDRESS],
-          value: ['0x00'],
-          data: [
-            '0xa9059cbb00000000000000000000000095222290dd7278aa3ddd389cc1e1d165cc4bafe50000000000000000000000000000000000000000000000000000000000000064',
-          ],
-          delegatecall: 1,
-          auth: '',
-        });
-    });
-
-    it('Should call the sendTokens function properly for Native token transfer', async function () {
-      await handleNewTransaction({
-        senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
-        eventId: txId,
-        tokenAddress: nativeTokenAddresses[0],
-      });
-
-      chai
-        .expect(
-          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL)
-            .args[1],
-        )
-        .to.deep.equal({
-          userId: `grindery:${mockUserTelegramID}`,
-          chain: mockChainName,
-          to: [mockWallet],
-          value: [web3.scaleDecimals('100', 18)],
-          data: ['0x'],
-          delegatecall: 0,
-          auth: '',
-        });
-    });
-
-    it('Should call the sendTokens function properly for Native token transfer with delegate call', async function () {
-      await handleNewTransaction({
-        senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
-        eventId: txId,
-        tokenAddress: nativeTokenAddresses[0],
-        delegatecall: 1,
-      });
-
-      chai
-        .expect(
-          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL)
-            .args[1],
-        )
-        .to.deep.equal({
-          userId: `grindery:${mockUserTelegramID}`,
-          chain: mockChainName,
-          to: [mockWallet],
-          value: [web3.scaleDecimals('100', 18)],
-          data: ['0x'],
-          delegatecall: 1,
-          auth: '',
-        });
-    });
-
-    it('Should populate the segment transfer properly', async function () {
-      await handleNewTransaction({
-        senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [
+          { recipientAddress: mockWallet, amount: '100' },
+          { recipientAddress: mockWallet1, amount: '15' },
+        ],
         eventId: txId,
         tokenSymbol: 'USDC',
         tokenAddress: '0xe36BD65609c08Cd17b53520293523CF4560533d2',
@@ -312,7 +231,7 @@ describe('handleNewTransaction function', async function () {
         .excluding(['timestamp'])
         .to.deep.equal({
           userId: mockUserTelegramID,
-          event: 'Transfer',
+          event: 'Vesting',
           properties: {
             chainId: mockChainId,
             tokenSymbol: 'USDC',
@@ -321,9 +240,10 @@ describe('handleNewTransaction function', async function () {
             senderWallet: mockWallet,
             senderName: mockUserName,
             senderHandle: mockUserHandle,
-            recipientTgId: mockUserTelegramID1,
-            recipientWallet: mockWallet,
-            tokenAmount: '100',
+            recipients: [
+              { recipientAddress: mockWallet, amount: '100' },
+              { recipientAddress: mockWallet1, amount: '15' },
+            ],
             transactionHash: mockTransactionHash,
             eventId: txId,
           },
@@ -331,35 +251,41 @@ describe('handleNewTransaction function', async function () {
     });
 
     it('Should call FlowXO webhook properly for new transactions', async function () {
-      await handleNewTransaction({
+      await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [
+          { recipientAddress: mockWallet, amount: '100' },
+          { recipientAddress: mockWallet1, amount: '15' },
+        ],
         eventId: txId,
       });
 
       const FlowXOCallArgs = axiosStub
         .getCalls()
-        .find((e) => e.firstArg === FLOWXO_NEW_TRANSACTION_WEBHOOK).args[1];
+        .find((e) => e.firstArg === FLOWXO_NEW_VESTING_WEBHOOK).args[1];
 
-      chai.expect(FlowXOCallArgs).excluding(['dateAdded']).to.deep.equal({
-        senderResponsePath: mockResponsePath,
-        chainId: mockChainId,
-        tokenSymbol: G1_TOKEN_SYMBOL,
-        tokenAddress: G1_POLYGON_ADDRESS,
-        senderTgId: mockUserTelegramID,
-        senderWallet: mockWallet,
-        senderName: mockUserName,
-        senderHandle: mockUserHandle,
-        recipientTgId: mockUserTelegramID1,
-        recipientWallet: mockWallet,
-        tokenAmount: '100',
-        transactionHash: mockTransactionHash,
-      });
+      chai
+        .expect(FlowXOCallArgs)
+        .excluding(['dateAdded'])
+        .to.deep.equal({
+          senderResponsePath: mockResponsePath,
+          chainId: mockChainId,
+          tokenSymbol: G1_TOKEN_SYMBOL,
+          tokenAddress: G1_POLYGON_ADDRESS,
+          senderTgId: mockUserTelegramID,
+          senderWallet: mockWallet,
+          senderName: mockUserName,
+          senderHandle: mockUserHandle,
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
+          transactionHash: mockTransactionHash,
+        });
     });
   });
 
-  describe('Normal process to handle a transaction with a float number', async function () {
+  describe('Normal process to handle a vesting with a float number', async function () {
     beforeEach(async function () {
       await collectionUsersMock.insertOne({
         userTelegramID: mockUserTelegramID,
@@ -371,17 +297,19 @@ describe('handleNewTransaction function', async function () {
     });
 
     it('Should populate transfers database', async function () {
-      await handleNewTransaction({
+      await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '10.002',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [
+          { recipientAddress: mockWallet, amount: '100' },
+          { recipientAddress: mockWallet1, amount: '15' },
+        ],
         eventId: txId,
         chainId: mockChainId,
         tokenAddress: mockTokenAddress,
         chainName: mockChainName,
       });
 
-      const transfers = await collectionTransfersMock.find({}).toArray();
+      const transfers = await collectionVestingsMock.find({}).toArray();
 
       chai
         .expect(transfers)
@@ -396,9 +324,10 @@ describe('handleNewTransaction function', async function () {
             senderWallet: mockWallet,
             senderName: mockUserName,
             senderHandle: mockUserHandle,
-            recipientTgId: mockUserTelegramID1,
-            recipientWallet: mockWallet,
-            tokenAmount: '10.002',
+            recipients: [
+              { recipientAddress: mockWallet, amount: '100' },
+              { recipientAddress: mockWallet1, amount: '15' },
+            ],
             transactionHash: mockTransactionHash,
             status: TRANSACTION_STATUS.SUCCESS,
             userOpHash: null,
@@ -407,11 +336,13 @@ describe('handleNewTransaction function', async function () {
       chai.expect(transfers[0].dateAdded).to.be.a('date');
     });
 
-    it('Should call the sendTokens function properly for ERC20 token transfer', async function () {
-      await handleNewTransaction({
+    it('Should call the sendTokens function properly for ERC20 token vesting', async function () {
+      await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '10.9',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [
+          { recipientAddress: mockWallet, amount: '100' },
+          { recipientAddress: mockWallet1, amount: '15' },
+        ],
         eventId: txId,
       });
 
@@ -423,36 +354,11 @@ describe('handleNewTransaction function', async function () {
         .to.deep.equal({
           userId: `grindery:${mockUserTelegramID}`,
           chain: mockChainName,
-          to: [G1_POLYGON_ADDRESS],
+          to: [HEDGEY_BATCHPLANNER_ADDRESS],
           value: ['0x00'],
           data: [
-            '0xa9059cbb00000000000000000000000095222290dd7278aa3ddd389cc1e1d165cc4bafe50000000000000000000000000000000000000000000000000000000000000064',
+            '0xae6253530000000000000000000000001961a23409ca59eedca6a99c97e4087dad752486000000000000000000000000e36bd65609c08cd17b53520293523cf4560533d00000000000000000000000000000000000000000000000063bf212b431ec000000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000005000000000000000000000000000000000000000000000000000000000000000200000000000000000000000095222290dd7278aa3ddd389cc1e1d165cc4bafe50000000000000000000000000000000000000000000000056bc75e2d6310000000000000000000000000000000000000000000000000000000000000659200800000000000000000000000000000000000000000000000000000000065920080000000000000000000000000000000000000000000000000000002e24d16b5a9000000000000000000000000594cfcaa67bc8789d17d39eb5f1dfc7dd95242cd000000000000000000000000000000000000000000000000d02ab486cedc0000000000000000000000000000000000000000000000000000000000006592008000000000000000000000000000000000000000000000000000000000659200800000000000000000000000000000000000000000000000000000006ebec3680d',
           ],
-          delegatecall: 0,
-          auth: '',
-        });
-    });
-
-    it('Should call the sendTokens function properly for Native token transfer', async function () {
-      await handleNewTransaction({
-        senderTgId: mockUserTelegramID,
-        amount: '10.3',
-        recipientTgId: mockUserTelegramID1,
-        eventId: txId,
-        tokenAddress: nativeTokenAddresses[0],
-      });
-
-      chai
-        .expect(
-          axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL)
-            .args[1],
-        )
-        .to.deep.equal({
-          userId: `grindery:${mockUserTelegramID}`,
-          chain: mockChainName,
-          to: [mockWallet],
-          value: ['10300000000000000000'],
-          data: ['0x'],
           delegatecall: 0,
           auth: '',
         });
@@ -468,28 +374,32 @@ describe('handleNewTransaction function', async function () {
         patchwallet: mockWallet,
       });
 
-      await collectionTransfersMock.insertOne({
+      await collectionVestingsMock.insertOne({
         eventId: txId,
         status: TRANSACTION_STATUS.SUCCESS,
       });
     });
 
-    it('Should return true and no token sending if transaction is already a success', async function () {
+    it('Should return true and no token sending if vesting is already a success', async function () {
       chai.expect(
-        await handleNewTransaction({
+        await handleNewVesting({
           senderTgId: mockUserTelegramID,
-          amount: '100',
-          recipientTgId: mockUserTelegramID1,
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           eventId: txId,
         }),
       ).to.be.true;
     });
 
-    it('Should not send tokens if transaction is already a success', async function () {
-      await handleNewTransaction({
+    it('Should not send tokens if vesting is already a success', async function () {
+      await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [
+          { recipientAddress: mockWallet, amount: '100' },
+          { recipientAddress: mockWallet1, amount: '15' },
+        ],
         eventId: txId,
       });
 
@@ -498,16 +408,18 @@ describe('handleNewTransaction function', async function () {
       ).to.be.undefined;
     });
 
-    it('Should not modify database if transaction is already a success', async function () {
-      await handleNewTransaction({
+    it('Should not modify database if vesting is already a success', async function () {
+      await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [
+          { recipientAddress: mockWallet, amount: '100' },
+          { recipientAddress: mockWallet1, amount: '15' },
+        ],
         eventId: txId,
       });
 
       chai
-        .expect(await collectionTransfersMock.find({}).toArray())
+        .expect(await collectionVestingsMock.find({}).toArray())
         .excluding(['_id'])
         .to.deep.equal([
           {
@@ -518,25 +430,29 @@ describe('handleNewTransaction function', async function () {
     });
 
     it('Should not call FlowXO is already a success', async function () {
-      await handleNewTransaction({
+      await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [
+          { recipientAddress: mockWallet, amount: '100' },
+          { recipientAddress: mockWallet1, amount: '15' },
+        ],
         eventId: txId,
       });
 
       chai.expect(
         axiosStub
           .getCalls()
-          .find((e) => e.firstArg === FLOWXO_NEW_TRANSACTION_WEBHOOK),
+          .find((e) => e.firstArg === FLOWXO_NEW_VESTING_WEBHOOK),
       ).to.be.undefined;
     });
 
     it('Should not call Segment is already a success', async function () {
-      await handleNewTransaction({
+      await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [
+          { recipientAddress: mockWallet, amount: '100' },
+          { recipientAddress: mockWallet1, amount: '15' },
+        ],
         eventId: txId,
       });
 
@@ -555,28 +471,32 @@ describe('handleNewTransaction function', async function () {
         patchwallet: mockWallet,
       });
 
-      await collectionTransfersMock.insertOne({
+      await collectionVestingsMock.insertOne({
         eventId: txId,
         status: TRANSACTION_STATUS.FAILURE,
       });
     });
 
-    it('Should return true and no token sending if transaction if is already a failure', async function () {
+    it('Should return true and no token sending if vesting if is already a failure', async function () {
       chai.expect(
-        await handleNewTransaction({
+        await handleNewVesting({
           senderTgId: mockUserTelegramID,
-          amount: '100',
-          recipientTgId: mockUserTelegramID1,
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           eventId: txId,
         }),
       ).to.be.true;
     });
 
-    it('Should not send tokens if transaction if is already a failure', async function () {
-      await handleNewTransaction({
+    it('Should not send tokens if vesting if is already a failure', async function () {
+      await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [
+          { recipientAddress: mockWallet, amount: '100' },
+          { recipientAddress: mockWallet1, amount: '15' },
+        ],
         eventId: txId,
       });
 
@@ -585,16 +505,18 @@ describe('handleNewTransaction function', async function () {
       ).to.be.undefined;
     });
 
-    it('Should not modify database if transaction if is already a failure', async function () {
-      await handleNewTransaction({
+    it('Should not modify database if vesting if is already a failure', async function () {
+      await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [
+          { recipientAddress: mockWallet, amount: '100' },
+          { recipientAddress: mockWallet1, amount: '15' },
+        ],
         eventId: txId,
       });
 
       chai
-        .expect(await collectionTransfersMock.find({}).toArray())
+        .expect(await collectionVestingsMock.find({}).toArray())
         .excluding(['_id'])
         .to.deep.equal([
           {
@@ -605,25 +527,29 @@ describe('handleNewTransaction function', async function () {
     });
 
     it('Should not call FlowXO if is already a failure', async function () {
-      await handleNewTransaction({
+      await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [
+          { recipientAddress: mockWallet, amount: '100' },
+          { recipientAddress: mockWallet1, amount: '15' },
+        ],
         eventId: txId,
       });
 
       chai.expect(
         axiosStub
           .getCalls()
-          .find((e) => e.firstArg === FLOWXO_NEW_TRANSACTION_WEBHOOK),
+          .find((e) => e.firstArg === FLOWXO_NEW_VESTING_WEBHOOK),
       ).to.be.undefined;
     });
 
     it('Should not call Segment if is already a failure', async function () {
-      await handleNewTransaction({
+      await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [
+          { recipientAddress: mockWallet, amount: '100' },
+          { recipientAddress: mockWallet1, amount: '15' },
+        ],
         eventId: txId,
       });
 
@@ -650,26 +576,30 @@ describe('handleNewTransaction function', async function () {
     });
 
     it('Should return false if there is an error in the send tokens request', async function () {
-      const result = await handleNewTransaction({
+      const result = await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [
+          { recipientAddress: mockWallet, amount: '100' },
+          { recipientAddress: mockWallet1, amount: '15' },
+        ],
         eventId: txId,
       });
 
       chai.expect(result).to.be.false;
     });
 
-    it('Should not modify transaction status in the database if there is an error in the send tokens request', async function () {
-      await handleNewTransaction({
+    it('Should not modify vesting status in the database if there is an error in the send tokens request', async function () {
+      await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [
+          { recipientAddress: mockWallet, amount: '100' },
+          { recipientAddress: mockWallet1, amount: '15' },
+        ],
         eventId: txId,
       });
 
       chai
-        .expect(await collectionTransfersMock.find({}).toArray())
+        .expect(await collectionVestingsMock.find({}).toArray())
         .excluding(['_id', 'dateAdded'])
         .to.deep.equal([
           {
@@ -681,9 +611,10 @@ describe('handleNewTransaction function', async function () {
             senderWallet: mockWallet,
             senderName: mockUserName,
             senderHandle: mockUserHandle,
-            recipientTgId: mockUserTelegramID1,
-            recipientWallet: mockWallet,
-            tokenAmount: '100',
+            recipients: [
+              { recipientAddress: mockWallet, amount: '100' },
+              { recipientAddress: mockWallet1, amount: '15' },
+            ],
             status: TRANSACTION_STATUS.PENDING,
             transactionHash: null,
             userOpHash: null,
@@ -692,25 +623,29 @@ describe('handleNewTransaction function', async function () {
     });
 
     it('Should not call FlowXO if there is an error in the send tokens request', async function () {
-      await handleNewTransaction({
+      await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [
+          { recipientAddress: mockWallet, amount: '100' },
+          { recipientAddress: mockWallet1, amount: '15' },
+        ],
         eventId: txId,
       });
 
       chai.expect(
         axiosStub
           .getCalls()
-          .find((e) => e.firstArg === FLOWXO_NEW_TRANSACTION_WEBHOOK),
+          .find((e) => e.firstArg === FLOWXO_NEW_VESTING_WEBHOOK),
       ).to.be.undefined;
     });
 
     it('Should not call Segment if there is an error in the send tokens request', async function () {
-      await handleNewTransaction({
+      await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [
+          { recipientAddress: mockWallet, amount: '100' },
+          { recipientAddress: mockWallet1, amount: '15' },
+        ],
         eventId: txId,
       });
 
@@ -720,13 +655,13 @@ describe('handleNewTransaction function', async function () {
     });
   });
 
-  it('Should not add new transaction if one with the same eventId already exists', async function () {
-    await collectionTransfersMock.insertOne({
+  it('Should not add new vesting if one with the same eventId already exists', async function () {
+    await collectionVestingsMock.insertOne({
       eventId: txId,
     });
 
     const objectId = (
-      await collectionTransfersMock.findOne({
+      await collectionVestingsMock.findOne({
         eventId: txId,
       })
     )._id.toString();
@@ -738,26 +673,30 @@ describe('handleNewTransaction function', async function () {
       patchwallet: mockWallet,
     });
 
-    await handleNewTransaction({
+    await handleNewVesting({
       senderTgId: mockUserTelegramID,
-      amount: '100',
-      recipientTgId: mockUserTelegramID1,
+      recipients: [
+        { recipientAddress: mockWallet, amount: '100' },
+        { recipientAddress: mockWallet1, amount: '15' },
+      ],
       eventId: txId,
     });
 
     chai
       .expect(
-        (await collectionTransfersMock.find({}).toArray())[0]._id.toString(),
+        (await collectionVestingsMock.find({}).toArray())[0]._id.toString(),
       )
       .to.equal(objectId);
   });
 
   describe('Sender is not a user', async function () {
     it('Should return true if sender is not a user', async function () {
-      const result = await handleNewTransaction({
+      const result = await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [
+          { recipientAddress: mockWallet, amount: '100' },
+          { recipientAddress: mockWallet1, amount: '15' },
+        ],
         eventId: txId,
       });
 
@@ -765,21 +704,25 @@ describe('handleNewTransaction function', async function () {
     });
 
     it('Should not add anything in database if sender is not a user', async function () {
-      await handleNewTransaction({
+      await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [
+          { recipientAddress: mockWallet, amount: '100' },
+          { recipientAddress: mockWallet1, amount: '15' },
+        ],
         eventId: txId,
       });
 
-      chai.expect(await collectionTransfersMock.find({}).toArray()).to.be.empty;
+      chai.expect(await collectionVestingsMock.find({}).toArray()).to.be.empty;
     });
 
     it('Should not send tokens if sender is not a user', async function () {
-      await handleNewTransaction({
+      await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [
+          { recipientAddress: mockWallet, amount: '100' },
+          { recipientAddress: mockWallet1, amount: '15' },
+        ],
         eventId: txId,
       });
 
@@ -789,25 +732,29 @@ describe('handleNewTransaction function', async function () {
     });
 
     it('Should not call FlowXO if sender is not a user', async function () {
-      await handleNewTransaction({
+      await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [
+          { recipientAddress: mockWallet, amount: '100' },
+          { recipientAddress: mockWallet1, amount: '15' },
+        ],
         eventId: txId,
       });
 
       chai.expect(
         axiosStub
           .getCalls()
-          .find((e) => e.firstArg === FLOWXO_NEW_TRANSACTION_WEBHOOK),
+          .find((e) => e.firstArg === FLOWXO_NEW_VESTING_WEBHOOK),
       ).to.be.undefined;
     });
 
     it('Should not call Segment if sender is not a user', async function () {
-      await handleNewTransaction({
+      await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [
+          { recipientAddress: mockWallet, amount: '100' },
+          { recipientAddress: mockWallet1, amount: '15' },
+        ],
         eventId: txId,
       });
 
@@ -817,132 +764,7 @@ describe('handleNewTransaction function', async function () {
     });
   });
 
-  describe('Error in PatchWallet get address', async function () {
-    beforeEach(async function () {
-      axiosStub
-        .withArgs(PATCHWALLET_RESOLVER_URL)
-        .rejects(new Error('Service not available'));
-
-      await collectionUsersMock.insertOne({
-        userTelegramID: mockUserTelegramID,
-        userName: mockUserName,
-        userHandle: mockUserHandle,
-        patchwallet: mockWallet,
-        responsePath: mockResponsePath,
-      });
-    });
-
-    it('Should return false if error in PatchWallet get address', async function () {
-      const result = await handleNewTransaction({
-        senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
-        eventId: txId,
-      });
-
-      chai.expect(result).to.be.false;
-    });
-
-    it('Should not add anything in the database if error in PatchWallet get address', async function () {
-      await handleNewTransaction({
-        senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
-        eventId: txId,
-      });
-
-      chai.expect(await collectionTransfersMock.find({}).toArray()).to.be.empty;
-    });
-
-    it('Should not send tokens if error in PatchWallet get address', async function () {
-      await handleNewTransaction({
-        senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
-        eventId: txId,
-      });
-
-      chai.expect(
-        axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
-      ).to.be.undefined;
-    });
-
-    it('Should not call FlowXO if error in PatchWallet get address', async function () {
-      await handleNewTransaction({
-        senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
-        eventId: txId,
-      });
-
-      chai.expect(
-        axiosStub
-          .getCalls()
-          .find((e) => e.firstArg === FLOWXO_NEW_TRANSACTION_WEBHOOK),
-      ).to.be.undefined;
-    });
-
-    it('Should not call Segment if error in PatchWallet get address', async function () {
-      await handleNewTransaction({
-        senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
-        eventId: txId,
-      });
-
-      chai.expect(
-        axiosStub.getCalls().find((e) => e.firstArg === SEGMENT_TRACK_URL),
-      ).to.be.undefined;
-    });
-  });
-
-  it('Should return true if error in Segment Webhook', async function () {
-    axiosStub
-      .withArgs(SEGMENT_TRACK_URL)
-      .rejects(new Error('Service not available'));
-
-    await collectionUsersMock.insertOne({
-      userTelegramID: mockUserTelegramID,
-      userName: mockUserName,
-      userHandle: mockUserHandle,
-      patchwallet: mockWallet,
-      responsePath: mockResponsePath,
-    });
-
-    const result = await handleNewTransaction({
-      senderTgId: mockUserTelegramID,
-      amount: '100',
-      recipientTgId: mockUserTelegramID1,
-      eventId: txId,
-    });
-
-    chai.expect(result).to.be.true;
-  });
-
-  it('Should return true if error in FlowXO Webhook', async function () {
-    axiosStub
-      .withArgs(FLOWXO_NEW_TRANSACTION_WEBHOOK)
-      .rejects(new Error('Service not available'));
-
-    await collectionUsersMock.insertOne({
-      userTelegramID: mockUserTelegramID,
-      userName: mockUserName,
-      userHandle: mockUserHandle,
-      patchwallet: mockWallet,
-      responsePath: mockResponsePath,
-    });
-
-    const result = await handleNewTransaction({
-      senderTgId: mockUserTelegramID,
-      amount: '100',
-      recipientTgId: mockUserTelegramID1,
-      eventId: txId,
-    });
-
-    chai.expect(result).to.be.true;
-  });
-
-  describe('Error in PatchWallet transaction', async function () {
+  describe('Error in PatchWallet vesting', async function () {
     beforeEach(async function () {
       axiosStub
         .withArgs(PATCHWALLET_TX_URL)
@@ -957,27 +779,31 @@ describe('handleNewTransaction function', async function () {
       });
     });
 
-    it('Should return false if error in PatchWallet transaction', async function () {
-      const result = await handleNewTransaction({
+    it('Should return false if error in PatchWallet vesting', async function () {
+      const result = await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [
+          { recipientAddress: mockWallet, amount: '100' },
+          { recipientAddress: mockWallet1, amount: '15' },
+        ],
         eventId: txId,
       });
 
       chai.expect(result).to.be.false;
     });
 
-    it('Should not modify database if error in PatchWallet transaction', async function () {
-      await handleNewTransaction({
+    it('Should not modify database if error in PatchWallet vesting', async function () {
+      await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [
+          { recipientAddress: mockWallet, amount: '100' },
+          { recipientAddress: mockWallet1, amount: '15' },
+        ],
         eventId: txId,
       });
 
       chai
-        .expect(await collectionTransfersMock.find({}).toArray())
+        .expect(await collectionVestingsMock.find({}).toArray())
         .excluding(['_id', 'dateAdded'])
         .to.deep.equal([
           {
@@ -989,9 +815,10 @@ describe('handleNewTransaction function', async function () {
             senderWallet: mockWallet,
             senderName: mockUserName,
             senderHandle: mockUserHandle,
-            recipientTgId: mockUserTelegramID1,
-            recipientWallet: mockWallet,
-            tokenAmount: '100',
+            recipients: [
+              { recipientAddress: mockWallet, amount: '100' },
+              { recipientAddress: mockWallet1, amount: '15' },
+            ],
             status: TRANSACTION_STATUS.PENDING,
             transactionHash: null,
             userOpHash: null,
@@ -999,26 +826,30 @@ describe('handleNewTransaction function', async function () {
         ]);
     });
 
-    it('Should not call FlowXO if error in PatchWallet transaction', async function () {
-      await handleNewTransaction({
+    it('Should not call FlowXO if error in PatchWallet vesting', async function () {
+      await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [
+          { recipientAddress: mockWallet, amount: '100' },
+          { recipientAddress: mockWallet1, amount: '15' },
+        ],
         eventId: txId,
       });
 
       chai.expect(
         axiosStub
           .getCalls()
-          .find((e) => e.firstArg === FLOWXO_NEW_TRANSACTION_WEBHOOK),
+          .find((e) => e.firstArg === FLOWXO_NEW_VESTING_WEBHOOK),
       ).to.be.undefined;
     });
 
-    it('Should not call Segment if error in PatchWallet transaction', async function () {
-      await handleNewTransaction({
+    it('Should not call Segment if error in PatchWallet vesting', async function () {
+      await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [
+          { recipientAddress: mockWallet, amount: '100' },
+          { recipientAddress: mockWallet1, amount: '15' },
+        ],
         eventId: txId,
       });
 
@@ -1045,27 +876,31 @@ describe('handleNewTransaction function', async function () {
       });
     });
 
-    it('Should return true if error 470 in PatchWallet transaction', async function () {
-      const result = await handleNewTransaction({
+    it('Should return true if error 470 in PatchWallet vesting', async function () {
+      const result = await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [
+          { recipientAddress: mockWallet, amount: '100' },
+          { recipientAddress: mockWallet1, amount: '15' },
+        ],
         eventId: txId,
       });
 
       chai.expect(result).to.be.true;
     });
 
-    it('Should complete db status to failure in database if error 470 in PatchWallet transaction', async function () {
-      await handleNewTransaction({
+    it('Should complete db status to failure in database if error 470 in PatchWallet vesting', async function () {
+      await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [
+          { recipientAddress: mockWallet, amount: '100' },
+          { recipientAddress: mockWallet1, amount: '15' },
+        ],
         eventId: txId,
       });
 
       chai
-        .expect(await collectionTransfersMock.find({}).toArray())
+        .expect(await collectionVestingsMock.find({}).toArray())
         .excluding(['dateAdded', '_id'])
         .to.deep.equal([
           {
@@ -1077,9 +912,10 @@ describe('handleNewTransaction function', async function () {
             senderWallet: mockWallet,
             senderName: mockUserName,
             senderHandle: mockUserHandle,
-            recipientTgId: mockUserTelegramID1,
-            recipientWallet: mockWallet,
-            tokenAmount: '100',
+            recipients: [
+              { recipientAddress: mockWallet, amount: '100' },
+              { recipientAddress: mockWallet1, amount: '15' },
+            ],
             status: TRANSACTION_STATUS.FAILURE,
             transactionHash: null,
             userOpHash: null,
@@ -1087,26 +923,30 @@ describe('handleNewTransaction function', async function () {
         ]);
     });
 
-    it('Should not call FlowXO if error 470 in PatchWallet transaction', async function () {
-      await handleNewTransaction({
+    it('Should not call FlowXO if error 470 in PatchWallet vesting', async function () {
+      await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [
+          { recipientAddress: mockWallet, amount: '100' },
+          { recipientAddress: mockWallet1, amount: '15' },
+        ],
         eventId: txId,
       });
 
       chai.expect(
         axiosStub
           .getCalls()
-          .find((e) => e.firstArg === FLOWXO_NEW_TRANSACTION_WEBHOOK),
+          .find((e) => e.firstArg === FLOWXO_NEW_VESTING_WEBHOOK),
       ).to.be.undefined;
     });
 
-    it('Should not call Segment if error 470 in PatchWallet transaction', async function () {
-      await handleNewTransaction({
+    it('Should not call Segment if error 470 in PatchWallet vesting', async function () {
+      await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [
+          { recipientAddress: mockWallet, amount: '100' },
+          { recipientAddress: mockWallet1, amount: '15' },
+        ],
         eventId: txId,
       });
 
@@ -1116,7 +956,7 @@ describe('handleNewTransaction function', async function () {
     });
   });
 
-  describe('No hash in PatchWallet transaction', async function () {
+  describe('No hash in PatchWallet vesting', async function () {
     beforeEach(async function () {
       axiosStub.withArgs(PATCHWALLET_TX_URL).resolves({
         data: {
@@ -1133,27 +973,31 @@ describe('handleNewTransaction function', async function () {
       });
     });
 
-    it('Should return false if no hash in PatchWallet transaction', async function () {
-      const result = await handleNewTransaction({
+    it('Should return false if no hash in PatchWallet vesting', async function () {
+      const result = await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [
+          { recipientAddress: mockWallet, amount: '100' },
+          { recipientAddress: mockWallet1, amount: '15' },
+        ],
         eventId: txId,
       });
 
       chai.expect(result).to.be.false;
     });
 
-    it('Should do no transaction status modification in database if no hash in PatchWallet transaction', async function () {
-      await handleNewTransaction({
+    it('Should do no vesting status modification in database if no hash in PatchWallet vesting', async function () {
+      await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [
+          { recipientAddress: mockWallet, amount: '100' },
+          { recipientAddress: mockWallet1, amount: '15' },
+        ],
         eventId: txId,
       });
 
       chai
-        .expect(await collectionTransfersMock.find({}).toArray())
+        .expect(await collectionVestingsMock.find({}).toArray())
         .excluding(['_id', 'dateAdded'])
         .to.deep.equal([
           {
@@ -1165,9 +1009,10 @@ describe('handleNewTransaction function', async function () {
             senderWallet: mockWallet,
             senderName: mockUserName,
             senderHandle: mockUserHandle,
-            recipientTgId: mockUserTelegramID1,
-            recipientWallet: mockWallet,
-            tokenAmount: '100',
+            recipients: [
+              { recipientAddress: mockWallet, amount: '100' },
+              { recipientAddress: mockWallet1, amount: '15' },
+            ],
             status: TRANSACTION_STATUS.PENDING,
             transactionHash: null,
             userOpHash: null,
@@ -1175,26 +1020,30 @@ describe('handleNewTransaction function', async function () {
         ]);
     });
 
-    it('Should not call FlowXO if no hash in PatchWallet transaction', async function () {
-      await handleNewTransaction({
+    it('Should not call FlowXO if no hash in PatchWallet vesting', async function () {
+      await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [
+          { recipientAddress: mockWallet, amount: '100' },
+          { recipientAddress: mockWallet1, amount: '15' },
+        ],
         eventId: txId,
       });
 
       chai.expect(
         axiosStub
           .getCalls()
-          .find((e) => e.firstArg === FLOWXO_NEW_TRANSACTION_WEBHOOK),
+          .find((e) => e.firstArg === FLOWXO_NEW_VESTING_WEBHOOK),
       ).to.be.undefined;
     });
 
-    it('Should not call Segment if no hash in PatchWallet transaction', async function () {
-      await handleNewTransaction({
+    it('Should not call Segment if no hash in PatchWallet vesting', async function () {
+      await handleNewVesting({
         senderTgId: mockUserTelegramID,
-        amount: '100',
-        recipientTgId: mockUserTelegramID1,
+        recipients: [
+          { recipientAddress: mockWallet, amount: '100' },
+          { recipientAddress: mockWallet1, amount: '15' },
+        ],
         eventId: txId,
       });
 
@@ -1204,7 +1053,7 @@ describe('handleNewTransaction function', async function () {
     });
   });
 
-  describe('Get transaction hash via userOpHash if transaction hash is empty first', async function () {
+  describe('Get vesting hash via userOpHash if vesting hash is empty first', async function () {
     describe('Transaction hash is empty in tx PatchWallet endpoint', async function () {
       beforeEach(async function () {
         await collectionUsersMock.insertOne({
@@ -1223,27 +1072,31 @@ describe('handleNewTransaction function', async function () {
         });
       });
 
-      it('Should return false if transaction hash is empty in tx PatchWallet endpoint', async function () {
-        const result = await handleNewTransaction({
+      it('Should return false if vesting hash is empty in tx PatchWallet endpoint', async function () {
+        const result = await handleNewVesting({
           senderTgId: mockUserTelegramID,
-          amount: '100',
-          recipientTgId: mockUserTelegramID1,
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           eventId: txId,
         });
 
         chai.expect(result).to.be.false;
       });
 
-      it('Should update reward database with a pending_hash status and userOpHash if transaction hash is empty in tx PatchWallet endpoint', async function () {
-        await handleNewTransaction({
+      it('Should update reward database with a pending_hash status and userOpHash if vesting hash is empty in tx PatchWallet endpoint', async function () {
+        await handleNewVesting({
           senderTgId: mockUserTelegramID,
-          amount: '100',
-          recipientTgId: mockUserTelegramID1,
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           eventId: txId,
         });
 
         chai
-          .expect(await collectionTransfersMock.find({}).toArray())
+          .expect(await collectionVestingsMock.find({}).toArray())
           .excluding(['_id', 'dateAdded'])
           .to.deep.equal([
             {
@@ -1255,9 +1108,10 @@ describe('handleNewTransaction function', async function () {
               senderWallet: mockWallet,
               senderName: mockUserName,
               senderHandle: mockUserHandle,
-              recipientTgId: mockUserTelegramID1,
-              recipientWallet: mockWallet,
-              tokenAmount: '100',
+              recipients: [
+                { recipientAddress: mockWallet, amount: '100' },
+                { recipientAddress: mockWallet1, amount: '15' },
+              ],
               status: TRANSACTION_STATUS.PENDING_HASH,
               userOpHash: mockUserOpHash,
               transactionHash: null,
@@ -1265,18 +1119,20 @@ describe('handleNewTransaction function', async function () {
           ]);
       });
 
-      it('Should not call FlowXO webhook if transaction hash is empty in tx PatchWallet endpoint', async function () {
-        await handleNewTransaction({
+      it('Should not call FlowXO webhook if vesting hash is empty in tx PatchWallet endpoint', async function () {
+        await handleNewVesting({
           senderTgId: mockUserTelegramID,
-          amount: '100',
-          recipientTgId: mockUserTelegramID1,
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           eventId: txId,
         });
 
         chai.expect(
           axiosStub
             .getCalls()
-            .find((e) => e.firstArg === FLOWXO_NEW_TRANSACTION_WEBHOOK),
+            .find((e) => e.firstArg === FLOWXO_NEW_VESTING_WEBHOOK),
         ).to.be.undefined;
       });
     });
@@ -1291,7 +1147,7 @@ describe('handleNewTransaction function', async function () {
           responsePath: mockResponsePath,
         });
 
-        await collectionTransfersMock.insertOne({
+        await collectionVestingsMock.insertOne({
           eventId: txId,
           chainId: mockChainId,
           tokenSymbol: G1_TOKEN_SYMBOL,
@@ -1300,30 +1156,35 @@ describe('handleNewTransaction function', async function () {
           senderWallet: mockWallet,
           senderName: mockUserName,
           senderHandle: mockUserHandle,
-          recipientTgId: mockUserTelegramID1,
-          recipientWallet: mockWallet,
-          tokenAmount: '100',
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           status: TRANSACTION_STATUS.PENDING_HASH,
           userOpHash: mockUserOpHash,
         });
       });
 
-      it('Should return true if transaction hash is present in PatchWallet status endpoint', async function () {
-        const result = await handleNewTransaction({
+      it('Should return true if vesting hash is present in PatchWallet status endpoint', async function () {
+        const result = await handleNewVesting({
           senderTgId: mockUserTelegramID,
-          amount: '100',
-          recipientTgId: mockUserTelegramID1,
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           eventId: txId,
         });
 
         chai.expect(result).to.be.true;
       });
 
-      it('Should not send tokens if transaction hash is present in PatchWallet status endpoint', async function () {
-        await handleNewTransaction({
+      it('Should not send tokens if vesting hash is present in PatchWallet status endpoint', async function () {
+        await handleNewVesting({
           senderTgId: mockUserTelegramID,
-          amount: '100',
-          recipientTgId: mockUserTelegramID1,
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           eventId: txId,
         });
 
@@ -1332,16 +1193,18 @@ describe('handleNewTransaction function', async function () {
         ).to.be.undefined;
       });
 
-      it('Should update the database with a success status if transaction hash is present in PatchWallet status endpoint', async function () {
-        await handleNewTransaction({
+      it('Should update the database with a success status if vesting hash is present in PatchWallet status endpoint', async function () {
+        await handleNewVesting({
           senderTgId: mockUserTelegramID,
-          amount: '100',
-          recipientTgId: mockUserTelegramID1,
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           eventId: txId,
         });
 
         chai
-          .expect(await collectionTransfersMock.find({}).toArray())
+          .expect(await collectionVestingsMock.find({}).toArray())
           .excluding(['_id', 'dateAdded'])
           .to.deep.equal([
             {
@@ -1353,9 +1216,10 @@ describe('handleNewTransaction function', async function () {
               senderWallet: mockWallet,
               senderName: mockUserName,
               senderHandle: mockUserHandle,
-              recipientTgId: mockUserTelegramID1,
-              recipientWallet: mockWallet,
-              tokenAmount: '100',
+              recipients: [
+                { recipientAddress: mockWallet, amount: '100' },
+                { recipientAddress: mockWallet1, amount: '15' },
+              ],
               status: TRANSACTION_STATUS.SUCCESS,
               userOpHash: mockUserOpHash,
               transactionHash: mockTransactionHash,
@@ -1363,32 +1227,38 @@ describe('handleNewTransaction function', async function () {
           ]);
       });
 
-      it('Should call FlowXO webhook properly if transaction hash is present in PatchWallet status endpoint', async function () {
-        await handleNewTransaction({
+      it('Should call FlowXO webhook properly if vesting hash is present in PatchWallet status endpoint', async function () {
+        await handleNewVesting({
           senderTgId: mockUserTelegramID,
-          amount: '100',
-          recipientTgId: mockUserTelegramID1,
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           eventId: txId,
         });
 
         const FlowXOCallArgs = axiosStub
           .getCalls()
-          .find((e) => e.firstArg === FLOWXO_NEW_TRANSACTION_WEBHOOK).args[1];
+          .find((e) => e.firstArg === FLOWXO_NEW_VESTING_WEBHOOK).args[1];
 
-        chai.expect(FlowXOCallArgs).excluding(['dateAdded']).to.deep.equal({
-          senderResponsePath: mockResponsePath,
-          chainId: mockChainId,
-          tokenSymbol: G1_TOKEN_SYMBOL,
-          tokenAddress: G1_POLYGON_ADDRESS,
-          senderTgId: mockUserTelegramID,
-          senderWallet: mockWallet,
-          senderName: mockUserName,
-          senderHandle: mockUserHandle,
-          recipientTgId: mockUserTelegramID1,
-          recipientWallet: mockWallet,
-          tokenAmount: '100',
-          transactionHash: mockTransactionHash,
-        });
+        chai
+          .expect(FlowXOCallArgs)
+          .excluding(['dateAdded'])
+          .to.deep.equal({
+            senderResponsePath: mockResponsePath,
+            chainId: mockChainId,
+            tokenSymbol: G1_TOKEN_SYMBOL,
+            tokenAddress: G1_POLYGON_ADDRESS,
+            senderTgId: mockUserTelegramID,
+            senderWallet: mockWallet,
+            senderName: mockUserName,
+            senderHandle: mockUserHandle,
+            recipients: [
+              { recipientAddress: mockWallet, amount: '100' },
+              { recipientAddress: mockWallet1, amount: '15' },
+            ],
+            transactionHash: mockTransactionHash,
+          });
 
         chai
           .expect(FlowXOCallArgs.dateAdded)
@@ -1407,7 +1277,7 @@ describe('handleNewTransaction function', async function () {
           responsePath: mockResponsePath,
         });
 
-        await collectionTransfersMock.insertOne({
+        await collectionVestingsMock.insertOne({
           eventId: txId,
           chainId: mockChainId,
           tokenSymbol: G1_TOKEN_SYMBOL,
@@ -1416,9 +1286,10 @@ describe('handleNewTransaction function', async function () {
           senderWallet: mockWallet,
           senderName: mockUserName,
           senderHandle: mockUserHandle,
-          recipientTgId: mockUserTelegramID1,
-          recipientWallet: mockWallet,
-          tokenAmount: '100',
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           status: TRANSACTION_STATUS.PENDING_HASH,
           userOpHash: mockUserOpHash,
         });
@@ -1431,22 +1302,26 @@ describe('handleNewTransaction function', async function () {
         });
       });
 
-      it('Should return false if transaction hash is not present in PatchWallet status endpoint', async function () {
-        const result = await handleNewTransaction({
+      it('Should return false if vesting hash is not present in PatchWallet status endpoint', async function () {
+        const result = await handleNewVesting({
           senderTgId: mockUserTelegramID,
-          amount: '100',
-          recipientTgId: mockUserTelegramID1,
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           eventId: txId,
         });
 
         chai.expect(result).to.be.false;
       });
 
-      it('Should not send tokens if transaction hash is not present in PatchWallet status endpoint', async function () {
-        await handleNewTransaction({
+      it('Should not send tokens if vesting hash is not present in PatchWallet status endpoint', async function () {
+        await handleNewVesting({
           senderTgId: mockUserTelegramID,
-          amount: '100',
-          recipientTgId: mockUserTelegramID1,
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           eventId: txId,
         });
 
@@ -1455,16 +1330,18 @@ describe('handleNewTransaction function', async function () {
         ).to.be.undefined;
       });
 
-      it('Should not update database if transaction hash is not present in PatchWallet status endpoint', async function () {
-        await handleNewTransaction({
+      it('Should not update database if vesting hash is not present in PatchWallet status endpoint', async function () {
+        await handleNewVesting({
           senderTgId: mockUserTelegramID,
-          amount: '100',
-          recipientTgId: mockUserTelegramID1,
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           eventId: txId,
         });
 
         chai
-          .expect(await collectionTransfersMock.find({}).toArray())
+          .expect(await collectionVestingsMock.find({}).toArray())
           .excluding(['_id', 'dateAdded'])
           .to.deep.equal([
             {
@@ -1476,9 +1353,10 @@ describe('handleNewTransaction function', async function () {
               senderWallet: mockWallet,
               senderName: mockUserName,
               senderHandle: mockUserHandle,
-              recipientTgId: mockUserTelegramID1,
-              recipientWallet: mockWallet,
-              tokenAmount: '100',
+              recipients: [
+                { recipientAddress: mockWallet, amount: '100' },
+                { recipientAddress: mockWallet1, amount: '15' },
+              ],
               status: TRANSACTION_STATUS.PENDING_HASH,
               userOpHash: mockUserOpHash,
               transactionHash: null,
@@ -1486,18 +1364,20 @@ describe('handleNewTransaction function', async function () {
           ]);
       });
 
-      it('Should not call FlowXO webhook if transaction hash is not present in PatchWallet status endpoint', async function () {
-        await handleNewTransaction({
+      it('Should not call FlowXO webhook if vesting hash is not present in PatchWallet status endpoint', async function () {
+        await handleNewVesting({
           senderTgId: mockUserTelegramID,
-          amount: '100',
-          recipientTgId: mockUserTelegramID1,
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           eventId: txId,
         });
 
         chai.expect(
           axiosStub
             .getCalls()
-            .find((e) => e.firstArg === FLOWXO_NEW_TRANSACTION_WEBHOOK),
+            .find((e) => e.firstArg === FLOWXO_NEW_VESTING_WEBHOOK),
         ).to.be.undefined;
       });
     });
@@ -1512,7 +1392,7 @@ describe('handleNewTransaction function', async function () {
           responsePath: mockResponsePath,
         });
 
-        await collectionTransfersMock.insertOne({
+        await collectionVestingsMock.insertOne({
           eventId: txId,
           chainId: mockChainId,
           tokenSymbol: G1_TOKEN_SYMBOL,
@@ -1521,9 +1401,10 @@ describe('handleNewTransaction function', async function () {
           senderWallet: mockWallet,
           senderName: mockUserName,
           senderHandle: mockUserHandle,
-          recipientTgId: mockUserTelegramID1,
-          recipientWallet: mockWallet,
-          tokenAmount: '100',
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           status: TRANSACTION_STATUS.PENDING_HASH,
           userOpHash: mockUserOpHash,
         });
@@ -1534,10 +1415,12 @@ describe('handleNewTransaction function', async function () {
       });
 
       it('Should return false if Error in PatchWallet get status endpoint', async function () {
-        const result = await handleNewTransaction({
+        const result = await handleNewVesting({
           senderTgId: mockUserTelegramID,
-          amount: '100',
-          recipientTgId: mockUserTelegramID1,
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           eventId: txId,
         });
 
@@ -1545,10 +1428,12 @@ describe('handleNewTransaction function', async function () {
       });
 
       it('Should not send tokens if Error in PatchWallet get status endpoint', async function () {
-        await handleNewTransaction({
+        await handleNewVesting({
           senderTgId: mockUserTelegramID,
-          amount: '100',
-          recipientTgId: mockUserTelegramID1,
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           eventId: txId,
         });
 
@@ -1558,15 +1443,17 @@ describe('handleNewTransaction function', async function () {
       });
 
       it('Should not update database if Error in PatchWallet get status endpoint', async function () {
-        await handleNewTransaction({
+        await handleNewVesting({
           senderTgId: mockUserTelegramID,
-          amount: '100',
-          recipientTgId: mockUserTelegramID1,
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           eventId: txId,
         });
 
         chai
-          .expect(await collectionTransfersMock.find({}).toArray())
+          .expect(await collectionVestingsMock.find({}).toArray())
           .excluding(['_id', 'dateAdded'])
           .to.deep.equal([
             {
@@ -1578,9 +1465,10 @@ describe('handleNewTransaction function', async function () {
               senderWallet: mockWallet,
               senderName: mockUserName,
               senderHandle: mockUserHandle,
-              recipientTgId: mockUserTelegramID1,
-              recipientWallet: mockWallet,
-              tokenAmount: '100',
+              recipients: [
+                { recipientAddress: mockWallet, amount: '100' },
+                { recipientAddress: mockWallet1, amount: '15' },
+              ],
               status: TRANSACTION_STATUS.PENDING_HASH,
               userOpHash: mockUserOpHash,
             },
@@ -1588,17 +1476,19 @@ describe('handleNewTransaction function', async function () {
       });
 
       it('Should not call FlowXO webhook if Error in PatchWallet get status endpoint', async function () {
-        await handleNewTransaction({
+        await handleNewVesting({
           senderTgId: mockUserTelegramID,
-          amount: '100',
-          recipientTgId: mockUserTelegramID1,
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           eventId: txId,
         });
 
         chai.expect(
           axiosStub
             .getCalls()
-            .find((e) => e.firstArg === FLOWXO_NEW_TRANSACTION_WEBHOOK),
+            .find((e) => e.firstArg === FLOWXO_NEW_VESTING_WEBHOOK),
         ).to.be.undefined;
       });
     });
@@ -1613,7 +1503,7 @@ describe('handleNewTransaction function', async function () {
           responsePath: mockResponsePath,
         });
 
-        await collectionTransfersMock.insertOne({
+        await collectionVestingsMock.insertOne({
           eventId: txId,
           chainId: mockChainId,
           tokenSymbol: G1_TOKEN_SYMBOL,
@@ -1622,9 +1512,10 @@ describe('handleNewTransaction function', async function () {
           senderWallet: mockWallet,
           senderName: mockUserName,
           senderHandle: mockUserHandle,
-          recipientTgId: mockUserTelegramID1,
-          recipientWallet: mockWallet,
-          tokenAmount: '100',
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           status: TRANSACTION_STATUS.PENDING_HASH,
           userOpHash: mockUserOpHash,
         });
@@ -1637,10 +1528,12 @@ describe('handleNewTransaction function', async function () {
       });
 
       it('Should return true if Error 470 in PatchWallet get status endpoint', async function () {
-        const result = await handleNewTransaction({
+        const result = await handleNewVesting({
           senderTgId: mockUserTelegramID,
-          amount: '100',
-          recipientTgId: mockUserTelegramID1,
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           eventId: txId,
         });
 
@@ -1648,10 +1541,12 @@ describe('handleNewTransaction function', async function () {
       });
 
       it('Should not send tokens if Error 470 in PatchWallet get status endpoint', async function () {
-        await handleNewTransaction({
+        await handleNewVesting({
           senderTgId: mockUserTelegramID,
-          amount: '100',
-          recipientTgId: mockUserTelegramID1,
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           eventId: txId,
         });
 
@@ -1661,15 +1556,17 @@ describe('handleNewTransaction function', async function () {
       });
 
       it('Should update database with failure status if Error 470 in PatchWallet get status endpoint', async function () {
-        await handleNewTransaction({
+        await handleNewVesting({
           senderTgId: mockUserTelegramID,
-          amount: '100',
-          recipientTgId: mockUserTelegramID1,
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           eventId: txId,
         });
 
         chai
-          .expect(await collectionTransfersMock.find({}).toArray())
+          .expect(await collectionVestingsMock.find({}).toArray())
           .excluding(['_id', 'dateAdded'])
           .to.deep.equal([
             {
@@ -1681,9 +1578,10 @@ describe('handleNewTransaction function', async function () {
               senderWallet: mockWallet,
               senderName: mockUserName,
               senderHandle: mockUserHandle,
-              recipientTgId: mockUserTelegramID1,
-              recipientWallet: mockWallet,
-              tokenAmount: '100',
+              recipients: [
+                { recipientAddress: mockWallet, amount: '100' },
+                { recipientAddress: mockWallet1, amount: '15' },
+              ],
               status: TRANSACTION_STATUS.FAILURE,
               userOpHash: mockUserOpHash,
               transactionHash: null,
@@ -1692,22 +1590,24 @@ describe('handleNewTransaction function', async function () {
       });
 
       it('Should not call FlowXO webhook if Error 470 in PatchWallet get status endpoint', async function () {
-        await handleNewTransaction({
+        await handleNewVesting({
           senderTgId: mockUserTelegramID,
-          amount: '100',
-          recipientTgId: mockUserTelegramID1,
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           eventId: txId,
         });
 
         chai.expect(
           axiosStub
             .getCalls()
-            .find((e) => e.firstArg === FLOWXO_NEW_TRANSACTION_WEBHOOK),
+            .find((e) => e.firstArg === FLOWXO_NEW_VESTING_WEBHOOK),
         ).to.be.undefined;
       });
     });
 
-    describe('Transaction is set to success without transaction hash if pending_hash without userOpHash', async function () {
+    describe('Transaction is set to success without vesting hash if pending_hash without userOpHash', async function () {
       beforeEach(async function () {
         await collectionUsersMock.insertOne({
           userTelegramID: mockUserTelegramID,
@@ -1717,7 +1617,7 @@ describe('handleNewTransaction function', async function () {
           responsePath: mockResponsePath,
         });
 
-        await collectionTransfersMock.insertOne({
+        await collectionVestingsMock.insertOne({
           eventId: txId,
           chainId: mockChainId,
           tokenSymbol: G1_TOKEN_SYMBOL,
@@ -1726,29 +1626,34 @@ describe('handleNewTransaction function', async function () {
           senderWallet: mockWallet,
           senderName: mockUserName,
           senderHandle: mockUserHandle,
-          recipientTgId: mockUserTelegramID1,
-          recipientWallet: mockWallet,
-          tokenAmount: '100',
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           status: TRANSACTION_STATUS.PENDING_HASH,
         });
       });
 
-      it('Should return true if transaction hash is pending_hash without userOpHash', async function () {
-        const result = await handleNewTransaction({
+      it('Should return true if vesting hash is pending_hash without userOpHash', async function () {
+        const result = await handleNewVesting({
           senderTgId: mockUserTelegramID,
-          amount: '100',
-          recipientTgId: mockUserTelegramID1,
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           eventId: txId,
         });
 
         chai.expect(result).to.be.true;
       });
 
-      it('Should not send tokens if transaction hash is pending_hash without userOpHash', async function () {
-        await handleNewTransaction({
+      it('Should not send tokens if vesting hash is pending_hash without userOpHash', async function () {
+        await handleNewVesting({
           senderTgId: mockUserTelegramID,
-          amount: '100',
-          recipientTgId: mockUserTelegramID1,
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           eventId: txId,
         });
 
@@ -1757,16 +1662,18 @@ describe('handleNewTransaction function', async function () {
         ).to.be.undefined;
       });
 
-      it('Should update reward database with a success status if transaction hash is pending_hash without userOpHash', async function () {
-        await handleNewTransaction({
+      it('Should update reward database with a success status if vesting hash is pending_hash without userOpHash', async function () {
+        await handleNewVesting({
           senderTgId: mockUserTelegramID,
-          amount: '100',
-          recipientTgId: mockUserTelegramID1,
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           eventId: txId,
         });
 
         chai
-          .expect(await collectionTransfersMock.find({}).toArray())
+          .expect(await collectionVestingsMock.find({}).toArray())
           .excluding(['_id', 'dateAdded'])
           .to.deep.equal([
             {
@@ -1778,9 +1685,10 @@ describe('handleNewTransaction function', async function () {
               senderWallet: mockWallet,
               senderName: mockUserName,
               senderHandle: mockUserHandle,
-              recipientTgId: mockUserTelegramID1,
-              recipientWallet: mockWallet,
-              tokenAmount: '100',
+              recipients: [
+                { recipientAddress: mockWallet, amount: '100' },
+                { recipientAddress: mockWallet1, amount: '15' },
+              ],
               status: TRANSACTION_STATUS.SUCCESS,
               transactionHash: null,
               userOpHash: null,
@@ -1788,18 +1696,20 @@ describe('handleNewTransaction function', async function () {
           ]);
       });
 
-      it('Should not call FlowXO webhook if transaction hash is empty in tx PatchWallet endpoint', async function () {
-        await handleNewTransaction({
+      it('Should not call FlowXO webhook if vesting hash is empty in tx PatchWallet endpoint', async function () {
+        await handleNewVesting({
           senderTgId: mockUserTelegramID,
-          amount: '100',
-          recipientTgId: mockUserTelegramID1,
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           eventId: txId,
         });
 
         chai.expect(
           axiosStub
             .getCalls()
-            .find((e) => e.firstArg === FLOWXO_NEW_TRANSACTION_WEBHOOK),
+            .find((e) => e.firstArg === FLOWXO_NEW_VESTING_WEBHOOK),
         ).to.be.undefined;
       });
     });
@@ -1814,7 +1724,7 @@ describe('handleNewTransaction function', async function () {
           responsePath: mockResponsePath,
         });
 
-        await collectionTransfersMock.insertOne({
+        await collectionVestingsMock.insertOne({
           eventId: txId,
           chainId: mockChainId,
           tokenSymbol: G1_TOKEN_SYMBOL,
@@ -1823,9 +1733,10 @@ describe('handleNewTransaction function', async function () {
           senderWallet: mockWallet,
           senderName: mockUserName,
           senderHandle: mockUserHandle,
-          recipientTgId: mockUserTelegramID1,
-          recipientWallet: mockWallet,
-          tokenAmount: '100',
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           status: TRANSACTION_STATUS.PENDING_HASH,
           dateAdded: new Date(Date.now() - 12 * 60 * 1000),
         });
@@ -1839,10 +1750,12 @@ describe('handleNewTransaction function', async function () {
       });
 
       it('Should return true after 10 min of trying to get status', async function () {
-        const result = await handleNewTransaction({
+        const result = await handleNewVesting({
           senderTgId: mockUserTelegramID,
-          amount: '100',
-          recipientTgId: mockUserTelegramID1,
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           eventId: txId,
         });
 
@@ -1850,10 +1763,12 @@ describe('handleNewTransaction function', async function () {
       });
 
       it('Should not send tokens after 10 min of trying to get status', async function () {
-        await handleNewTransaction({
+        await handleNewVesting({
           senderTgId: mockUserTelegramID,
-          amount: '100',
-          recipientTgId: mockUserTelegramID1,
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           eventId: txId,
         });
 
@@ -1863,15 +1778,17 @@ describe('handleNewTransaction function', async function () {
       });
 
       it('Should update reward database with a failure status after 10 min of trying to get status', async function () {
-        await handleNewTransaction({
+        await handleNewVesting({
           senderTgId: mockUserTelegramID,
-          amount: '100',
-          recipientTgId: mockUserTelegramID1,
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           eventId: txId,
         });
 
         chai
-          .expect(await collectionTransfersMock.find({}).toArray())
+          .expect(await collectionVestingsMock.find({}).toArray())
           .excluding(['_id', 'dateAdded'])
           .to.deep.equal([
             {
@@ -1883,9 +1800,10 @@ describe('handleNewTransaction function', async function () {
               senderWallet: mockWallet,
               senderName: mockUserName,
               senderHandle: mockUserHandle,
-              recipientTgId: mockUserTelegramID1,
-              recipientWallet: mockWallet,
-              tokenAmount: '100',
+              recipients: [
+                { recipientAddress: mockWallet, amount: '100' },
+                { recipientAddress: mockWallet1, amount: '15' },
+              ],
               status: TRANSACTION_STATUS.FAILURE,
               transactionHash: null,
               userOpHash: null,
@@ -1894,17 +1812,19 @@ describe('handleNewTransaction function', async function () {
       });
 
       it('Should not call FlowXO webhook after 10 min of trying to get status', async function () {
-        await handleNewTransaction({
+        await handleNewVesting({
           senderTgId: mockUserTelegramID,
-          amount: '100',
-          recipientTgId: mockUserTelegramID1,
+          recipients: [
+            { recipientAddress: mockWallet, amount: '100' },
+            { recipientAddress: mockWallet1, amount: '15' },
+          ],
           eventId: txId,
         });
 
         chai.expect(
           axiosStub
             .getCalls()
-            .find((e) => e.firstArg === FLOWXO_NEW_TRANSACTION_WEBHOOK),
+            .find((e) => e.firstArg === FLOWXO_NEW_VESTING_WEBHOOK),
         ).to.be.undefined;
       });
     });

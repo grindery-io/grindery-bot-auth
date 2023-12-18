@@ -8,6 +8,7 @@ import { getContract, scaleDecimals } from './web3';
 import {
   DEFAULT_CHAIN_ID,
   DEFAULT_CHAIN_NAME,
+  HEDGEY_BATCHPLANNER_ADDRESS,
   PATCHWALLET_AUTH_URL,
   PATCHWALLET_RESOLVER_URL,
   PATCHWALLET_TX_STATUS_URL,
@@ -16,6 +17,8 @@ import {
 } from './constants';
 import { PatchRawResult } from '../types/webhook.types';
 import { CHAIN_NAME_MAPPING } from './chains';
+import { HedgeyRecipientParams } from '../types/hedgey.types';
+import { getData, getPlans } from './vesting';
 
 /**
  * Retrieves the Patch Wallet access token by making a POST request to the authentication endpoint.
@@ -175,6 +178,68 @@ export async function swapTokens(
       value: [value],
       data: [data],
       delegatecall,
+      auth: '',
+    },
+    {
+      timeout: 100000,
+      headers: {
+        Authorization: `Bearer ${patchWalletAccessToken}`,
+        'Content-Type': 'application/json',
+      },
+    },
+  );
+}
+
+/**
+ * Sends tokens from one wallet to another using the PayMagic API.
+ * @param {string} senderTgId - Sender's Telegram ID.
+ * @param {string} recipients - Array of Recipients.
+ * @param {string} patchWalletAccessToken - Access token for Patch Wallet API.
+ * @param {string} tokenAddress - Token address (default: G1_POLYGON_ADDRESS).
+ * @param {string} chainName - Name of the blockchain (default: 'matic').
+ * @param {string} chainId - ID of the blockchain (default: 'eip155:137').
+ * @returns {Promise<axios.AxiosResponse<PatchRawResult, AxiosError>>} - Promise resolving to the response from the PayMagic API.
+ */
+export async function hedgeyLockTokens(
+  senderTgId: string,
+  recipients: HedgeyRecipientParams[],
+  patchWalletAccessToken: string,
+  useVesting: boolean = false,
+  tokenAddress: string = G1_POLYGON_ADDRESS,
+  chainName: string = DEFAULT_CHAIN_NAME,
+  chainId: string = DEFAULT_CHAIN_ID,
+): Promise<axios.AxiosResponse<PatchRawResult, AxiosError>> {
+  const plans = await getPlans(recipients);
+
+  console.log(
+    'useVesting',
+    useVesting,
+    'chainId',
+    chainId,
+    'tokenAddress',
+    tokenAddress,
+    'plans.totalAmount',
+    plans.totalAmount,
+    'plans.plans',
+    plans.plans,
+  );
+
+  // Lock the tokens using PayMagic API
+  return await axios.post(
+    PATCHWALLET_TX_URL,
+    {
+      userId: `grindery:${senderTgId}`,
+      chain: chainName,
+      to: [HEDGEY_BATCHPLANNER_ADDRESS],
+      value: ['0x00'],
+      data: await getData(
+        useVesting,
+        chainId,
+        tokenAddress,
+        plans.totalAmount,
+        plans.plans,
+      ),
+      delegatecall: 0,
       auth: '',
     },
     {

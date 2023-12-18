@@ -2,10 +2,10 @@ import {
   PatchResult,
   Reward,
   TelegramOperations,
-} from '../../types/webhook.types';
-import { TRANSACTION_STATUS } from '../constants';
-import { getTxStatus } from '../patchwallet';
-import { getXMinBeforeDate } from '../time';
+} from '../types/webhook.types';
+import { TRANSACTION_STATUS } from '../utils/constants';
+import { getTxStatus } from '../utils/patchwallet';
+import { getXMinBeforeDate } from '../utils/time';
 
 /**
  * Checks if the provided status indicates a successful transaction.

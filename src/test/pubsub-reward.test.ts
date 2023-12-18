@@ -8,15 +8,15 @@ import {
   mockUserTelegramID1,
   getCollectionUsersMock,
 } from './utils';
-import { handleNewReward } from '../utils/webhooks/webhook';
+import { handleNewReward } from '../webhooks/webhook';
 import Sinon from 'sinon';
 import axios from 'axios';
 
 import chaiExclude from 'chai-exclude';
 import { v4 as uuidv4 } from 'uuid';
-import { signup_utils } from '../utils/webhooks/signup-reward';
-import { referral_utils } from '../utils/webhooks/referral-reward';
-import { link_reward_utils } from '../utils/webhooks/link-reward';
+import { signup_utils } from '../webhooks/signup-reward';
+import { referral_utils } from '../webhooks/referral-reward';
+import { link_reward_utils } from '../webhooks/link-reward';
 import * as web3 from '../utils/web3';
 import { RewardParams } from '../types/webhook.types';
 import { Collection, Document } from 'mongodb';

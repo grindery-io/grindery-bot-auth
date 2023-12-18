@@ -1,12 +1,12 @@
 import express from 'express';
 import { PubSub, Duration } from '@google-cloud/pubsub';
 import { authenticateApiKey } from '../utils/auth';
-import { handleNewReward } from '../utils/webhooks/webhook';
+import { handleNewReward } from '../webhooks/webhook';
 import { v4 as uuidv4 } from 'uuid';
 import { MetricServiceClient } from '@google-cloud/monitoring';
-import { handleIsolatedReward } from '../utils/webhooks/isolated-reward';
-import { handleSwap } from '../utils/webhooks/swap';
-import { handleNewTransaction } from '../utils/webhooks/transaction';
+import { handleIsolatedReward } from '../webhooks/isolated-reward';
+import { handleSwap } from '../webhooks/swap';
+import { handleNewTransaction } from '../webhooks/transaction';
 import {
   PROJECT_ID,
   PUBSUB_CONCURRENCY,
@@ -16,7 +16,7 @@ import {
   PUBSUB_TOPIC_NAME,
 } from '../../secrets';
 import { google } from '@google-cloud/monitoring/build/protos/protos';
-import { isPositiveFloat } from '../utils/webhooks/utils';
+import { isPositiveFloat } from '../webhooks/utils';
 
 /**
  * This is a generic and extendable implementation of a webhook endpoint and pub/sub messages queue.

@@ -13,7 +13,7 @@ import {
   getCollectionUsersMock,
   getCollectionRewardsMock,
 } from './utils';
-import { handleSignUpReward } from '../utils/webhooks/signup-reward';
+import { handleSignUpReward } from '../webhooks/signup-reward';
 import Sinon from 'sinon';
 import axios from 'axios';
 

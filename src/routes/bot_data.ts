@@ -1,6 +1,6 @@
 import Web3 from 'web3';
 import express from 'express';
-import ERC20 from './abi/ERC20.json';
+import ERC20 from '../abi/ERC20.json';
 import BigNumber from 'bignumber.js';
 import { CHAIN_MAPPING } from '../utils/chains';
 import { authenticateApiKey } from '../utils/auth';
@@ -183,6 +183,7 @@ router.post('/sendTokens', authenticateApiKey, async (req, res) => {
             await getPatchWalletAddressFromTgId(req.body.toTgId),
             req.body.amount,
             await getPatchWalletAccessToken(),
+            0,
           )
         ).data,
       );

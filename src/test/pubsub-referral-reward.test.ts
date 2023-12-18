@@ -50,7 +50,7 @@ import {
   G1_POLYGON_ADDRESS,
   SOURCE_TG_ID,
 } from '../../secrets';
-import { handleReferralReward } from '../utils/webhooks/referral-reward';
+import { handleReferralReward } from '../webhooks/referral-reward';
 import * as web3 from '../utils/web3';
 import { Collection, Document } from 'mongodb';
 
