@@ -73,3 +73,9 @@ export function formatDate(date: Date): string {
     month: 'short',
   });
 }
+
+export const minutesUntilJanFirst2024 = (): number =>
+  Math.round(
+    (new Date('2024-01-01T00:00:00Z').getTime() - new Date().getTime()) /
+      (1000 * 60),
+  );
