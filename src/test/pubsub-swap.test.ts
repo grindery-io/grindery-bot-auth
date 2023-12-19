@@ -286,7 +286,7 @@ describe('handleSwap function', async function () {
         tokenOutSymbol: mockTokenOutSymbol,
         status: TRANSACTION_STATUS.SUCCESS,
         transactionHash: mockTransactionHash,
-        apiKey: FLOWXO_WEBHOOK_API_KEY
+        apiKey: FLOWXO_WEBHOOK_API_KEY,
       });
     });
 
@@ -1696,7 +1696,7 @@ describe('handleSwap function', async function () {
           tokenOutSymbol: mockTokenOutSymbol,
           transactionHash: mockTransactionHash,
           status: TRANSACTION_STATUS.SUCCESS,
-          apiKey: FLOWXO_WEBHOOK_API_KEY
+          apiKey: FLOWXO_WEBHOOK_API_KEY,
         });
 
         chai

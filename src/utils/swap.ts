@@ -205,7 +205,7 @@ export class SwapTelegram {
       from: this.params.from,
       tokenInSymbol: this.params.tokenInSymbol,
       tokenOutSymbol: this.params.tokenOutSymbol,
-      apiKey: FLOWXO_WEBHOOK_API_KEY
+      apiKey: FLOWXO_WEBHOOK_API_KEY,
     });
   }
 
