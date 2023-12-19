@@ -40,7 +40,7 @@ import {
 } from '../utils/constants';
 import { v4 as uuidv4 } from 'uuid';
 import { handleSwap } from '../webhooks/swap';
-import { FLOWXO_NEW_SWAP_WEBHOOK } from '../../secrets';
+import { FLOWXO_NEW_SWAP_WEBHOOK, FLOWXO_WEBHOOK_API_KEY } from '../../secrets';
 import { Collection, Document } from 'mongodb';
 
 chai.use(chaiExclude);
@@ -286,6 +286,7 @@ describe('handleSwap function', async function () {
         tokenOutSymbol: mockTokenOutSymbol,
         status: TRANSACTION_STATUS.SUCCESS,
         transactionHash: mockTransactionHash,
+        apiKey: FLOWXO_WEBHOOK_API_KEY
       });
     });
 
@@ -1695,6 +1696,7 @@ describe('handleSwap function', async function () {
           tokenOutSymbol: mockTokenOutSymbol,
           transactionHash: mockTransactionHash,
           status: TRANSACTION_STATUS.SUCCESS,
+          apiKey: FLOWXO_WEBHOOK_API_KEY
         });
 
         chai

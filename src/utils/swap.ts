@@ -6,7 +6,7 @@ import {
   getTxStatus,
   swapTokens,
 } from './patchwallet';
-import { FLOWXO_NEW_SWAP_WEBHOOK } from '../../secrets';
+import { FLOWXO_NEW_SWAP_WEBHOOK, FLOWXO_WEBHOOK_API_KEY } from '../../secrets';
 import axios from 'axios';
 import { addTrackSwapSegment } from './segment';
 import { PatchResult, SwapParams } from '../types/webhook.types';
@@ -205,6 +205,7 @@ export class SwapTelegram {
       from: this.params.from,
       tokenInSymbol: this.params.tokenInSymbol,
       tokenOutSymbol: this.params.tokenOutSymbol,
+      apiKey: FLOWXO_WEBHOOK_API_KEY
     });
   }
 

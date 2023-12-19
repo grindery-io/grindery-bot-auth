@@ -310,3 +310,10 @@ export const PRODUCTION_ENV = process.env.PRODUCTION_ENV || '';
  */
 export const GRINDERY_NEXUS_REFRESH_TOKEN =
   process.env.GRINDERY_NEXUS_REFRESH_TOKEN || '';
+
+/**
+ * FlowXO Webhook api key
+ * Fallback: an empty string if not defined in the environment.
+ */
+export const FLOWXO_WEBHOOK_API_KEY =
+  process.env.FLOWXO_WEBHOOK_API_KEY || '';
