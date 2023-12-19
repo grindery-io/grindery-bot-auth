@@ -1,4 +1,8 @@
-import { RewardParams, createRewardParams } from '../types/webhook.types';
+import {
+  PatchResult,
+  RewardParams,
+  createRewardParams,
+} from '../types/webhook.types';
 import { TRANSACTION_STATUS } from '../utils/constants';
 import {
   SignUpRewardTelegram,
@@ -33,7 +37,7 @@ export async function handleSignUpReward(
 
     reward = reward as SignUpRewardTelegram;
 
-    let txReward;
+    let txReward: PatchResult;
 
     // Handle pending hash status
     if (isPendingTransactionHash(reward.status)) {

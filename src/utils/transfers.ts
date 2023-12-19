@@ -16,7 +16,7 @@ import axios from 'axios';
 import { FLOWXO_NEW_TRANSACTION_WEBHOOK } from '../../secrets';
 import { Db, Document, WithId } from 'mongodb';
 import { formatDate } from './time';
-import { TransactionParams } from '../types/webhook.types';
+import { PatchResult, TransactionParams } from '../types/webhook.types';
 import { isPositiveFloat } from '../webhooks/utils';
 
 /**
@@ -405,12 +405,18 @@ export class TransferTelegram {
 
   /**
    * Retrieves the status of the PatchWallet transaction.
-   * @returns {Promise<any>} - True if the transaction status is retrieved successfully, false otherwise.
+   * @returns {Promise<PatchResult>} - True if the transaction status is retrieved successfully, false otherwise.
    */
-  async getStatus(): Promise<any> {
+  async getStatus(): Promise<PatchResult> {
     try {
       // Retrieve the status of the PatchWallet transaction
-      return await getTxStatus(this.userOpHash);
+      const res = await getTxStatus(this.userOpHash);
+
+      return {
+        isError: false,
+        userOpHash: res.data.userOpHash,
+        txHash: res.data.txHash,
+      };
     } catch (error) {
       // Log error if retrieving transaction status fails
       console.error(
@@ -420,20 +426,19 @@ export class TransferTelegram {
       return (
         (error?.response?.status === 470 &&
           (await this.updateInDatabase(TRANSACTION_STATUS.FAILURE, new Date()),
-          true)) ||
-        false
+          { isError: true })) || { isError: false }
       );
     }
   }
 
   /**
    * Sends tokens using PatchWallet.
-   * @returns {Promise<any>} - True if the tokens are sent successfully, false otherwise.
+   * @returns {Promise<PatchResult>} - True if the tokens are sent successfully, false otherwise.
    */
-  async sendTx(): Promise<any> {
+  async sendTx(): Promise<PatchResult> {
     try {
       // Send tokens using PatchWallet
-      return await sendTokens(
+      const res = await sendTokens(
         this.params.senderInformation.userTelegramID,
         this.recipientWallet,
         this.params.amount,
@@ -442,6 +447,12 @@ export class TransferTelegram {
         this.params.tokenAddress,
         this.params.chainId,
       );
+
+      return {
+        isError: false,
+        userOpHash: res.data.userOpHash,
+        txHash: res.data.txHash,
+      };
     } catch (error) {
       // Log error if sending tokens fails
       console.error(
@@ -454,8 +465,8 @@ export class TransferTelegram {
             `Potentially invalid amount: ${this.params.amount}, dropping`,
           ),
           await this.updateInDatabase(TRANSACTION_STATUS.FAILURE, new Date()),
-          true)
-        : false;
+          { isError: true })
+        : { isError: false };
     }
   }
 }

@@ -1,4 +1,8 @@
-import { RewardParams, createRewardParams } from '../types/webhook.types';
+import {
+  PatchResult,
+  RewardParams,
+  createRewardParams,
+} from '../types/webhook.types';
 import { TRANSACTION_STATUS } from '../utils/constants';
 import { createReferralRewardTelegram } from '../utils/rewards';
 import {
@@ -45,7 +49,7 @@ export async function handleReferralReward(
     if (!reward.tx)
       await reward.updateInDatabase(TRANSACTION_STATUS.PENDING, new Date());
 
-    let txReward;
+    let txReward: PatchResult;
 
     // Handle pending hash status
     if (isPendingTransactionHash(reward.status)) {

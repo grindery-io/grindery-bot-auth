@@ -1,5 +1,9 @@
 import { Database } from '../db/conn';
-import { TransactionParams, createTransaction } from '../types/webhook.types';
+import {
+  PatchResult,
+  TransactionParams,
+  createTransaction,
+} from '../types/webhook.types';
 import { TRANSACTION_STATUS, USERS_COLLECTION } from '../utils/constants';
 import { sendTelegramMessage } from '../utils/telegram';
 import { TransferTelegram, createTransferTelegram } from '../utils/transfers';
@@ -57,7 +61,7 @@ export async function handleNewTransaction(
   )
     return true;
 
-  let tx;
+  let tx: PatchResult;
 
   // Handle pending hash status
   if (isPendingTransactionHash(transfer.status)) {
@@ -70,17 +74,22 @@ export async function handleNewTransaction(
         true
       );
 
-    // Check status for userOpHash
-    if ((tx = await transfer.getStatus()) === true || tx == false) return tx;
+    // Check status for userOpHash and return the status if it's retrieved successfully or false if failed
+    tx = await transfer.getStatus();
+    if (tx.isError) return true;
+    if (!tx.txHash && !tx.userOpHash) return false;
   }
 
   // Handle sending transaction if not already handled
-  if (!tx && ((tx = await transfer.sendTx()) === true || tx == false))
-    return tx;
+  if (!tx) {
+    tx = await transfer.sendTx();
+    if (tx.isError) return true;
+    if (!tx.txHash && !tx.userOpHash) return false;
+  }
 
   // Finalize transaction handling
-  if (tx && tx.data.txHash) {
-    updateTxHash(transfer, tx.data.txHash);
+  if (tx && tx.txHash) {
+    updateTxHash(transfer, tx.txHash);
     await Promise.all([
       transfer.updateInDatabase(TRANSACTION_STATUS.SUCCESS, new Date()),
       transfer.saveToSegment(),
@@ -110,8 +119,8 @@ export async function handleNewTransaction(
 
   // Handle pending hash for userOpHash
   tx &&
-    tx.data.userOpHash &&
-    updateUserOpHash(transfer, tx.data.userOpHash) &&
+    tx.userOpHash &&
+    updateUserOpHash(transfer, tx.userOpHash) &&
     (await transfer.updateInDatabase(TRANSACTION_STATUS.PENDING_HASH, null));
 
   return false;

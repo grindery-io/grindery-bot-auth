@@ -1,4 +1,8 @@
-import { RewardParams, createRewardParams } from '../types/webhook.types';
+import {
+  PatchResult,
+  RewardParams,
+  createRewardParams,
+} from '../types/webhook.types';
 import { TRANSACTION_STATUS } from '../utils/constants';
 import {
   IsolatedRewardTelegram,
@@ -41,7 +45,7 @@ export async function handleIsolatedReward(
     reward = reward as IsolatedRewardTelegram;
 
     // Check if this event already exists
-    let txReward;
+    let txReward: PatchResult;
 
     // Handle pending hash status
     if (isPendingTransactionHash(reward.status)) {

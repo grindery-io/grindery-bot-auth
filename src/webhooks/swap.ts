@@ -9,7 +9,11 @@ import {
   updateTxHash,
   updateUserOpHash,
 } from './utils';
-import { SwapParams, createSwapParams } from '../types/webhook.types';
+import {
+  PatchResult,
+  SwapParams,
+  createSwapParams,
+} from '../types/webhook.types';
 
 /**
  * Handles the swap process based on provided parameters.
@@ -42,7 +46,7 @@ export async function handleSwap(params: SwapParams): Promise<boolean> {
   if (isSuccessfulTransaction(swap.status) || isFailedTransaction(swap.status))
     return true;
 
-  let tx;
+  let tx: PatchResult;
 
   // Handle pending hash status
   if (isPendingTransactionHash(swap.status)) {
@@ -59,17 +63,22 @@ export async function handleSwap(params: SwapParams): Promise<boolean> {
     }
 
     // Check status for userOpHash and return the status if it's retrieved successfully or false if failed
-    if ((tx = await swap.getStatus()) === true || tx == false) return tx;
+    tx = await swap.getStatus();
+    if (tx.isError) return true;
+    if (!tx.txHash && !tx.userOpHash) return false;
   }
 
   // Handle sending transaction if not already handled
-  if (!tx && ((tx = await swap.swapTokens()) === true || tx == false))
-    return tx;
+  if (!tx) {
+    tx = await swap.swapTokens();
+    if (tx.isError) return true;
+    if (!tx.txHash && !tx.userOpHash) return false;
+  }
 
   // Finalize transaction handling if tx data's txHash exists
-  if (tx && tx.data.txHash) {
+  if (tx && tx.txHash) {
     // Update transaction hash, update database, save to Segment and FlowXO
-    updateTxHash(swap, tx.data.txHash);
+    updateTxHash(swap, tx.txHash);
     await Promise.all([
       swap.updateInDatabase(TRANSACTION_STATUS.SUCCESS, new Date()),
       swap.saveToSegment(),
@@ -82,15 +91,15 @@ export async function handleSwap(params: SwapParams): Promise<boolean> {
 
     // Log successful swap event completion
     console.log(
-      `[SWAP EVENT] Event ID [${swap.txHash}] Swap event [${tx.data.txHash}] from ${params.userTelegramID} completed successfully.`,
+      `[SWAP EVENT] Event ID [${swap.txHash}] Swap event [${tx.txHash}] from ${params.userTelegramID} completed successfully.`,
     );
     return true;
   }
 
   // Handle pending hash for userOpHash, if available
   tx &&
-    tx.data.userOpHash &&
-    updateUserOpHash(swap, tx.data.userOpHash) &&
+    tx.userOpHash &&
+    updateUserOpHash(swap, tx.userOpHash) &&
     (await swap.updateInDatabase(TRANSACTION_STATUS.PENDING_HASH, null));
 
   // Return false indicating swap process is not fully handled
