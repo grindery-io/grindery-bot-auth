@@ -96,34 +96,30 @@ export async function getData(
   tokenAddress: string,
   totalAmount: string,
   plans: HedgeyPlanParams[],
-): Promise<string[]> {
+): Promise<string> {
   return useVesting
-    ? [
-        getHedgeyBatchPlannerContract(chainId)
-          .methods['batchVestingPlans'](
-            HEDGEY_VESTING_LOCKER,
-            tokenAddress,
-            totalAmount,
-            plans,
-            1, // Period: Linear
-            GRINDERY_VESTING_ADMIN,
-            true,
-            4, // Vesting (fixed Hedgey constant)
-          )
-          .encodeABI(),
-      ]
-    : [
-        getHedgeyBatchPlannerContract(chainId)
-          .methods['batchLockingPlans'](
-            HEDGEY_LOCKUP_LOCKER,
-            tokenAddress,
-            totalAmount,
-            plans,
-            1, // Period: Linear
-            5, // Investor Lockups (fixed Hedgey constant)
-          )
-          .encodeABI(),
-      ];
+    ? getHedgeyBatchPlannerContract(chainId)
+        .methods['batchVestingPlans'](
+          HEDGEY_VESTING_LOCKER,
+          tokenAddress,
+          totalAmount,
+          plans,
+          1, // Period: Linear
+          GRINDERY_VESTING_ADMIN,
+          true,
+          4, // Vesting (fixed Hedgey constant)
+        )
+        .encodeABI()
+    : getHedgeyBatchPlannerContract(chainId)
+        .methods['batchLockingPlans'](
+          HEDGEY_LOCKUP_LOCKER,
+          tokenAddress,
+          totalAmount,
+          plans,
+          1, // Period: Linear
+          5, // Investor Lockups (fixed Hedgey constant)
+        )
+        .encodeABI();
 }
 
 /**
