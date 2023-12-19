@@ -13,6 +13,7 @@ import {
   mockChainName,
   getCollectionUsersMock,
   getCollectionRewardsMock,
+  mockChainId,
 } from './utils';
 import Sinon from 'sinon';
 import axios from 'axios';
@@ -856,7 +857,7 @@ describe('handleIsolatedReward function', async function () {
         message: 'isolated message 1',
         amount: '100',
         tokenAddress: mockTokenAddress,
-        chainName: mockChainName,
+        chainId: mockChainId,
       });
       chai
         .expect(
@@ -888,7 +889,7 @@ describe('handleIsolatedReward function', async function () {
         message: 'isolated message 1',
         amount: '100',
         tokenAddress: mockTokenAddress,
-        chainName: mockChainName,
+        chainId: mockChainId,
         delegatecall: 1,
       });
       chai

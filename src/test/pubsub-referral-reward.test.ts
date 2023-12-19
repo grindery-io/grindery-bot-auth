@@ -31,6 +31,7 @@ import {
   getCollectionTransfersMock,
   getCollectionUsersMock,
   getCollectionRewardsMock,
+  mockChainId,
 } from './utils';
 import Sinon from 'sinon';
 import axios from 'axios';
@@ -708,7 +709,7 @@ describe('handleReferralReward function', function () {
         userName: mockUserName,
         patchwallet: mockWallet,
         tokenAddress: mockTokenAddress,
-        chainName: mockChainName,
+        chainId: mockChainId,
       });
 
       const sendTokensCalls = axiosStub

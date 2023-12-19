@@ -13,6 +13,7 @@ import {
   mockChainName,
   getCollectionUsersMock,
   getCollectionRewardsMock,
+  mockChainId,
 } from './utils';
 import Sinon from 'sinon';
 import axios from 'axios';
@@ -434,7 +435,7 @@ describe('handleLinkReward function', async function () {
         userTelegramID: mockUserTelegramID,
         referentUserTelegramID: mockUserTelegramID1,
         tokenAddress: mockTokenAddress,
-        chainName: mockChainName,
+        chainId: mockChainId,
       });
 
       chai
@@ -461,7 +462,7 @@ describe('handleLinkReward function', async function () {
         userTelegramID: mockUserTelegramID,
         referentUserTelegramID: mockUserTelegramID1,
         tokenAddress: mockTokenAddress,
-        chainName: mockChainName,
+        chainId: mockChainId,
         delegatecall: 1,
       });
 

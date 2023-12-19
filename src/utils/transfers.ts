@@ -440,7 +440,7 @@ export class TransferTelegram {
         await getPatchWalletAccessToken(),
         this.params.delegatecall,
         this.params.tokenAddress,
-        this.params.chainName,
+        this.params.chainId,
       );
     } catch (error) {
       // Log error if sending tokens fails

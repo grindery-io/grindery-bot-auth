@@ -109,8 +109,9 @@ export type RewardParams = {
   amount?: string;
   /** The token address for the reward. */
   tokenAddress?: string;
-  /** The chain name for the reward. */
-  chainName?: string;
+  /** The chain id for the reward. */
+  chainId?: string;
+
   /** The Telegram user ID of the referent. */
   referentUserTelegramID?: string;
   /** Specifies if there is a signup reward. */
@@ -139,7 +140,7 @@ export function createRewardParams(
   return {
     ...{
       tokenAddress: G1_POLYGON_ADDRESS,
-      chainName: DEFAULT_CHAIN_NAME,
+      chainId: DEFAULT_CHAIN_ID,
       isSignupReward: false,
       isReferralReward: false,
       isLinkReward: false,

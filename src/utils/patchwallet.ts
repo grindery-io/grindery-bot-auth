@@ -7,7 +7,6 @@ import {
 import { getContract, scaleDecimals } from './web3';
 import {
   DEFAULT_CHAIN_ID,
-  DEFAULT_CHAIN_NAME,
   HEDGEY_BATCHPLANNER_ADDRESS,
   PATCHWALLET_AUTH_URL,
   PATCHWALLET_RESOLVER_URL,
@@ -80,10 +79,8 @@ export async function sendTokens(
   patchWalletAccessToken: string,
   delegatecall: 0 | 1,
   tokenAddress: string = G1_POLYGON_ADDRESS,
-  chainName: string = DEFAULT_CHAIN_NAME,
   chainId: string = DEFAULT_CHAIN_ID,
 ): Promise<axios.AxiosResponse<PatchRawResult, AxiosError>> {
-  chainName; // @todo remove chainName
   // Determine data, value, and address based on the token type
   const [data, value, address] = nativeTokenAddresses.includes(tokenAddress)
     ? ['0x', scaleDecimals(amountEther, 18), recipientwallet]
@@ -182,7 +179,6 @@ export async function hedgeyLockTokens(
   patchWalletAccessToken: string,
   useVesting: boolean = false,
   tokenAddress: string = G1_POLYGON_ADDRESS,
-  chainName: string = DEFAULT_CHAIN_NAME,
   chainId: string = DEFAULT_CHAIN_ID,
 ): Promise<axios.AxiosResponse<PatchRawResult, AxiosError>> {
   const plans = await getPlans(recipients);
@@ -200,16 +196,6 @@ export async function hedgeyLockTokens(
     plans.plans,
   );
 
-  console.log(
-    'data ',
-    await getData(
-      useVesting,
-      chainId,
-      tokenAddress,
-      plans.totalAmount,
-      plans.plans,
-    ),
-  );
   // Lock the tokens using PayMagic API
   return await callPatchWalletTx(
     senderTgId,

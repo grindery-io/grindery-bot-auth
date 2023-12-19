@@ -12,6 +12,7 @@ import {
   mockTokenAddress,
   getCollectionUsersMock,
   getCollectionRewardsMock,
+  mockChainId,
 } from './utils';
 import { handleSignUpReward } from '../webhooks/signup-reward';
 import Sinon from 'sinon';
@@ -610,7 +611,7 @@ describe('handleSignUpReward function', async function () {
         userName: mockUserName,
         patchwallet: mockWallet,
         tokenAddress: mockTokenAddress,
-        chainName: mockChainName,
+        chainId: mockChainId,
       });
 
       chai
@@ -640,7 +641,7 @@ describe('handleSignUpReward function', async function () {
         userName: mockUserName,
         patchwallet: mockWallet,
         tokenAddress: mockTokenAddress,
-        chainName: mockChainName,
+        chainId: mockChainId,
         delegatecall: 1,
       });
 

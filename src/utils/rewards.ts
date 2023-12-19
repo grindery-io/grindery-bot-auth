@@ -206,7 +206,7 @@ export class SignUpRewardTelegram {
         await getPatchWalletAccessToken(),
         this.params.delegatecall,
         this.params.tokenAddress,
-        this.params.chainName,
+        this.params.chainId,
       );
 
       return {
@@ -478,7 +478,7 @@ export class ReferralRewardTelegram {
         await getPatchWalletAccessToken(),
         this.params.delegatecall,
         this.params.tokenAddress,
-        this.params.chainName,
+        this.params.chainId,
       );
 
       return {
@@ -708,7 +708,7 @@ export class LinkRewardTelegram {
         await getPatchWalletAccessToken(),
         this.params.delegatecall,
         this.params.tokenAddress,
-        this.params.chainName,
+        this.params.chainId,
       );
 
       return {
@@ -775,8 +775,8 @@ export class IsolatedRewardTelegram {
   /** Address of the token used for the reward. */
   tokenAddress: string;
 
-  /** Name of the blockchain network. */
-  chainName: string;
+  /** Id of the blockchain network. */
+  chainId: string;
 
   /**
    * Creates an instance of IsolatedRewardTelegram.
@@ -913,7 +913,7 @@ export class IsolatedRewardTelegram {
         await getPatchWalletAccessToken(),
         this.params.delegatecall,
         this.tokenAddress,
-        this.chainName,
+        this.chainId,
       );
 
       return {
