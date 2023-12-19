@@ -8,7 +8,7 @@ export const FUNCTION_PARAMETER_A: number = 5;
 /**
  * Coefficient B used in a mathematical function.
  */
-export const FUNCTION_PARAMETER_B: number = 223.18;
+export const FUNCTION_PARAMETER_B: number = 223.175920819801;
 
 /**
  * Coefficient C used in a mathematical function.
@@ -52,11 +52,17 @@ export const TIME_EFFECT_INITIAL_FACTOR: number = 1.15;
 export const TIME_EFFECT_FINAL_FACTOR: number = 1;
 
 /**
+ * Represents the constant defining the number of minutes from a reference time
+ * to a deadline for time effect calculation.
+ */
+export const TIME_EFFECT_MINUTE_TO_DEADLINE = 23712;
+
+/**
  * Decaying slope used in time effect calculation based on time until Jan 1, 2024.
  */
 export const TIME_EFFECT_DECAYING_SLOPE: number =
   (TIME_EFFECT_INITIAL_FACTOR - TIME_EFFECT_FINAL_FACTOR) /
-  minutesUntilJanFirst2024();
+  TIME_EFFECT_MINUTE_TO_DEADLINE;
 
 /**
  * Computes the ratio between USD quantity and G1 quantity.
@@ -171,17 +177,18 @@ export function getGxAfterMVU(
  * @param {number} usdQuantity - The quantity in USD.
  * @param {number} g1Quantity - The quantity in G1.
  * @param {number} mvu - The MVU factor.
- * @param {number} time_left - The time remaining until a specific date (e.g., Jan 1, 2024).
  * @returns {number} The total quantity of GX after MVU with time effect.
  */
 export function getGxAfterMVUWithTimeEffect(
   usdQuantity: number,
   g1Quantity: number,
   mvu: number,
-  time_left: number,
 ): number {
   // Calculate the time difference between the target date and the provided time
-  const maxDifference = Math.max(minutesUntilJanFirst2024() - time_left, 0);
+  const maxDifference = Math.max(
+    TIME_EFFECT_MINUTE_TO_DEADLINE - minutesUntilJanFirst2024(),
+    0,
+  );
 
   // Calculate the total GX after MVU and apply the time effect
   return (
@@ -195,21 +202,18 @@ export function getGxAfterMVUWithTimeEffect(
  * @param {number} usdQuantity - The quantity in USD.
  * @param {number} g1Quantity - The quantity in G1.
  * @param {number} mvu - MVU factor.
- * @param {number} time_left - The time remaining until a specific date (e.g., Jan 1, 2024).
  * @returns {number} The total equivalent quantity in USD after MVU and time effects.
  */
 export function getTotalUSD(
   usdQuantity: number,
   g1Quantity: number,
   mvu: number,
-  time_left: number,
 ): number {
   // Calculate the total quantity of GX after MVU with time effect
   const gxAfterMVUWithTimeEffect = getGxAfterMVUWithTimeEffect(
     usdQuantity,
     g1Quantity,
     mvu,
-    time_left,
   );
 
   // Convert the total GX after MVU with time effect to USD
@@ -221,14 +225,12 @@ export function getTotalUSD(
  * @param {number} usdQuantity - The quantity in USD.
  * @param {number} g1Quantity - The quantity in G1.
  * @param {number} mvu - The Market Value Update (MVU) factor.
- * @param {number} time_left - The time remaining until a specific date (e.g., Jan 1, 2024).
  * @returns {object} An object containing details of the conversion and its equivalent investments in USD.
  */
 export function computeG1ToGxConversion(
   usdQuantity: number,
   g1Quantity: number,
   mvu: number,
-  time_left: number,
 ) {
   // Calculate different quantities and effects
   const gxAfterMVU = getGxAfterMVU(usdQuantity, g1Quantity, mvu);
@@ -239,7 +241,6 @@ export function computeG1ToGxConversion(
     usdQuantity,
     g1Quantity,
     mvu,
-    time_left,
   );
 
   // Calculate quantities in USD
@@ -273,6 +274,6 @@ export function computeG1ToGxConversion(
     equivalent_gx_usd_exchange_rate,
     standard_gx_usd_exchange_rate: EXCHANGE_RATE_GX_USD,
     discount_received:
-      1 - EXCHANGE_RATE_GX_USD / equivalent_gx_usd_exchange_rate,
+      (1 - EXCHANGE_RATE_GX_USD / equivalent_gx_usd_exchange_rate) * 100,
   };
 }
