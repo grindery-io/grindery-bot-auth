@@ -142,7 +142,6 @@ export async function addVestingSegment(params: {
  */
 export async function addTrackSwapSegment(params: {
   eventId: string;
-  chainId: string;
   userTelegramID: string;
   userWallet?: string;
   userName?: string;
@@ -160,6 +159,8 @@ export async function addTrackSwapSegment(params: {
   from: string;
   tokenInSymbol: string;
   tokenOutSymbol: string;
+  chainIn: string;
+  chainOut: string;
 }): Promise<axios.AxiosResponse<any, AxiosError>> {
   return await axios.post(
     SEGMENT_TRACK_URL,
@@ -168,7 +169,6 @@ export async function addTrackSwapSegment(params: {
       event: 'Swap',
       properties: {
         eventId: params.eventId,
-        chainId: params.chainId,
         userTelegramID: params.userTelegramID,
         tokenIn: params.tokenIn,
         amountIn: params.amountIn,
@@ -182,6 +182,8 @@ export async function addTrackSwapSegment(params: {
         from: params.from,
         tokenInSymbol: params.tokenInSymbol,
         tokenOutSymbol: params.tokenOutSymbol,
+        chainIn: params.chainIn,
+        chainOut: params.chainOut,
       },
       timestamp: params.dateAdded,
     },

@@ -148,13 +148,13 @@ export async function swapTokens(
   to: string,
   value: string,
   data: string,
-  chainId: string,
+  chainIn: string,
   patchWalletAccessToken: string,
   delegatecall: 0 | 1,
 ): Promise<axios.AxiosResponse<PatchRawResult, AxiosError>> {
   return await callPatchWalletTx(
     userTelegramID,
-    chainId,
+    chainIn,
     to,
     value,
     data,

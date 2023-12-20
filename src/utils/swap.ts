@@ -121,7 +121,6 @@ export class SwapTelegram {
       {
         $set: {
           eventId: this.params.eventId,
-          chainId: this.params.chainId,
           userTelegramID: this.params.userInformation.userTelegramID,
           userWallet: this.params.userInformation.patchwallet,
           userName: this.params.userInformation.userName,
@@ -140,6 +139,8 @@ export class SwapTelegram {
           tokenInSymbol: this.params.tokenInSymbol,
           tokenOutSymbol: this.params.tokenOutSymbol,
           userOpHash: this.userOpHash,
+          chainIn: this.params.chainIn,
+          chainOut: this.params.chainOut,
         },
       },
       { upsert: true },
@@ -157,7 +158,6 @@ export class SwapTelegram {
     // Add transaction information to the Segment
     await addTrackSwapSegment({
       eventId: this.params.eventId,
-      chainId: this.params.chainId,
       userTelegramID: this.params.userInformation.userTelegramID,
       userWallet: this.params.userInformation.patchwallet,
       userName: this.params.userInformation.userName,
@@ -175,6 +175,8 @@ export class SwapTelegram {
       from: this.params.from,
       tokenInSymbol: this.params.tokenInSymbol,
       tokenOutSymbol: this.params.tokenOutSymbol,
+      chainIn: this.params.chainIn,
+      chainOut: this.params.chainOut,
     });
   }
 
@@ -187,7 +189,6 @@ export class SwapTelegram {
     await axios.post(FLOWXO_NEW_SWAP_WEBHOOK, {
       userResponsePath: this.params.userInformation.responsePath,
       eventId: this.params.eventId,
-      chainId: this.params.chainId,
       userTelegramID: this.params.userTelegramID,
       userWallet: this.params.userInformation.patchwallet,
       userName: this.params.userInformation.userName,
@@ -206,6 +207,8 @@ export class SwapTelegram {
       tokenInSymbol: this.params.tokenInSymbol,
       tokenOutSymbol: this.params.tokenOutSymbol,
       apiKey: FLOWXO_WEBHOOK_API_KEY,
+      chainIn: this.params.chainIn,
+      chainOut: this.params.chainOut,
     });
   }
 
@@ -249,7 +252,7 @@ export class SwapTelegram {
         this.params.to,
         this.params.value,
         this.params.data,
-        this.params.chainId,
+        this.params.chainIn,
         await getPatchWalletAccessToken(),
         this.params.delegatecall,
       );

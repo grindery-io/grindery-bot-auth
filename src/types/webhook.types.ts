@@ -63,6 +63,10 @@ export type SwapParams = {
    * - `1` for delegate call
    */
   delegatecall?: 0 | 1;
+  /** The chain in ID for the swap/bridge. */
+  chainIn?: string;
+  /** The chain out ID for the swap/bridge. */
+  chainOut?: string;
 };
 
 /**
