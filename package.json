@@ -24,7 +24,6 @@
     "@google-cloud/pubsub": "^4.0.5",
     "@google-cloud/secret-manager": "^5.0.1",
     "@types/sinon": "^10.0.17",
-    "airtable": "^0.12.2",
     "axios": "^1.4.0",
     "bignumber.js": "^9.1.1",
     "body-parser": "^1.20.2",

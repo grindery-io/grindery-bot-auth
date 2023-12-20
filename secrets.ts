@@ -222,18 +222,6 @@ export const FLOWXO_NEW_SWAP_WEBHOOK =
   process.env.FLOWXO_NEW_SWAP_WEBHOOK || '';
 
 /**
- * The Airtable base ID used for something.
- * Fallback: an empty string if not defined in the environment.
- */
-export const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID || '';
-
-/**
- * The Airtable API key used for something.
- * Fallback: an empty string if not defined in the environment.
- */
-export const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY || '';
-
-/**
  * The Segment write key used for something.
  * Fallback: an empty string if not defined in the environment.
  */
