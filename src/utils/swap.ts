@@ -157,26 +157,10 @@ export class SwapTelegram {
   async saveToSegment(): Promise<void> {
     // Add transaction information to the Segment
     await addTrackSwapSegment({
-      eventId: this.params.eventId,
-      userTelegramID: this.params.userInformation.userTelegramID,
-      userWallet: this.params.userInformation.patchwallet,
-      userName: this.params.userInformation.userName,
-      userHandle: this.params.userInformation.userHandle,
-      tokenIn: this.params.tokenIn,
-      amountIn: this.params.amountIn,
-      tokenOut: this.params.tokenOut,
-      amountOut: this.params.amountOut,
-      priceImpact: this.params.priceImpact,
-      gas: this.params.gas,
-      status: TRANSACTION_STATUS.SUCCESS,
+      ...this.params,
       transactionHash: this.txHash,
       dateAdded: new Date(),
-      to: this.params.to,
-      from: this.params.from,
-      tokenInSymbol: this.params.tokenInSymbol,
-      tokenOutSymbol: this.params.tokenOutSymbol,
-      chainIn: this.params.chainIn,
-      chainOut: this.params.chainOut,
+      status: TRANSACTION_STATUS.SUCCESS,
     });
   }
 

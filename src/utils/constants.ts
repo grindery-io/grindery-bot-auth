@@ -78,7 +78,7 @@ export const TRANSACTION_STATUS = {
   SUCCESS: 'success',
   FAILURE: 'failure',
   PENDING_HASH: 'pending_hash',
-};
+} as const;
 
 /**
  * Segment API endpoint.

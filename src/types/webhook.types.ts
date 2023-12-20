@@ -7,9 +7,20 @@ import {
 } from '../utils/rewards';
 import { TransferTelegram } from '../utils/transfers';
 import { SwapTelegram } from '../utils/swap';
-import { DEFAULT_CHAIN_ID, G1_TOKEN_SYMBOL } from '../utils/constants';
+import {
+  DEFAULT_CHAIN_ID,
+  G1_TOKEN_SYMBOL,
+  TRANSACTION_STATUS,
+} from '../utils/constants';
 import { G1_POLYGON_ADDRESS } from '../../secrets';
 import { VestingTelegram } from '../utils/vesting';
+
+/**
+ * Represents the various transaction statuses.
+ * Possible values are constrained to those defined in TRANSACTION_STATUS.
+ */
+export type TransactionStatus =
+  (typeof TRANSACTION_STATUS)[keyof typeof TRANSACTION_STATUS];
 
 /**
  * Defines the structure for SwapParams.
@@ -81,6 +92,19 @@ export function createSwapParams(
     userInformation,
   };
 }
+
+/**
+ * Defines the structure for TrackSwapSegmentParams.
+ * Extends SwapParams and includes additional fields for tracking swap segments.
+ */
+export type TrackSwapSegmentParams = SwapParams & {
+  /** The status of the swap transaction. Must be one of the TRANSACTION_STATUS values. */
+  status: TransactionStatus;
+  /** The hash associated with the transaction. */
+  transactionHash: string;
+  /** The date when the segment was added. */
+  dateAdded: Date;
+};
 
 /**
  * Defines the structure for RewardParams.
@@ -199,6 +223,19 @@ export function createTransaction(
     senderInformation,
   };
 }
+
+/**
+ * Defines the structure for TrackSegmentParams.
+ * Extends TransactionParams and includes additional fields for tracking segments.
+ */
+export type TrackSegmentParams = TransactionParams & {
+  /** The wallet address of the recipient. */
+  recipientWallet: string;
+  /** The hash associated with the transaction. */
+  transactionHash: string;
+  /** The date when the segment was added. */
+  dateAdded: Date;
+};
 
 /**
  * Type union for different reward types.

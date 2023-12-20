@@ -64,3 +64,14 @@ export function createVesting(
     senderInformation,
   };
 }
+
+/**
+ * Defines the structure for VestingSegmentParams.
+ * Extends VestingParams and includes additional fields for tracking vesting segments.
+ */
+export type VestingSegmentParams = VestingParams & {
+  /** The hash associated with the transaction. */
+  transactionHash: string;
+  /** The date when the segment was added. */
+  dateAdded: Date;
+};

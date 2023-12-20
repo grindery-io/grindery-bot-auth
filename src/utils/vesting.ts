@@ -250,18 +250,9 @@ export class VestingTelegram {
   async saveToSegment(): Promise<void> {
     // Add transaction information to the Segment
     await addVestingSegment({
-      userTelegramID: this.params.senderInformation.userTelegramID,
-      senderTgId: this.params.senderInformation.userTelegramID,
-      senderWallet: this.params.senderInformation.patchwallet,
-      senderName: this.params.senderInformation.userName,
-      senderHandle: this.params.senderInformation.userHandle,
-      recipients: this.params.recipients,
+      ...this.params,
       transactionHash: this.txHash,
       dateAdded: new Date(),
-      eventId: this.eventId,
-      tokenSymbol: this.params.tokenSymbol,
-      tokenAddress: this.params.tokenAddress,
-      chainId: this.params.chainId,
     });
   }
 
