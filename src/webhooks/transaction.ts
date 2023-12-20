@@ -21,7 +21,6 @@ import {
  * @param params.eventId The ID of the event related to the transaction.
  * @param params.chainId Optional: The chain ID.
  * @param params.tokenAddress Optional: The token address related to the transaction.
- * @param params.chainName Optional: The chain name.
  * @param params.message Optional: A message associated with the transaction.
  * @returns A Promise that resolves to a boolean indicating the success status of the transaction handling process.
  */

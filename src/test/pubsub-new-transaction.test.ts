@@ -159,7 +159,6 @@ describe('handleNewTransaction function', async function () {
         eventId: txId,
         chainId: mockChainId,
         tokenAddress: mockTokenAddress,
-        chainName: mockChainName,
       });
 
       const transfers = await collectionTransfersMock.find({}).toArray();
@@ -378,7 +377,6 @@ describe('handleNewTransaction function', async function () {
         eventId: txId,
         chainId: mockChainId,
         tokenAddress: mockTokenAddress,
-        chainName: mockChainName,
       });
 
       const transfers = await collectionTransfersMock.find({}).toArray();

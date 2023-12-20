@@ -19,7 +19,6 @@ import {
   mockFromSwap,
   mockTokenInSymbol,
   mockTokenOutSymbol,
-  mockChainName,
   mockChainId,
   getCollectionUsersMock,
   getCollectionSwapsMock,
@@ -160,7 +159,6 @@ describe('handleSwap function', async function () {
         from: mockFromSwap,
         tokenInSymbol: mockTokenInSymbol,
         tokenOutSymbol: mockTokenOutSymbol,
-        chainName: mockChainName,
         chainIn: mockChainId,
         chainOut: mockChainId,
       });

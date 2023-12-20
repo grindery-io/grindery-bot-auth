@@ -7,11 +7,7 @@ import {
 } from '../utils/rewards';
 import { TransferTelegram } from '../utils/transfers';
 import { SwapTelegram } from '../utils/swap';
-import {
-  DEFAULT_CHAIN_ID,
-  DEFAULT_CHAIN_NAME,
-  G1_TOKEN_SYMBOL,
-} from '../utils/constants';
+import { DEFAULT_CHAIN_ID, G1_TOKEN_SYMBOL } from '../utils/constants';
 import { G1_POLYGON_ADDRESS } from '../../secrets';
 import { VestingTelegram } from '../utils/vesting';
 
@@ -51,8 +47,6 @@ export type SwapParams = {
   tokenOutSymbol: string;
   /** The chain ID for the swap. */
   chainId?: string;
-  /** The chain name for the swap. */
-  chainName?: string;
   /** Additional amount information for the swap. */
   amount?: string;
   /** The Telegram user ID of the sender. */
@@ -81,7 +75,6 @@ export function createSwapParams(
   return {
     ...{
       chainId: DEFAULT_CHAIN_ID,
-      chainName: DEFAULT_CHAIN_NAME,
       delegatecall: 0,
     },
     ...params,
@@ -171,8 +164,6 @@ export type TransactionParams = {
   chainId?: string;
   /** The token address for the transaction. */
   tokenAddress?: string;
-  /** The chain name for the transaction. */
-  chainName?: string;
   /** The message associated with the transaction. */
   message?: string;
   /** The symbol of the token for the transaction. */
@@ -202,7 +193,6 @@ export function createTransaction(
       tokenSymbol: G1_TOKEN_SYMBOL,
       tokenAddress: G1_POLYGON_ADDRESS,
       chainId: DEFAULT_CHAIN_ID,
-      chainName: DEFAULT_CHAIN_NAME,
       delegatecall: 0,
     },
     ...params,

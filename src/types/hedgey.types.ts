@@ -1,9 +1,5 @@
 import { Document, WithId } from 'mongodb';
-import {
-  DEFAULT_CHAIN_ID,
-  DEFAULT_CHAIN_NAME,
-  G1_TOKEN_SYMBOL,
-} from '../utils/constants';
+import { DEFAULT_CHAIN_ID, G1_TOKEN_SYMBOL } from '../utils/constants';
 import { G1_POLYGON_ADDRESS } from '../../secrets';
 
 export type HedgeyRecipientParams = {
@@ -40,8 +36,6 @@ export type VestingParams = {
   chainId?: string;
   /** The token address for the transaction. */
   tokenAddress?: string;
-  /** The chain name for the transaction. */
-  chainName?: string;
   /** The message associated with the transaction. */
   message?: string;
   /** The symbol of the token for the transaction. */
@@ -65,7 +59,6 @@ export function createVesting(
       tokenSymbol: G1_TOKEN_SYMBOL,
       tokenAddress: G1_POLYGON_ADDRESS,
       chainId: DEFAULT_CHAIN_ID,
-      chainName: DEFAULT_CHAIN_NAME,
     },
     ...params,
     senderInformation,

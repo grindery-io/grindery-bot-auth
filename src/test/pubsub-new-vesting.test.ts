@@ -154,7 +154,6 @@ describe('handleNewVesting function', async function () {
         eventId: txId,
         chainId: mockChainId,
         tokenAddress: mockTokenAddress,
-        chainName: mockChainName,
       });
 
       const transfers = await collectionVestingsMock.find({}).toArray();
@@ -306,7 +305,6 @@ describe('handleNewVesting function', async function () {
         eventId: txId,
         chainId: mockChainId,
         tokenAddress: mockTokenAddress,
-        chainName: mockChainName,
       });
 
       const transfers = await collectionVestingsMock.find({}).toArray();
