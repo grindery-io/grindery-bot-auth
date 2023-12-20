@@ -1,5 +1,6 @@
 import { Database } from '../db/conn';
 import { VestingParams, createVesting } from '../types/hedgey.types';
+import { PatchResult } from '../types/webhook.types';
 import { TRANSACTION_STATUS, USERS_COLLECTION } from '../utils/constants';
 import { VestingTelegram, createVestingTelegram } from '../utils/vesting';
 import {
@@ -55,7 +56,7 @@ export async function handleNewVesting(
   )
     return true;
 
-  let tx;
+  let tx: PatchResult;
 
   // Handle pending hash status
   if (isPendingTransactionHash(vesting.status)) {
@@ -68,16 +69,22 @@ export async function handleNewVesting(
         true
       );
 
-    // Check status for userOpHash
-    if ((tx = await vesting.getStatus()) === true || tx == false) return tx;
+    // Check status for userOpHash and return the status if it's retrieved successfully or false if failed
+    tx = await vesting.getStatus();
+    if (tx.isError) return true;
+    if (!tx.txHash && !tx.userOpHash) return false;
   }
 
   // Handle sending transaction if not already handled
-  if (!tx && ((tx = await vesting.sendTx()) === true || tx == false)) return tx;
+  if (!tx) {
+    tx = await vesting.sendTx();
+    if (tx.isError) return true;
+    if (!tx.txHash && !tx.userOpHash) return false;
+  }
 
   // Finalize transaction handling
-  if (tx && tx.data.txHash) {
-    updateTxHash(vesting, tx.data.txHash);
+  if (tx && tx.txHash) {
+    updateTxHash(vesting, tx.txHash);
     await Promise.all([
       vesting.updateInDatabase(TRANSACTION_STATUS.SUCCESS, new Date()),
       vesting.saveToSegment(),
@@ -96,8 +103,8 @@ export async function handleNewVesting(
 
   // Handle pending hash for userOpHash
   tx &&
-    tx.data.userOpHash &&
-    updateUserOpHash(vesting, tx.data.userOpHash) &&
+    tx.userOpHash &&
+    updateUserOpHash(vesting, tx.userOpHash) &&
     (await vesting.updateInDatabase(TRANSACTION_STATUS.PENDING_HASH, null));
 
   return false;

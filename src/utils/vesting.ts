@@ -29,6 +29,7 @@ import {
   scaleDecimals,
 } from './web3';
 import BigNumber from 'bignumber.js';
+import { PatchResult } from '../types/webhook.types';
 
 /**
  * Calculates and generates plans for distributing tokens to recipients over time.
@@ -287,12 +288,18 @@ export class VestingTelegram {
 
   /**
    * Retrieves the status of the PatchWallet transaction.
-   * @returns {Promise<any>} - True if the transaction status is retrieved successfully, false otherwise.
+   * @returns {Promise<PatchResult>} - True if the transaction status is retrieved successfully, false otherwise.
    */
-  async getStatus(): Promise<any> {
+  async getStatus(): Promise<PatchResult> {
     try {
       // Retrieve the status of the PatchWallet transaction
-      return await getTxStatus(this.userOpHash);
+      const res = await getTxStatus(this.userOpHash);
+
+      return {
+        isError: false,
+        userOpHash: res.data.userOpHash,
+        txHash: res.data.txHash,
+      };
     } catch (error) {
       // Log error if retrieving transaction status fails
       console.error(
@@ -302,24 +309,29 @@ export class VestingTelegram {
       return (
         (error?.response?.status === 470 &&
           (await this.updateInDatabase(TRANSACTION_STATUS.FAILURE, new Date()),
-          true)) ||
-        false
+          { isError: true })) || { isError: false }
       );
     }
   }
 
   /**
    * Sends tokens using PatchWallet.
-   * @returns {Promise<any>} - True if the tokens are sent successfully, false otherwise.
+   * @returns {Promise<PatchResult>} - True if the tokens are sent successfully, false otherwise.
    */
-  async sendTx(): Promise<any> {
+  async sendTx(): Promise<PatchResult> {
     try {
       // Send tokens using PatchWallet
-      return await hedgeyLockTokens(
+      const res = await hedgeyLockTokens(
         this.params.senderInformation.userTelegramID,
         this.params.recipients,
         await getPatchWalletAccessToken(),
       );
+
+      return {
+        isError: false,
+        userOpHash: res.data.userOpHash,
+        txHash: res.data.txHash,
+      };
     } catch (error) {
       console.error(error);
       // Log error if sending tokens fails
@@ -329,8 +341,8 @@ export class VestingTelegram {
       // Return true if the amount is not a valid number or the error status is 470, marking the transaction as failed
       return error?.response?.status === 470
         ? (await this.updateInDatabase(TRANSACTION_STATUS.FAILURE, new Date()),
-          true)
-        : false;
+          { isError: true })
+        : { isError: false };
     }
   }
 }
