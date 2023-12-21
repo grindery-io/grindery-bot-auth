@@ -11,24 +11,21 @@ import { RewardParams, createRewardParams } from '../types/webhook.types';
  */
 export async function handleNewReward(params: RewardParams): Promise<boolean> {
   // Creates a new user based on the provided parameters.
-  const user = await createUserTelegram(
-    params.userTelegramID,
-    params.responsePath,
-    params.userHandle,
-    params.userName,
-  );
+  const user = await createUserTelegram(params);
 
   // Checks if the user is already in the database.
   if (user.isInDatabase) {
     // Stops processing and logs that the user already exists.
-    console.log(`[${params.eventId}] ${user.telegramID} user already exists.`);
+    console.log(
+      `[${params.eventId}] ${user.params.userTelegramID} user already exists.`,
+    );
     return true;
   }
 
   // Stops processing if user's patchwallet is missing.
-  if (!user.patchwallet) return false;
+  if (!user.params.patchwallet) return false;
 
-  const param_rewards = createRewardParams(params, user.patchwallet);
+  const param_rewards = createRewardParams(params, user.params.patchwallet);
 
   // Handles the sign-up reward for the user.
   if (

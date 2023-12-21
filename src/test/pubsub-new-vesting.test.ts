@@ -14,7 +14,6 @@ import {
   getCollectionUsersMock,
   getCollectionVestingsMock,
   mockWallet1,
-  ContractStub,
 } from './utils';
 import Sinon from 'sinon';
 import axios from 'axios';
@@ -33,6 +32,7 @@ import { FLOWXO_NEW_VESTING_WEBHOOK, G1_POLYGON_ADDRESS } from '../../secrets';
 import * as web3 from '../utils/web3';
 import { Collection, Document } from 'mongodb';
 import { handleNewVesting } from '../webhooks/vesting';
+import { ContractStub } from '../types/tests.types';
 
 chai.use(chaiExclude);
 

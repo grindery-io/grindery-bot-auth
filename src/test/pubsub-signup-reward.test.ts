@@ -13,7 +13,6 @@ import {
   getCollectionUsersMock,
   getCollectionRewardsMock,
   mockChainId,
-  ContractStub,
 } from './utils';
 import { handleSignUpReward } from '../webhooks/signup-reward';
 import Sinon from 'sinon';
@@ -35,6 +34,7 @@ import {
 } from '../../secrets';
 import * as web3 from '../utils/web3';
 import { Collection, Document } from 'mongodb';
+import { ContractStub } from '../types/tests.types';
 
 chai.use(chaiExclude);
 

@@ -173,6 +173,16 @@ export function createRewardParams(
 }
 
 /**
+ * Represents parameters for an Identity Segment, extending RewardParams.
+ */
+export type IdentitySegmentParams = RewardParams & {
+  /**
+   * The date when the segment was added.
+   */
+  dateAdded: Date;
+};
+
+/**
  * Defines the structure for TransactionParams.
  */
 export type TransactionParams = {

@@ -32,7 +32,6 @@ import {
   getCollectionUsersMock,
   getCollectionRewardsMock,
   mockChainId,
-  ContractStub,
 } from './utils';
 import Sinon from 'sinon';
 import axios from 'axios';
@@ -55,6 +54,7 @@ import {
 import { handleReferralReward } from '../webhooks/referral-reward';
 import * as web3 from '../utils/web3';
 import { Collection, Document } from 'mongodb';
+import { ContractStub } from '../types/tests.types';
 
 chai.use(chaiExclude);
 

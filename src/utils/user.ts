@@ -3,22 +3,17 @@ import { Database } from '../db/conn';
 import { REWARDS_COLLECTION, USERS_COLLECTION } from './constants';
 import { getPatchWalletAddressFromTgId } from './patchwallet';
 import { addIdentitySegment } from './segment';
+import { RewardParams } from '../types/webhook.types';
 
 /**
- * Creates a new UserTelegram instance and initializes it.
- * @param {string} telegramID - The Telegram user ID.
- * @param {string} responsePath - The response path.
- * @param {string} userHandle - The user's handle.
- * @param {string} userName - The user's name.
- * @returns {Promise<UserTelegram>} - The initialized UserTelegram instance.
+ * Creates a new instance of UserTelegram and initializes its database.
+ * @param params - The parameters used to create the UserTelegram instance.
+ * @returns A Promise that resolves to the created UserTelegram instance.
  */
 export async function createUserTelegram(
-  telegramID: string,
-  responsePath: string,
-  userHandle: string,
-  userName: string,
+  params: RewardParams,
 ): Promise<UserTelegram> {
-  const user = new UserTelegram(telegramID, responsePath, userHandle, userName);
+  const user = new UserTelegram(params);
   await user.initializeUserDatabase();
   return user;
 }
@@ -27,28 +22,29 @@ export async function createUserTelegram(
  * Represents a UserTelegram.
  */
 export class UserTelegram {
-  telegramID: string;
-  responsePath: string;
-  patchwallet?: string;
-  userHandle: string;
-  userName: string;
+  /**
+   * The parameters used to create the UserTelegram instance.
+   */
+  params: RewardParams;
+
+  /**
+   * Indicates whether the user exists in the database.
+   */
   isInDatabase: boolean = false;
+
+  /**
+   * The database instance associated with the user.
+   */
   db?: Db;
 
-  constructor(
-    telegramID: string,
-    responsePath: string,
-    userHandle: string,
-    userName: string,
-  ) {
-    this.telegramID = telegramID;
-    this.responsePath = responsePath;
-    this.patchwallet = undefined;
-    this.userHandle = userHandle;
-    this.userName = userName;
+  /**
+   * Constructs a new UserTelegram instance.
+   * @param params - The parameters used to create the UserTelegram instance.
+   */
+  constructor(params: RewardParams) {
+    this.params = params;
     this.isInDatabase = false;
   }
-
   /**
    * Initializes the UserTelegram's database connection and retrieves user data if available.
    */
@@ -58,10 +54,12 @@ export class UserTelegram {
 
     if (userDB) {
       this.isInDatabase = true;
-      this.patchwallet = userDB.patchwallet;
+      this.params.patchwallet = userDB.patchwallet;
     } else {
       try {
-        this.patchwallet = await getPatchWalletAddressFromTgId(this.telegramID);
+        this.params.patchwallet = await getPatchWalletAddressFromTgId(
+          this.params.userTelegramID,
+        );
       } catch (error) {
         console.error('Error:', error);
       }
@@ -75,7 +73,7 @@ export class UserTelegram {
   async getUserFromDatabase(): Promise<WithId<Document>> {
     return await this.db
       .collection(USERS_COLLECTION)
-      .findOne({ userTelegramID: this.telegramID });
+      .findOne({ userTelegramID: this.params.userTelegramID });
   }
 
   /**
@@ -96,21 +94,23 @@ export class UserTelegram {
     if (this.isInDatabase) return;
 
     await this.db.collection(USERS_COLLECTION).updateOne(
-      { userTelegramID: this.telegramID },
+      { userTelegramID: this.params.userTelegramID },
       {
         $set: {
-          userTelegramID: this.telegramID,
-          userHandle: this.userHandle,
-          userName: this.userName,
-          responsePath: this.responsePath,
-          patchwallet: this.patchwallet,
+          userTelegramID: this.params.userTelegramID,
+          userHandle: this.params.userHandle,
+          userName: this.params.userName,
+          responsePath: this.params.responsePath,
+          patchwallet: this.params.patchwallet,
           dateAdded: new Date(),
         },
       },
       { upsert: true },
     );
 
-    console.log(`[${eventId}] ${this.telegramID} added to the user database.`);
+    console.log(
+      `[${eventId}] ${this.params.userTelegramID} added to the user database.`,
+    );
   }
 
   /**
@@ -123,15 +123,13 @@ export class UserTelegram {
 
     try {
       await addIdentitySegment({
-        userTelegramID: this.telegramID,
-        responsePath: this.responsePath,
-        userHandle: this.userHandle,
-        userName: this.userName,
-        patchwallet: this.patchwallet,
+        ...this.params,
         dateAdded: new Date(),
       });
 
-      console.log(`[${eventId}] ${this.telegramID} added to Segment.`);
+      console.log(
+        `[${eventId}] ${this.params.userTelegramID} added to Segment.`,
+      );
     } catch (error) {
       console.error(
         `[${eventId}] Error processing new user in Segment: ${error}`,
@@ -146,7 +144,10 @@ export class UserTelegram {
   async getSignUpReward(): Promise<WithId<Document>[]> {
     return await this.db
       .collection(REWARDS_COLLECTION)
-      .find({ userTelegramID: this.telegramID, reason: 'user_sign_up' })
+      .find({
+        userTelegramID: this.params.userTelegramID,
+        reason: 'user_sign_up',
+      })
       .toArray();
   }
 
@@ -165,7 +166,7 @@ export class UserTelegram {
   async getReferralRewards(): Promise<WithId<Document>[]> {
     return await this.db
       .collection(REWARDS_COLLECTION)
-      .find({ userTelegramID: this.telegramID, reason: '2x_reward' })
+      .find({ userTelegramID: this.params.userTelegramID, reason: '2x_reward' })
       .toArray();
   }
 
@@ -184,7 +185,10 @@ export class UserTelegram {
   async getLinkRewards(): Promise<WithId<Document>[]> {
     return await this.db
       .collection(REWARDS_COLLECTION)
-      .find({ userTelegramID: this.telegramID, reason: 'referral_link' })
+      .find({
+        userTelegramID: this.params.userTelegramID,
+        reason: 'referral_link',
+      })
       .toArray();
   }
 

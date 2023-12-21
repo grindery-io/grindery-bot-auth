@@ -3,6 +3,7 @@ import { SEGMENT_KEY } from '../../secrets';
 import { SEGMENT_IDENTITY_URL, SEGMENT_TRACK_URL } from './constants';
 import { VestingSegmentParams } from '../types/hedgey.types';
 import {
+  IdentitySegmentParams,
   TrackSegmentParams,
   TrackSwapSegmentParams,
 } from '../types/webhook.types';
@@ -12,14 +13,9 @@ import {
  * @param user The user data to identify and add to the segment.
  * @returns A Promise resolving to an AxiosResponse.
  */
-export async function addIdentitySegment(user: {
-  userTelegramID: string;
-  responsePath: string;
-  userHandle: string;
-  userName: string;
-  patchwallet: string;
-  dateAdded: Date;
-}): Promise<axios.AxiosResponse<any, AxiosError>> {
+export async function addIdentitySegment(
+  user: IdentitySegmentParams,
+): Promise<axios.AxiosResponse<any, AxiosError>> {
   return await axios.post(
     SEGMENT_IDENTITY_URL,
     {

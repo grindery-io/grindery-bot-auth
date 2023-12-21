@@ -23,7 +23,6 @@ import {
   getCollectionUsersMock,
   getCollectionSwapsMock,
   mockValue,
-  ContractStub,
 } from './utils';
 import Sinon from 'sinon';
 import axios from 'axios';
@@ -42,6 +41,7 @@ import { handleSwap } from '../webhooks/swap';
 import { FLOWXO_NEW_SWAP_WEBHOOK, FLOWXO_WEBHOOK_API_KEY } from '../../secrets';
 import { Collection, Document } from 'mongodb';
 import { CHAIN_MAPPING } from '../utils/chains';
+import { ContractStub } from '../types/tests.types';
 
 chai.use(chaiExclude);
 

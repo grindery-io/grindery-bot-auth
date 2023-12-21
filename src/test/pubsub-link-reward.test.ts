@@ -14,7 +14,6 @@ import {
   getCollectionUsersMock,
   getCollectionRewardsMock,
   mockChainId,
-  ContractStub,
 } from './utils';
 import Sinon from 'sinon';
 import axios from 'axios';
@@ -32,6 +31,7 @@ import {
 import { FLOWXO_NEW_LINK_REWARD_WEBHOOK, SOURCE_TG_ID } from '../../secrets';
 import { handleLinkReward } from '../webhooks/link-reward';
 import { Collection, Document } from 'mongodb';
+import { ContractStub } from '../types/tests.types';
 
 chai.use(chaiExclude);
 

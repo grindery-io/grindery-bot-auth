@@ -7,8 +7,6 @@ import {
   mockWallet,
   mockUserTelegramID1,
   getCollectionUsersMock,
-  ContractStub,
-  RewardStub,
 } from './utils';
 import { handleNewReward } from '../webhooks/webhook';
 import Sinon from 'sinon';
@@ -26,6 +24,7 @@ import {
   PATCHWALLET_RESOLVER_URL,
   SEGMENT_IDENTITY_URL,
 } from '../utils/constants';
+import { ContractStub, RewardStub } from '../types/tests.types';
 
 chai.use(chaiExclude);
 
