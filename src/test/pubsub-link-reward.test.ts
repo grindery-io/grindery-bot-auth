@@ -14,6 +14,7 @@ import {
   getCollectionUsersMock,
   getCollectionRewardsMock,
   mockChainId,
+  ContractStub,
 } from './utils';
 import Sinon from 'sinon';
 import axios from 'axios';
@@ -40,7 +41,7 @@ describe('handleLinkReward function', async function () {
   let rewardId: string;
   let collectionUsersMock: Collection<Document>;
   let collectionRewardsMock: Collection<Document>;
-  let contractStub: { methods: any };
+  let contractStub: ContractStub;
   let getContract;
 
   beforeEach(async function () {

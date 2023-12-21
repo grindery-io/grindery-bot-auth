@@ -7,6 +7,7 @@ import {
   mockWallet,
   mockUserTelegramID1,
   getCollectionUsersMock,
+  ContractStub,
 } from './utils';
 import { handleNewReward } from '../webhooks/webhook';
 import Sinon from 'sinon';
@@ -41,7 +42,7 @@ describe('handleReferralReward function', function () {
   let linkRewardStub: Sinon.SinonStub<[params: RewardParams], Promise<boolean>>;
   let eventId: string;
   let collectionUsersMock: Collection<Document>;
-  let contractStub: { methods: any };
+  let contractStub: ContractStub;
   let getContract;
 
   beforeEach(async function () {

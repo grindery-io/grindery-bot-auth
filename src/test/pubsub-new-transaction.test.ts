@@ -14,6 +14,7 @@ import {
   mockChainId,
   getCollectionUsersMock,
   getCollectionTransfersMock,
+  ContractStub,
 } from './utils';
 import Sinon from 'sinon';
 import axios from 'axios';
@@ -45,7 +46,7 @@ describe('handleNewTransaction function', async function () {
   let txId: string;
   let collectionUsersMock: Collection<Document>;
   let collectionTransfersMock: Collection<Document>;
-  let contractStub: { methods: any };
+  let contractStub: ContractStub;
   let getContract;
 
   beforeEach(async function () {

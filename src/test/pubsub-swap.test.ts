@@ -23,6 +23,7 @@ import {
   getCollectionUsersMock,
   getCollectionSwapsMock,
   mockValue,
+  ContractStub,
 } from './utils';
 import Sinon from 'sinon';
 import axios from 'axios';
@@ -113,7 +114,7 @@ describe('handleSwap function', async function () {
   });
 
   describe('Normal process to handle a swap', async function () {
-    let contractStub: { methods: any };
+    let contractStub: ContractStub;
     let getContract;
 
     beforeEach(async function () {
@@ -1572,7 +1573,7 @@ describe('handleSwap function', async function () {
     });
 
     describe('Transaction hash is present in PatchWallet status endpoint', async function () {
-      let contractStub: { methods: any };
+      let contractStub: ContractStub;
       let getContract;
 
       beforeEach(async function () {

@@ -32,6 +32,7 @@ import {
   getCollectionUsersMock,
   getCollectionRewardsMock,
   mockChainId,
+  ContractStub,
 } from './utils';
 import Sinon from 'sinon';
 import axios from 'axios';
@@ -64,7 +65,7 @@ describe('handleReferralReward function', function () {
   let collectionTransfersMock: Collection<Document>;
   let collectionUsersMock: Collection<Document>;
   let collectionRewardsMock: Collection<Document>;
-  let contractStub: { methods: any };
+  let contractStub: ContractStub;
   let getContract;
 
   beforeEach(async function () {

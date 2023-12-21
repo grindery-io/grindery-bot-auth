@@ -149,3 +149,16 @@ async function getAccessToken(): Promise<string> {
  * Mocked token retrieved as an access token.
  */
 export const mockedToken = getAccessToken();
+
+/**
+ * Represents a smart contract stub with methods of any type.
+ * This type is used to define an object structure containing contract methods.
+ */
+export type ContractStub = {
+  /**
+   * Methods within the contract.
+   * Type: any
+   * This property holds the methods associated with the contract, allowing flexibility in method definitions.
+   */
+  methods: any;
+};

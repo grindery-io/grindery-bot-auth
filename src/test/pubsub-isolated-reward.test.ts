@@ -14,6 +14,7 @@ import {
   getCollectionUsersMock,
   getCollectionRewardsMock,
   mockChainId,
+  ContractStub,
 } from './utils';
 import Sinon from 'sinon';
 import axios from 'axios';
@@ -44,7 +45,7 @@ describe('handleIsolatedReward function', async function () {
   let axiosStub;
   let rewardId: string;
   let collectionRewardsMock: Collection<Document>;
-  let contractStub: { methods: any };
+  let contractStub: ContractStub;
   let getContract;
 
   beforeEach(async function () {

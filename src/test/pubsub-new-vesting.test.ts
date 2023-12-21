@@ -14,6 +14,7 @@ import {
   getCollectionUsersMock,
   getCollectionVestingsMock,
   mockWallet1,
+  ContractStub,
 } from './utils';
 import Sinon from 'sinon';
 import axios from 'axios';
@@ -41,7 +42,7 @@ describe('handleNewVesting function', async function () {
   let txId: string;
   let collectionUsersMock: Collection<Document>;
   let collectionVestingsMock: Collection<Document>;
-  let contractStub: { methods: any };
+  let contractStub: ContractStub;
   let getContract;
 
   beforeEach(async function () {

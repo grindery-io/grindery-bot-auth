@@ -13,6 +13,7 @@ import {
   getCollectionUsersMock,
   getCollectionRewardsMock,
   mockChainId,
+  ContractStub,
 } from './utils';
 import { handleSignUpReward } from '../webhooks/signup-reward';
 import Sinon from 'sinon';
@@ -43,7 +44,7 @@ describe('handleSignUpReward function', async function () {
   let rewardId: string;
   let collectionUsersMock: Collection<Document>;
   let collectionRewardsMock: Collection<Document>;
-  let contractStub: { methods: any };
+  let contractStub: ContractStub;
   let getContract;
 
   beforeEach(async function () {

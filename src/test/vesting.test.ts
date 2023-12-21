@@ -1,6 +1,6 @@
 import chai from 'chai';
 import { getData, getPlans } from '../utils/vesting';
-import { mockTokenAddress, mockWallet } from './utils';
+import { ContractStub, mockTokenAddress, mockWallet } from './utils';
 import { HedgeyPlanParams } from '../types/hedgey.types';
 import { DEFAULT_CHAIN_ID, IDO_START_DATE } from '../utils/constants';
 import Sinon from 'sinon';
@@ -8,7 +8,7 @@ import * as web3 from '../utils/web3';
 
 describe('Vesting functions', async function () {
   let sandbox: Sinon.SinonSandbox;
-  let contractStub: { methods: any };
+  let contractStub: ContractStub;
   let getContract;
 
   beforeEach(async function () {
