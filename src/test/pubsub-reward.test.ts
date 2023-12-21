@@ -8,6 +8,7 @@ import {
   mockUserTelegramID1,
   getCollectionUsersMock,
   ContractStub,
+  RewardStub,
 } from './utils';
 import { handleNewReward } from '../webhooks/webhook';
 import Sinon from 'sinon';
@@ -197,9 +198,11 @@ describe('handleReferralReward function', function () {
   });
 
   it('Should return false with no new user if signup reward is false', async function () {
-    (signup_utils.handleSignUpReward as any).callsFake(async function () {
-      return false;
-    });
+    (signup_utils.handleSignUpReward as RewardStub).callsFake(
+      async function () {
+        return false;
+      },
+    );
 
     const result = await handleNewReward({
       isSignupReward: true,
@@ -217,9 +220,7 @@ describe('handleReferralReward function', function () {
   });
 
   it('Should return true and populate database properly after restart', async function () {
-    (signup_utils.handleSignUpReward as any).callsFake(async function () {
-      return false;
-    });
+    (signup_utils.handleSignUpReward as RewardStub).resolves(false);
 
     let result = await handleNewReward({
       isSignupReward: true,
@@ -234,9 +235,11 @@ describe('handleReferralReward function', function () {
 
     chai.expect(result).to.be.false;
 
-    (signup_utils.handleSignUpReward as any).callsFake(async function () {
-      return true;
-    });
+    (signup_utils.handleSignUpReward as RewardStub).callsFake(
+      async function () {
+        return true;
+      },
+    );
 
     // Restart
     result = await handleNewReward({
@@ -268,9 +271,11 @@ describe('handleReferralReward function', function () {
   });
 
   it('Should return false and no new user if referral reward is false', async function () {
-    (referral_utils.handleReferralReward as any).callsFake(async function () {
-      return false;
-    });
+    (referral_utils.handleReferralReward as RewardStub).callsFake(
+      async function () {
+        return false;
+      },
+    );
 
     chai.expect(
       await handleNewReward({
@@ -288,9 +293,11 @@ describe('handleReferralReward function', function () {
   });
 
   it('Should be able to restart, return true and populate the database properly after restart', async function () {
-    (referral_utils.handleReferralReward as any).callsFake(async function () {
-      return false;
-    });
+    (referral_utils.handleReferralReward as RewardStub).callsFake(
+      async function () {
+        return false;
+      },
+    );
 
     let result = await handleNewReward({
       isSignupReward: true,
@@ -306,9 +313,11 @@ describe('handleReferralReward function', function () {
     chai.expect(result).to.be.false;
     chai.expect(await collectionUsersMock.find({}).toArray()).to.be.empty;
 
-    (referral_utils.handleReferralReward as any).callsFake(async function () {
-      return true;
-    });
+    (referral_utils.handleReferralReward as RewardStub).callsFake(
+      async function () {
+        return true;
+      },
+    );
 
     result = await handleNewReward({
       isSignupReward: true,
@@ -365,9 +374,7 @@ describe('handleReferralReward function', function () {
   });
 
   it('Should be able to restart and return true + populate the database properly', async function () {
-    (link_reward_utils.handleLinkReward as any).callsFake(async function () {
-      return false;
-    });
+    (link_reward_utils.handleLinkReward as RewardStub).resolves(false);
 
     let result = await handleNewReward({
       isSignupReward: true,
@@ -384,9 +391,11 @@ describe('handleReferralReward function', function () {
     chai.expect(result).to.be.false;
     chai.expect(await collectionUsersMock.find({}).toArray()).to.be.empty;
 
-    (link_reward_utils.handleLinkReward as any).callsFake(async function () {
-      return true;
-    });
+    (link_reward_utils.handleLinkReward as RewardStub).callsFake(
+      async function () {
+        return true;
+      },
+    );
 
     result = await handleNewReward({
       isSignupReward: true,
