@@ -2,6 +2,7 @@ import {
   PatchResult,
   Reward,
   TelegramOperations,
+  TransactionStatus,
 } from '../types/webhook.types';
 import { TRANSACTION_STATUS } from '../utils/constants';
 import { getTxStatus } from '../utils/patchwallet';
@@ -12,7 +13,7 @@ import { getXMinBeforeDate } from '../utils/time';
  * @param status - The status of the transaction.
  * @returns {boolean} - True if the transaction status represents success, otherwise false.
  */
-export function isSuccessfulTransaction(status: string): boolean {
+export function isSuccessfulTransaction(status: TransactionStatus): boolean {
   return status === TRANSACTION_STATUS.SUCCESS;
 }
 
@@ -21,7 +22,7 @@ export function isSuccessfulTransaction(status: string): boolean {
  * @param status - The status of the transaction.
  * @returns {boolean} - True if the transaction has failed, false otherwise.
  */
-export function isFailedTransaction(status: string): boolean {
+export function isFailedTransaction(status: TransactionStatus): boolean {
   return status === TRANSACTION_STATUS.FAILURE;
 }
 
@@ -30,7 +31,7 @@ export function isFailedTransaction(status: string): boolean {
  * @param status - The status of the transaction.
  * @returns {boolean} - True if the transaction is in the pending hash state, false otherwise.
  */
-export function isPendingTransactionHash(status: string): boolean {
+export function isPendingTransactionHash(status: TransactionStatus): boolean {
   return status === TRANSACTION_STATUS.PENDING_HASH;
 }
 

@@ -29,7 +29,7 @@ import {
   scaleDecimals,
 } from './web3';
 import BigNumber from 'bignumber.js';
-import { PatchResult } from '../types/webhook.types';
+import { PatchResult, TransactionStatus } from '../types/webhook.types';
 
 /**
  * Calculates and generates plans for distributing tokens to recipients over time.
@@ -154,7 +154,7 @@ export class VestingTelegram {
   tx?: WithId<Document>;
 
   /** Current status of the vesting. */
-  status?: string;
+  status?: TransactionStatus;
 
   /** Transaction hash associated with the vesting. */
   txHash?: string;
@@ -213,10 +213,13 @@ export class VestingTelegram {
 
   /**
    * Updates the vesting information in the database.
-   * @param {string} status - The transaction status.
+   * @param {TransactionStatus} status - The transaction status.
    * @param {Date|null} date - The date of the transaction.
    */
-  async updateInDatabase(status: string, date: Date | null): Promise<void> {
+  async updateInDatabase(
+    status: TransactionStatus,
+    date: Date | null,
+  ): Promise<void> {
     await this.db.collection(VESTING_COLLECTION).updateOne(
       { eventId: this.eventId },
       {

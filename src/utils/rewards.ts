@@ -20,7 +20,11 @@ import {
 } from '../../secrets';
 import { isSuccessfulTransaction } from '../webhooks/utils';
 import { Db, Document, FindCursor, WithId } from 'mongodb';
-import { PatchResult, RewardParams } from '../types/webhook.types';
+import {
+  PatchResult,
+  RewardParams,
+  TransactionStatus,
+} from '../types/webhook.types';
 
 /**
  * Creates a sign-up reward specific to Telegram based on the specified parameters.
@@ -56,7 +60,7 @@ export class SignUpRewardTelegram {
   tx?: WithId<Document>;
 
   /** Current status of the reward. */
-  status?: string;
+  status?: TransactionStatus;
 
   /** Transaction hash associated with the reward. */
   txHash?: string;
@@ -138,10 +142,10 @@ export class SignUpRewardTelegram {
 
   /**
    * Updates the reward information in the database.
-   * @param {string} status - The transaction status.
+   * @param {TransactionStatus} status - The transaction status.
    * @param {Date|null} date - The date of the transaction.
    */
-  async updateInDatabase(status: string, date: Date | null) {
+  async updateInDatabase(status: TransactionStatus, date: Date | null) {
     await this.db.collection(REWARDS_COLLECTION).updateOne(
       {
         eventId: this.eventId,
@@ -262,7 +266,7 @@ export class ReferralRewardTelegram {
   tx?: WithId<Document>;
 
   /** Current status of the reward. */
-  status?: string;
+  status?: TransactionStatus;
 
   /** Transaction hash associated with the reward. */
   txHash?: string;
@@ -406,10 +410,10 @@ export class ReferralRewardTelegram {
 
   /**
    * Updates the referral reward information in the database.
-   * @param {string} status - The transaction status.
+   * @param {TransactionStatus} status - The transaction status.
    * @param {Date|null} date - The date of the transaction.
    */
-  async updateInDatabase(status: string, date: Date | null) {
+  async updateInDatabase(status: TransactionStatus, date: Date | null) {
     await this.db.collection(REWARDS_COLLECTION).updateOne(
       {
         eventId: this.eventId,
@@ -530,7 +534,7 @@ export class LinkRewardTelegram {
   tx?: WithId<Document>;
 
   /** Current status of the reward. */
-  status?: string;
+  status?: TransactionStatus;
 
   /** Transaction hash associated with the reward. */
   txHash?: string;
@@ -639,10 +643,10 @@ export class LinkRewardTelegram {
 
   /**
    * Updates the reward information in the database.
-   * @param {string} status - The transaction status.
+   * @param {TransactionStatus} status - The transaction status.
    * @param {Date|null} date - The date of the transaction.
    */
-  async updateInDatabase(status: string, date: Date | null) {
+  async updateInDatabase(status: TransactionStatus, date: Date | null) {
     await this.db.collection(REWARDS_COLLECTION).updateOne(
       {
         eventId: this.eventId,
@@ -761,7 +765,7 @@ export class IsolatedRewardTelegram {
   tx?: WithId<Document>;
 
   /** Current status of the reward. */
-  status?: string;
+  status?: TransactionStatus;
 
   /** Transaction hash associated with the reward. */
   txHash?: string;
@@ -845,10 +849,10 @@ export class IsolatedRewardTelegram {
 
   /**
    * Updates the reward information in the database.
-   * @param {string} status - The transaction status.
+   * @param {TransactionStatus} status - The transaction status.
    * @param {Date|null} date - The date of the transaction.
    */
-  async updateInDatabase(status: string, date: Date | null) {
+  async updateInDatabase(status: TransactionStatus, date: Date | null) {
     await this.db.collection(REWARDS_COLLECTION).updateOne(
       {
         eventId: this.params.eventId,

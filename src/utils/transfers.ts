@@ -16,7 +16,11 @@ import axios from 'axios';
 import { FLOWXO_NEW_TRANSACTION_WEBHOOK } from '../../secrets';
 import { Db, Document, WithId } from 'mongodb';
 import { formatDate } from './time';
-import { PatchResult, TransactionParams } from '../types/webhook.types';
+import {
+  PatchResult,
+  TransactionParams,
+  TransactionStatus,
+} from '../types/webhook.types';
 import { isPositiveFloat } from '../webhooks/utils';
 
 /**
@@ -253,7 +257,7 @@ export class TransferTelegram {
   tx?: WithId<Document>;
 
   /** Current status of the transfer. */
-  status?: string;
+  status?: TransactionStatus;
 
   /** Wallet address of the recipient. */
   recipientWallet?: string;
@@ -324,10 +328,13 @@ export class TransferTelegram {
 
   /**
    * Updates the transfer information in the database.
-   * @param {string} status - The transaction status.
+   * @param {TransactionStatus} status - The transaction status.
    * @param {Date|null} date - The date of the transaction.
    */
-  async updateInDatabase(status: string, date: Date | null): Promise<void> {
+  async updateInDatabase(
+    status: TransactionStatus,
+    date: Date | null,
+  ): Promise<void> {
     await this.db.collection(TRANSFERS_COLLECTION).updateOne(
       { eventId: this.eventId },
       {

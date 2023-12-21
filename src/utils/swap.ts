@@ -9,7 +9,11 @@ import {
 import { FLOWXO_NEW_SWAP_WEBHOOK, FLOWXO_WEBHOOK_API_KEY } from '../../secrets';
 import axios from 'axios';
 import { addTrackSwapSegment } from './segment';
-import { PatchResult, SwapParams } from '../types/webhook.types';
+import {
+  PatchResult,
+  SwapParams,
+  TransactionStatus,
+} from '../types/webhook.types';
 import { getContract } from './web3';
 import { CHAIN_EXPLORER_MAPPING, CHAIN_PROTOCOL_NAME_MAPPING } from './chains';
 import BigNumber from 'bignumber.js';
@@ -50,7 +54,7 @@ export class SwapTelegram {
   /**
    * The status of the swap.
    */
-  status?: string;
+  status?: TransactionStatus;
   /**
    * The recipient's wallet address.
    */
@@ -115,10 +119,13 @@ export class SwapTelegram {
 
   /**
    * Updates swap information in the database.
-   * @param {string} status - The transaction status.
+   * @param {TransactionStatus} status - The transaction status.
    * @param {Date|null} date - The date of the transaction.
    */
-  async updateInDatabase(status: string, date: Date | null): Promise<void> {
+  async updateInDatabase(
+    status: TransactionStatus,
+    date: Date | null,
+  ): Promise<void> {
     await this.db.collection(SWAPS_COLLECTION).updateOne(
       { eventId: this.params.eventId },
       {
