@@ -14,10 +14,40 @@ import {
 import { addTrackSegment } from './segment';
 import axios from 'axios';
 import { FLOWXO_NEW_TRANSACTION_WEBHOOK } from '../../secrets';
-import { Db, Document, WithId } from 'mongodb';
+import { Db, Document, ObjectId, WithId } from 'mongodb';
 import { formatDate } from './time';
 import { PatchResult, TransactionParams } from '../types/webhook.types';
 import { isPositiveFloat } from '../webhooks/utils';
+
+/**
+ * Represents an Incoming Transaction from the database.
+ */
+type IncomingTransaction = {
+  /**
+   * The date when the transaction was added.
+   */
+  dateAdded: string;
+
+  /**
+   * The handle of the sender user associated with the transaction.
+   */
+  senderUserHandle: string | null;
+
+  /**
+   * A message related to the transaction.
+   */
+  message: string;
+
+  /**
+   * The unique identifier of the transaction.
+   */
+  _id: ObjectId;
+
+  /**
+   * The amount of tokens associated with the transaction.
+   */
+  tokenAmount: string;
+};
 
 /**
  * Retrieves incoming transactions for a user from the database.
@@ -32,7 +62,7 @@ export async function getIncomingTxsUser(
   userId: string,
   start: number,
   limit: number,
-): Promise<any> {
+): Promise<IncomingTransaction[]> {
   return await Promise.all(
     (
       await db
@@ -42,18 +72,56 @@ export async function getIncomingTxsUser(
         .skip(start)
         .limit(limit)
         .toArray()
-    ).map(async (entry) => ({
-      ...entry,
-      dateAdded: formatDate(entry.dateAdded),
-      senderUserHandle:
-        (
-          await db
-            .collection(USERS_COLLECTION)
-            .findOne({ userTelegramID: entry.senderTgId })
-        )?.userHandle || null,
-    })),
+    ).map(
+      async (entry) =>
+        ({
+          ...entry,
+          dateAdded: formatDate(entry.dateAdded),
+          senderUserHandle:
+            (
+              await db
+                .collection(USERS_COLLECTION)
+                .findOne({ userTelegramID: entry.senderTgId })
+            )?.userHandle || null,
+        } as IncomingTransaction),
+    ),
   );
 }
+
+/**
+ * Represents an Outgoing Transaction in the system.
+ */
+type OutgoingTransaction = {
+  /**
+   * The unique identifier of the transaction.
+   */
+  _id: ObjectId;
+
+  /**
+   * The date when the transaction was added.
+   */
+  dateAdded: string;
+
+  /**
+   * The handle of the recipient user associated with the transaction, which can be a string or null.
+   */
+  recipientUserHandle: string | null;
+
+  /**
+   * The amount of tokens associated with the transaction.
+   */
+  tokenAmount: string;
+
+  /**
+   * The Telegram ID of the recipient user.
+   */
+  recipientTgId: string;
+
+  /**
+   * A message related to the transaction.
+   */
+  message: string;
+};
 
 /**
  * Retrieves outgoing transactions for a user from the database.
@@ -68,7 +136,7 @@ export async function getOutgoingTxsUser(
   userId: string,
   start: number,
   limit: number,
-): Promise<any> {
+): Promise<OutgoingTransaction[]> {
   return await Promise.all(
     (
       await db
@@ -78,16 +146,19 @@ export async function getOutgoingTxsUser(
         .skip(start)
         .limit(limit)
         .toArray()
-    ).map(async (entry) => ({
-      ...entry,
-      dateAdded: formatDate(entry.dateAdded),
-      recipientUserHandle:
-        (
-          await db
-            .collection(USERS_COLLECTION)
-            .findOne({ userTelegramID: entry.recipientTgId })
-        )?.userHandle || null,
-    })),
+    ).map(
+      async (entry) =>
+        ({
+          ...entry,
+          dateAdded: formatDate(entry.dateAdded),
+          recipientUserHandle:
+            (
+              await db
+                .collection(USERS_COLLECTION)
+                .findOne({ userTelegramID: entry.recipientTgId })
+            )?.userHandle || null,
+        } as OutgoingTransaction),
+    ),
   );
 }
 
@@ -104,7 +175,7 @@ export async function getOutgoingTxsToNewUsers(
   userId: string,
   start: number,
   limit: number,
-): Promise<any> {
+): Promise<OutgoingTransaction[]> {
   return await Promise.all(
     (
       await db
@@ -151,12 +222,40 @@ export async function getOutgoingTxsToNewUsers(
             : []),
         ])
         .toArray()
-    ).map(async (entry) => ({
-      ...entry,
-      dateAdded: formatDate(entry.dateAdded),
-    })),
+    ).map(
+      async (entry) =>
+        ({
+          ...entry,
+          dateAdded: formatDate(entry.dateAdded),
+        } as OutgoingTransaction),
+    ),
   );
 }
+
+/**
+ * Represents a transaction involving rewards in the system.
+ */
+type RewardTransaction = {
+  /**
+   * The date when the reward transaction was added.
+   */
+  dateAdded: string;
+
+  /**
+   * A descriptive message associated with the reward transaction.
+   */
+  message: string;
+
+  /**
+   * The unique identifier of the reward transaction.
+   */
+  _id: ObjectId;
+
+  /**
+   * The amount of tokens associated with the reward transaction.
+   */
+  amount: string;
+};
 
 /**
  * Retrieves reward transactions for a user from the database.
@@ -171,7 +270,7 @@ export async function getRewardTxsUser(
   userId: string,
   start: number,
   limit: number,
-): Promise<any> {
+): Promise<RewardTransaction[]> {
   return (
     await db
       .collection(REWARDS_COLLECTION)
@@ -180,10 +279,13 @@ export async function getRewardTxsUser(
       .skip(start)
       .limit(limit)
       .toArray()
-  ).map((entry) => ({
-    ...entry,
-    dateAdded: formatDate(entry.dateAdded),
-  }));
+  ).map(
+    (entry) =>
+      ({
+        ...entry,
+        dateAdded: formatDate(entry.dateAdded),
+      } as RewardTransaction),
+  );
 }
 
 /**

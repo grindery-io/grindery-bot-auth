@@ -281,11 +281,7 @@ router.get(
         return outgoingTxs.length > 0
           ? `<b>Transfers to non-Grindery users:</b>\n${outgoingTxs
               .map(
-                (transfer: {
-                  recipientTgId: string;
-                  dateAdded: Date;
-                  tokenAmount: string;
-                }) =>
+                (transfer) =>
                   `${transfer.recipientTgId} | ${transfer.dateAdded} | ${transfer.tokenAmount} G1`,
               )
               .join('\n')}`
@@ -400,11 +396,7 @@ router.get('/format-transfers-user', authenticateApiKey, async (req, res) => {
       return rewardTxs.length > 0
         ? `<b>Reward transfers:</b>\n${rewardTxs
             .map(
-              (transfer: {
-                amount: string;
-                dateAdded: Date;
-                message: string;
-              }) =>
+              (transfer) =>
                 `- ${transfer.amount} g1 on ${transfer.dateAdded} ${
                   transfer.message ? `[${transfer.message}]` : ''
                 }`,
@@ -442,12 +434,7 @@ router.get('/format-transfers-user', authenticateApiKey, async (req, res) => {
       return incomingTxs.length > 0
         ? `<b>Incoming transfers:</b>\n${incomingTxs
             .map(
-              (transfer: {
-                tokenAmount: string;
-                senderUserHandle: string;
-                dateAdded: Date;
-                message: string;
-              }) =>
+              (transfer) =>
                 `- ${transfer.tokenAmount} g1 from @${
                   transfer.senderUserHandle
                 } on ${transfer.dateAdded} ${
@@ -467,13 +454,7 @@ router.get('/format-transfers-user', authenticateApiKey, async (req, res) => {
       return outgoingTxs.length > 0
         ? `<b>Outgoing transfers:</b>\n${outgoingTxs
             .map(
-              (transfer: {
-                tokenAmount: string;
-                recipientUserHandle: string;
-                recipientTgId: string;
-                dateAdded: Date;
-                message: string;
-              }) =>
+              (transfer) =>
                 `- ${transfer.tokenAmount} g1 to ${
                   transfer.recipientUserHandle
                     ? `@${transfer.recipientUserHandle}`
@@ -495,11 +476,7 @@ router.get('/format-transfers-user', authenticateApiKey, async (req, res) => {
       return rewardTxs.length > 0
         ? `<b>Reward transfers:</b>\n${rewardTxs
             .map(
-              (transfer: {
-                amount: string;
-                dateAdded: Date;
-                message: string;
-              }) =>
+              (transfer) =>
                 `- ${transfer.amount} g1 on ${transfer.dateAdded} ${
                   transfer.message ? `[${transfer.message}]` : ''
                 }`,
