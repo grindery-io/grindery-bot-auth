@@ -11,7 +11,7 @@ import axios from 'axios';
 import { addTrackSwapSegment } from './segment';
 import { PatchResult, SwapParams } from '../types/webhook.types';
 import { getContract } from './web3';
-import { CHAIN_EXPLORER_MAPPING, CHAIN_PROTOCOL_NAME_MAPPING } from './chains';
+import { CHAIN_MAPPING } from './chains';
 import BigNumber from 'bignumber.js';
 
 /**
@@ -188,10 +188,10 @@ export class SwapTelegram {
             .call()),
       )
       .toString();
-    const chainInName = CHAIN_PROTOCOL_NAME_MAPPING[this.params.chainIn];
-    const chainOutName = CHAIN_PROTOCOL_NAME_MAPPING[this.params.chainOut];
+    const chainInName = CHAIN_MAPPING[this.params.chainIn].name_display;
+    const chainOutName = CHAIN_MAPPING[this.params.chainOut].name_display;
     const transactionLink =
-      CHAIN_EXPLORER_MAPPING[this.params.chainOut] + this.txHash;
+      CHAIN_MAPPING[this.params.chainOut].explorer + this.txHash;
 
     // Send transaction information to FlowXO
     await axios.post(FLOWXO_NEW_SWAP_WEBHOOK, {

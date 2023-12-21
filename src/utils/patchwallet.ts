@@ -15,9 +15,9 @@ import {
   nativeTokenAddresses,
 } from './constants';
 import { PatchRawResult } from '../types/webhook.types';
-import { CHAIN_NAME_MAPPING } from './chains';
 import { HedgeyRecipientParams } from '../types/hedgey.types';
 import { getData, getPlans } from './vesting';
+import { CHAIN_MAPPING } from './chains';
 
 /**
  * Retrieves the Patch Wallet access token by making a POST request to the authentication endpoint.
@@ -226,8 +226,8 @@ async function callPatchWalletTx(
     {
       userId: `grindery:${userTelegramID}`,
       chain: chainId
-        ? CHAIN_NAME_MAPPING[chainId]
-        : CHAIN_NAME_MAPPING[DEFAULT_CHAIN_ID],
+        ? CHAIN_MAPPING[chainId].name_patch
+        : CHAIN_MAPPING[DEFAULT_CHAIN_ID].name_patch,
       to: [to],
       value: [value],
       data: [data],

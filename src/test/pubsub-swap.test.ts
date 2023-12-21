@@ -40,7 +40,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { handleSwap } from '../webhooks/swap';
 import { FLOWXO_NEW_SWAP_WEBHOOK, FLOWXO_WEBHOOK_API_KEY } from '../../secrets';
 import { Collection, Document } from 'mongodb';
-import { CHAIN_EXPLORER_MAPPING } from '../utils/chains';
+import { CHAIN_MAPPING } from '../utils/chains';
 
 chai.use(chaiExclude);
 
@@ -314,7 +314,7 @@ describe('handleSwap function', async function () {
           chainInName: 'Polygon',
           chainOutName: 'Polygon',
           transactionLink:
-            CHAIN_EXPLORER_MAPPING[mockChainId] + mockTransactionHash,
+            CHAIN_MAPPING[mockChainId].explorer + mockTransactionHash,
         });
     });
 
@@ -1754,7 +1754,7 @@ describe('handleSwap function', async function () {
             chainInName: 'Polygon',
             chainOutName: 'Polygon',
             transactionLink:
-              CHAIN_EXPLORER_MAPPING[mockChainId] + mockTransactionHash,
+              CHAIN_MAPPING[mockChainId].explorer + mockTransactionHash,
           });
 
         chai
