@@ -5,21 +5,19 @@ import { computeG1ToGxConversion } from '../utils/g1gx';
 const router = express.Router();
 
 /**
- * POST /v1/tge/conversion-information
+ * GET /v1/tge/conversion-information
  *
  * @summary Calculate G1 to Gx conversion
  * @description Calculates the conversion from G1 to Gx based on provided quantities of USD and G1.
  * @tags Conversion
  * @security BearerAuth
- * @param {object} request.body - The request body containing USD and G1 quantities
+ * @param {number} usdQuantity.query - The quantity of USD.
+ * @param {number} g1Quantity.query - The quantity of G1.
  * @return {object} 200 - Success response with the calculated conversion value
  * @return {object} 500 - Error response if an error occurs during the conversion
  *
- * @example request - 200 - Example request body
- * {
- *   "usdQuantity": 100,
- *   "g1Quantity": 50
- * }
+ * @example request - 200 - Example request query parameters
+ * /v1/tge/conversion-information?usdQuantity=100&g1Quantity=50
  *
  * @example response - 200 - Success response example
  * {
