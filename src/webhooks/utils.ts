@@ -144,7 +144,7 @@ export async function sendTransaction(
   } catch (error) {
     // Log error if transaction fails.
     console.error(
-      `[${inst.params.eventId}] Error processing PatchWallet token sending: ${error}`,
+      `[${inst.params.eventId}] Error processing PatchWallet transaction: ${error}`,
     );
 
     // Check if the instance belongs to specific types (SwapTelegram, TransferTelegram, or VestingTelegram).
