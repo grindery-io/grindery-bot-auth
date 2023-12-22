@@ -279,5 +279,6 @@ export function computeG1ToGxConversion(
     standard_gx_usd_exchange_rate: EXCHANGE_RATE_GX_USD,
     discount_received:
       (1 - EXCHANGE_RATE_GX_USD / equivalent_gx_usd_exchange_rate) * 100,
+    gx_received: equivalent_usd_invested * equivalent_gx_usd_exchange_rate,
   };
 }

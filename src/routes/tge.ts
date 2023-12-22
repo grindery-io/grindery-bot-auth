@@ -29,6 +29,7 @@ const router = express.Router();
  *   "gx_before_mvu": 279.1666666666667,
  *   "gx_mvu_effect": 22.33333333333337,
  *   "gx_time_effect": 29.00754997469636,
+ *   "gx_received": "1200",
  *   "equivalent_gx_usd_exchange_rate": 32.88632338056681,
  *   "standard_gx_usd_exchange_rate": 27.77777777777778,
  *   "discount_received": 15.533951739365826
