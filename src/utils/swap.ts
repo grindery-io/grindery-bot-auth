@@ -183,27 +183,6 @@ export class SwapTelegram {
    * @returns {Promise<void>} - The result of sending the transaction to FlowXO.
    */
   async saveToFlowXO(): Promise<void> {
-    const decimalsTokenIn = nativeTokenAddresses.includes(this.params.tokenIn)
-      ? 18
-      : await getContract(this.params.chainIn, this.params.tokenIn)
-          .methods.decimals()
-          .call();
-    const decimalsTokenOut = nativeTokenAddresses.includes(this.params.tokenOut)
-      ? 18
-      : await getContract(this.params.chainOut, this.params.tokenOut)
-          .methods.decimals()
-          .call();
-    const amountIn = new BigNumber(parseInt(this.params.amountIn))
-      .div(10 ** decimalsTokenIn)
-      .toString();
-    const amountOut = new BigNumber(parseInt(this.params.amountOut))
-      .div(10 ** decimalsTokenOut)
-      .toString();
-    const chainInName = CHAIN_MAPPING[this.params.chainIn].name_display;
-    const chainOutName = CHAIN_MAPPING[this.params.chainOut].name_display;
-    const transactionLink =
-      CHAIN_MAPPING[this.params.chainOut].explorer + this.txHash;
-
     // Send transaction information to FlowXO
     await axios.post(FLOWXO_NEW_SWAP_WEBHOOK, {
       userResponsePath: this.params.userInformation.responsePath,
@@ -213,9 +192,27 @@ export class SwapTelegram {
       userName: this.params.userInformation.userName,
       userHandle: this.params.userInformation.userHandle,
       tokenIn: this.params.tokenIn,
-      amountIn: amountIn,
+      amountIn: new BigNumber(parseInt(this.params.amountIn))
+        .div(
+          10 **
+            (nativeTokenAddresses.includes(this.params.tokenIn)
+              ? 18
+              : await getContract(this.params.chainIn, this.params.tokenIn)
+                  .methods.decimals()
+                  .call()),
+        )
+        .toString(),
       tokenOut: this.params.tokenOut,
-      amountOut: amountOut,
+      amountOut: new BigNumber(parseInt(this.params.amountOut))
+        .div(
+          10 **
+            (nativeTokenAddresses.includes(this.params.tokenOut)
+              ? 18
+              : await getContract(this.params.chainOut, this.params.tokenOut)
+                  .methods.decimals()
+                  .call()),
+        )
+        .toString(),
       priceImpact: this.params.priceImpact,
       gas: this.params.gas,
       status: TRANSACTION_STATUS.SUCCESS,
@@ -228,9 +225,10 @@ export class SwapTelegram {
       apiKey: FLOWXO_WEBHOOK_API_KEY,
       chainIn: this.params.chainIn,
       chainOut: this.params.chainOut,
-      chainInName: chainInName,
-      chainOutName: chainOutName,
-      transactionLink: transactionLink,
+      chainInName: CHAIN_MAPPING[this.params.chainIn].name_display,
+      chainOutName: CHAIN_MAPPING[this.params.chainOut].name_display,
+      transactionLink:
+        CHAIN_MAPPING[this.params.chainOut].explorer + this.txHash,
     });
   }
 
