@@ -175,13 +175,3 @@ export const HEDGEY_VESTING_LOCKER =
  */
 export const HEDGEY_LOCKUP_LOCKER =
   '0x1961A23409CA59EEDCA6a99c97E4087DaD752486';
-
-export const WEBHOOK_TYPE = {
-  SWAP: 'swap',
-  TRANSACTION: 'transaction',
-  ISOLATED_REWARD: 'isolated_reward',
-  LINK_REWARD: 'link_reward',
-  REFERRAL_REWARD: 'referral_reward',
-  SIGNUP_REWARD: 'signup_reward',
-  VESTING: 'VESTING',
-};
