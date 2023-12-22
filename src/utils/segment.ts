@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios, { AxiosError } from 'axios';
 import { SEGMENT_KEY } from '../../secrets';
 import { SEGMENT_IDENTITY_URL, SEGMENT_TRACK_URL } from './constants';

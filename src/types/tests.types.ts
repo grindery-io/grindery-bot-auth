@@ -11,6 +11,7 @@ export type ContractStub = {
    * Type: any
    * This property holds the methods associated with the contract, allowing flexibility in method definitions.
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   methods: any;
 };
 

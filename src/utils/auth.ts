@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from 'axios';
 import jwt_decode from 'jwt-decode';
 import { API_KEY_LINEA, getApiKey } from '../../secrets';

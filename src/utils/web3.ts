@@ -35,6 +35,7 @@ export function getContract(
  * @returns {string} - String representation of the input value.
  * @throws {Error} - Throws an error for invalid number values or types.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function numberToString(arg: any): string {
   if (typeof arg === 'string') {
     if (!arg.match(/^-?[0-9.]+$/)) {
