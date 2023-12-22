@@ -132,7 +132,9 @@ export function updateTxHash(inst: TelegramOperations, txHash: string): string {
  * @param inst - Instance of TelegramOperations representing the transaction to be sent.
  * @returns Promise<PatchResult> - Promise resolving to a PatchResult object indicating transaction status.
  */
-export async function sendTx(inst: TelegramOperations): Promise<PatchResult> {
+export async function sendTransaction(
+  inst: TelegramOperations,
+): Promise<PatchResult> {
   try {
     // Attempt to perform the transaction using the provided TelegramOperations instance.
     const { data } = await inst.sendTransactionAction();

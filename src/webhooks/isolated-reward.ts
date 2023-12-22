@@ -12,7 +12,7 @@ import {
   getStatusRewards,
   isPendingTransactionHash,
   isTreatmentDurationExceeded,
-  sendTx,
+  sendTransaction,
   updateTxHash,
   updateUserOpHash,
 } from './utils';
@@ -64,7 +64,8 @@ export async function handleIsolatedReward(
     }
 
     // Check for txReward and send transaction if not present
-    if (!txReward && (txReward = await sendTx(reward)).isError) return false;
+    if (!txReward && (txReward = await sendTransaction(reward)).isError)
+      return false;
 
     // Update transaction hash and perform additional actions
     if (txReward && txReward.txHash) {

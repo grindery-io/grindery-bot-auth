@@ -8,7 +8,7 @@ import {
   isPendingTransactionHash,
   isSuccessfulTransaction,
   isTreatmentDurationExceeded,
-  sendTx,
+  sendTransaction,
   updateTxHash,
   updateUserOpHash,
 } from './utils';
@@ -78,7 +78,7 @@ export async function handleNewVesting(
 
   // Handle sending transaction if not already handled
   if (!tx) {
-    tx = await sendTx(vesting);
+    tx = await sendTransaction(vesting);
     if (tx.isError) return true;
     if (!tx.txHash && !tx.userOpHash) return false;
   }

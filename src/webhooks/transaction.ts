@@ -12,7 +12,7 @@ import {
   isPendingTransactionHash,
   isSuccessfulTransaction,
   isTreatmentDurationExceeded,
-  sendTx,
+  sendTransaction,
   updateTxHash,
   updateUserOpHash,
 } from './utils';
@@ -82,7 +82,7 @@ export async function handleNewTransaction(
 
   // Handle sending transaction if not already handled
   if (!tx) {
-    tx = await sendTx(transfer);
+    tx = await sendTransaction(transfer);
     if (tx.isError) return true;
     if (!tx.txHash && !tx.userOpHash) return false;
   }
