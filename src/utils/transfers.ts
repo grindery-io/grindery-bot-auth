@@ -557,15 +557,24 @@ export class TransferTelegram {
       console.error(
         `[${this.eventId}] transaction from ${this.params.senderInformation.userTelegramID} to ${this.params.recipientTgId} for ${this.params.amount} - Error processing PatchWallet token sending: ${error}`,
       );
-      // Return true if the amount is not a valid number or the error status is 470, marking the transaction as failed
-      return !isPositiveFloat(this.params.amount) ||
+      // Check for potential invalid amount or specific error responses
+      if (
+        !isPositiveFloat(this.params.amount) ||
         error?.response?.status === 470
-        ? (console.warn(
-            `Potentially invalid amount: ${this.params.amount}, dropping`,
-          ),
-          await this.updateInDatabase(TRANSACTION_STATUS.FAILURE, new Date()),
-          { isError: true })
-        : { isError: false };
+      ) {
+        console.warn(
+          `Potentially invalid amount: ${this.params.amount}, dropping`,
+        );
+        await this.updateInDatabase(TRANSACTION_STATUS.FAILURE, new Date());
+        return { isError: true };
+      }
+      // Handling specific error response status 503
+      if (error?.response?.status === 503) {
+        await this.updateInDatabase(TRANSACTION_STATUS.FAILURE_503, new Date());
+        return { isError: true };
+      }
+      // Return PatchResult indicating no error if not handled specifically
+      return { isError: false };
     }
   }
 }

@@ -78,6 +78,7 @@ export const TRANSACTION_STATUS = {
   SUCCESS: 'success',
   FAILURE: 'failure',
   PENDING_HASH: 'pending_hash',
+  FAILURE_503: 'failure_503',
 } as const;
 
 /**

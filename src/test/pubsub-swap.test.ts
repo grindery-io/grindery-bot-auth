@@ -659,6 +659,138 @@ describe('handleSwap function', async function () {
     });
   });
 
+  describe('Transaction if swap is already a failure 503', async function () {
+    beforeEach(async function () {
+      await collectionUsersMock.insertOne({
+        userTelegramID: mockUserTelegramID,
+        userName: mockUserName,
+        userHandle: mockUserHandle,
+        patchwallet: mockWallet,
+      });
+
+      await collectionSwapsMock.insertOne({
+        eventId: swapId,
+        status: TRANSACTION_STATUS.FAILURE_503,
+      });
+    });
+
+    it('Should return true if swap is already a failure', async function () {
+      chai.expect(
+        await handleSwap({
+          value: mockAmountIn,
+          eventId: swapId,
+
+          userTelegramID: mockUserTelegramID,
+          tokenIn: mockTokenIn,
+          amountIn: mockAmountIn,
+          tokenOut: mockTokenOut,
+          amountOut: mockAmountOut,
+          priceImpact: mockPriceImpact,
+          gas: mockGas,
+          from: mockFromSwap,
+          tokenInSymbol: mockTokenInSymbol,
+          tokenOutSymbol: mockTokenOutSymbol,
+        }),
+      ).to.be.true;
+    });
+
+    it('Should not swap if swap if is already a failure', async function () {
+      await handleSwap({
+        value: mockAmountIn,
+        eventId: swapId,
+
+        userTelegramID: mockUserTelegramID,
+        tokenIn: mockTokenIn,
+        amountIn: mockAmountIn,
+        tokenOut: mockTokenOut,
+        amountOut: mockAmountOut,
+        priceImpact: mockPriceImpact,
+        gas: mockGas,
+        from: mockFromSwap,
+        tokenInSymbol: mockTokenInSymbol,
+        tokenOutSymbol: mockTokenOutSymbol,
+      });
+
+      chai.expect(
+        axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
+      ).to.be.undefined;
+    });
+
+    it('Should not modify database if swap is already a failure', async function () {
+      await handleSwap({
+        value: mockAmountIn,
+        eventId: swapId,
+
+        userTelegramID: mockUserTelegramID,
+        tokenIn: mockTokenIn,
+        amountIn: mockAmountIn,
+        tokenOut: mockTokenOut,
+        amountOut: mockAmountOut,
+        priceImpact: mockPriceImpact,
+        gas: mockGas,
+        from: mockFromSwap,
+        tokenInSymbol: mockTokenInSymbol,
+        tokenOutSymbol: mockTokenOutSymbol,
+      });
+
+      chai
+        .expect(await collectionSwapsMock.find({}).toArray())
+        .excluding(['_id'])
+        .to.deep.equal([
+          {
+            eventId: swapId,
+            status: TRANSACTION_STATUS.FAILURE_503,
+          },
+        ]);
+    });
+
+    it('Should not call FlowXO if swap is already a failure', async function () {
+      await handleSwap({
+        value: mockAmountIn,
+        eventId: swapId,
+
+        userTelegramID: mockUserTelegramID,
+        tokenIn: mockTokenIn,
+        amountIn: mockAmountIn,
+        tokenOut: mockTokenOut,
+        amountOut: mockAmountOut,
+        priceImpact: mockPriceImpact,
+        gas: mockGas,
+        from: mockFromSwap,
+        tokenInSymbol: mockTokenInSymbol,
+        tokenOutSymbol: mockTokenOutSymbol,
+      });
+
+      chai.expect(
+        axiosStub
+          .getCalls()
+          .find((e) => e.firstArg === FLOWXO_NEW_SWAP_WEBHOOK),
+      ).to.be.undefined;
+    });
+
+    it('Should not call Segment if swap is already a failure', async function () {
+      await handleSwap({
+        value: mockAmountIn,
+        eventId: swapId,
+
+        userTelegramID: mockUserTelegramID,
+        tokenIn: mockTokenIn,
+        amountIn: mockAmountIn,
+        tokenOut: mockTokenOut,
+        amountOut: mockAmountOut,
+        priceImpact: mockPriceImpact,
+        gas: mockGas,
+        from: mockFromSwap,
+        tokenInSymbol: mockTokenInSymbol,
+        tokenOutSymbol: mockTokenOutSymbol,
+      });
+
+      chai.expect(
+        axiosStub.getCalls().find((e) => e.firstArg === SEGMENT_TRACK_URL),
+      ).to.be.undefined;
+    });
+  });
+
   describe('Error in swap token request', async function () {
     beforeEach(async function () {
       await collectionUsersMock.insertOne({
@@ -1181,6 +1313,136 @@ describe('handleSwap function', async function () {
     });
 
     it('Should not call Segment if error 470 in PatchWallet transaction', async function () {
+      await handleSwap({
+        value: mockAmountIn,
+        eventId: swapId,
+        userTelegramID: mockUserTelegramID,
+        tokenIn: mockTokenIn,
+        amountIn: mockAmountIn,
+        tokenOut: mockTokenOut,
+        amountOut: mockAmountOut,
+        priceImpact: mockPriceImpact,
+        gas: mockGas,
+        from: mockFromSwap,
+        tokenInSymbol: mockTokenInSymbol,
+        tokenOutSymbol: mockTokenOutSymbol,
+      });
+
+      chai.expect(
+        axiosStub.getCalls().find((e) => e.firstArg === SEGMENT_TRACK_URL),
+      ).to.be.undefined;
+    });
+  });
+
+  describe('PatchWallet 503 error', async function () {
+    beforeEach(async function () {
+      axiosStub.withArgs(PATCHWALLET_TX_URL).rejects({
+        response: {
+          status: 503,
+        },
+      });
+
+      await collectionUsersMock.insertOne({
+        userTelegramID: mockUserTelegramID,
+        userName: mockUserName,
+        userHandle: mockUserHandle,
+        patchwallet: mockWallet,
+        responsePath: mockResponsePath,
+      });
+    });
+
+    it('Should return true if error 503 in PatchWallet transaction', async function () {
+      const result = await handleSwap({
+        value: mockAmountIn,
+        eventId: swapId,
+
+        userTelegramID: mockUserTelegramID,
+        tokenIn: mockTokenIn,
+        amountIn: mockAmountIn,
+        tokenOut: mockTokenOut,
+        amountOut: mockAmountOut,
+        priceImpact: mockPriceImpact,
+        gas: mockGas,
+        from: mockFromSwap,
+        tokenInSymbol: mockTokenInSymbol,
+        tokenOutSymbol: mockTokenOutSymbol,
+      });
+
+      chai.expect(result).to.be.true;
+    });
+
+    it('Should complete db status to failure in database if error 503 in PatchWallet transaction', async function () {
+      await handleSwap({
+        value: mockAmountIn,
+        eventId: swapId,
+        userTelegramID: mockUserTelegramID,
+        tokenIn: mockTokenIn,
+        amountIn: mockAmountIn,
+        tokenOut: mockTokenOut,
+        amountOut: mockAmountOut,
+        priceImpact: mockPriceImpact,
+        gas: mockGas,
+        to: mockToSwap,
+        from: mockFromSwap,
+        tokenInSymbol: mockTokenInSymbol,
+        tokenOutSymbol: mockTokenOutSymbol,
+        chainIn: mockChainId,
+        chainOut: mockChainId,
+      });
+
+      chai
+        .expect(await collectionSwapsMock.find({}).toArray())
+        .excluding(['dateAdded', '_id'])
+        .to.deep.equal([
+          {
+            userTelegramID: mockUserTelegramID,
+            userName: mockUserName,
+            userHandle: mockUserHandle,
+            userWallet: mockWallet,
+            tokenIn: mockTokenIn,
+            amountIn: mockAmountIn,
+            tokenOut: mockTokenOut,
+            amountOut: mockAmountOut,
+            priceImpact: mockPriceImpact,
+            gas: mockGas,
+            to: mockToSwap,
+            from: mockFromSwap,
+            tokenInSymbol: mockTokenInSymbol,
+            tokenOutSymbol: mockTokenOutSymbol,
+            eventId: swapId,
+            status: TRANSACTION_STATUS.FAILURE_503,
+            transactionHash: null,
+            userOpHash: null,
+            chainIn: mockChainId,
+            chainOut: mockChainId,
+          },
+        ]);
+    });
+
+    it('Should not call FlowXO if error 503 in PatchWallet transaction', async function () {
+      await handleSwap({
+        value: mockAmountIn,
+        eventId: swapId,
+        userTelegramID: mockUserTelegramID,
+        tokenIn: mockTokenIn,
+        amountIn: mockAmountIn,
+        tokenOut: mockTokenOut,
+        amountOut: mockAmountOut,
+        priceImpact: mockPriceImpact,
+        gas: mockGas,
+        from: mockFromSwap,
+        tokenInSymbol: mockTokenInSymbol,
+        tokenOutSymbol: mockTokenOutSymbol,
+      });
+
+      chai.expect(
+        axiosStub
+          .getCalls()
+          .find((e) => e.firstArg === FLOWXO_NEW_SWAP_WEBHOOK),
+      ).to.be.undefined;
+    });
+
+    it('Should not call Segment if error 503 in PatchWallet transaction', async function () {
       await handleSwap({
         value: mockAmountIn,
         eventId: swapId,

@@ -23,7 +23,10 @@ export function isSuccessfulTransaction(status: TransactionStatus): boolean {
  * @returns {boolean} - True if the transaction has failed, false otherwise.
  */
 export function isFailedTransaction(status: TransactionStatus): boolean {
-  return status === TRANSACTION_STATUS.FAILURE;
+  return (
+    status === TRANSACTION_STATUS.FAILURE ||
+    status === TRANSACTION_STATUS.FAILURE_503
+  );
 }
 
 /**

@@ -632,6 +632,93 @@ describe('handleNewTransaction function', async function () {
     });
   });
 
+  describe('Transaction if is already a failure 503', async function () {
+    beforeEach(async function () {
+      await collectionUsersMock.insertOne({
+        userTelegramID: mockUserTelegramID,
+        userName: mockUserName,
+        userHandle: mockUserHandle,
+        patchwallet: mockWallet,
+      });
+
+      await collectionTransfersMock.insertOne({
+        eventId: txId,
+        status: TRANSACTION_STATUS.FAILURE_503,
+      });
+    });
+
+    it('Should return true and no token sending if transaction if is already a failure', async function () {
+      chai.expect(
+        await handleNewTransaction({
+          senderTgId: mockUserTelegramID,
+          amount: '100',
+          recipientTgId: mockUserTelegramID1,
+          eventId: txId,
+        }),
+      ).to.be.true;
+    });
+
+    it('Should not send tokens if transaction if is already a failure', async function () {
+      await handleNewTransaction({
+        senderTgId: mockUserTelegramID,
+        amount: '100',
+        recipientTgId: mockUserTelegramID1,
+        eventId: txId,
+      });
+
+      chai.expect(
+        axiosStub.getCalls().find((e) => e.firstArg === PATCHWALLET_TX_URL),
+      ).to.be.undefined;
+    });
+
+    it('Should not modify database if transaction if is already a failure', async function () {
+      await handleNewTransaction({
+        senderTgId: mockUserTelegramID,
+        amount: '100',
+        recipientTgId: mockUserTelegramID1,
+        eventId: txId,
+      });
+
+      chai
+        .expect(await collectionTransfersMock.find({}).toArray())
+        .excluding(['_id'])
+        .to.deep.equal([
+          {
+            eventId: txId,
+            status: TRANSACTION_STATUS.FAILURE_503,
+          },
+        ]);
+    });
+
+    it('Should not call FlowXO if is already a failure', async function () {
+      await handleNewTransaction({
+        senderTgId: mockUserTelegramID,
+        amount: '100',
+        recipientTgId: mockUserTelegramID1,
+        eventId: txId,
+      });
+
+      chai.expect(
+        axiosStub
+          .getCalls()
+          .find((e) => e.firstArg === FLOWXO_NEW_TRANSACTION_WEBHOOK),
+      ).to.be.undefined;
+    });
+
+    it('Should not call Segment if is already a failure', async function () {
+      await handleNewTransaction({
+        senderTgId: mockUserTelegramID,
+        amount: '100',
+        recipientTgId: mockUserTelegramID1,
+        eventId: txId,
+      });
+
+      chai.expect(
+        axiosStub.getCalls().find((e) => e.firstArg === SEGMENT_TRACK_URL),
+      ).to.be.undefined;
+    });
+  });
+
   describe('Error in send token request', async function () {
     beforeEach(async function () {
       await collectionUsersMock.insertOne({
@@ -1102,6 +1189,94 @@ describe('handleNewTransaction function', async function () {
     });
 
     it('Should not call Segment if error 470 in PatchWallet transaction', async function () {
+      await handleNewTransaction({
+        senderTgId: mockUserTelegramID,
+        amount: '100',
+        recipientTgId: mockUserTelegramID1,
+        eventId: txId,
+      });
+
+      chai.expect(
+        axiosStub.getCalls().find((e) => e.firstArg === SEGMENT_TRACK_URL),
+      ).to.be.undefined;
+    });
+  });
+
+  describe('PatchWallet 503 error', async function () {
+    beforeEach(async function () {
+      axiosStub.withArgs(PATCHWALLET_TX_URL).rejects({
+        response: {
+          status: 503,
+        },
+      });
+
+      await collectionUsersMock.insertOne({
+        userTelegramID: mockUserTelegramID,
+        userName: mockUserName,
+        userHandle: mockUserHandle,
+        patchwallet: mockWallet,
+        responsePath: mockResponsePath,
+      });
+    });
+
+    it('Should return true if error 503 in PatchWallet transaction', async function () {
+      const result = await handleNewTransaction({
+        senderTgId: mockUserTelegramID,
+        amount: '100',
+        recipientTgId: mockUserTelegramID1,
+        eventId: txId,
+      });
+
+      chai.expect(result).to.be.true;
+    });
+
+    it('Should complete db status to failure 503 in database if error 503 in PatchWallet transaction', async function () {
+      await handleNewTransaction({
+        senderTgId: mockUserTelegramID,
+        amount: '100',
+        recipientTgId: mockUserTelegramID1,
+        eventId: txId,
+      });
+
+      chai
+        .expect(await collectionTransfersMock.find({}).toArray())
+        .excluding(['dateAdded', '_id'])
+        .to.deep.equal([
+          {
+            eventId: txId,
+            chainId: mockChainId,
+            tokenSymbol: G1_TOKEN_SYMBOL,
+            tokenAddress: G1_POLYGON_ADDRESS,
+            senderTgId: mockUserTelegramID,
+            senderWallet: mockWallet,
+            senderName: mockUserName,
+            senderHandle: mockUserHandle,
+            recipientTgId: mockUserTelegramID1,
+            recipientWallet: mockWallet,
+            tokenAmount: '100',
+            status: TRANSACTION_STATUS.FAILURE_503,
+            transactionHash: null,
+            userOpHash: null,
+          },
+        ]);
+    });
+
+    it('Should not call FlowXO if error 503 in PatchWallet transaction', async function () {
+      await handleNewTransaction({
+        senderTgId: mockUserTelegramID,
+        amount: '100',
+        recipientTgId: mockUserTelegramID1,
+        eventId: txId,
+      });
+
+      chai.expect(
+        axiosStub
+          .getCalls()
+          .find((e) => e.firstArg === FLOWXO_NEW_TRANSACTION_WEBHOOK),
+      ).to.be.undefined;
+    });
+
+    it('Should not call Segment if error 503 in PatchWallet transaction', async function () {
       await handleNewTransaction({
         senderTgId: mockUserTelegramID,
         amount: '100',
