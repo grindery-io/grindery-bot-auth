@@ -244,33 +244,37 @@ export function computeG1ToGxConversion(
   );
 
   // Calculate quantities in USD
-  const from_usd_investment = gxFromUSD / EXCHANGE_RATE_GX_USD;
-  const from_g1_holding = gxFromG1 / EXCHANGE_RATE_GX_USD;
-  const from_mvu = (gxAfterMVU - gxBeforeMVU) / EXCHANGE_RATE_GX_USD;
-  const from_time =
+  const usd_from_usd_investment = gxFromUSD / EXCHANGE_RATE_GX_USD;
+  const usd_from_g1_holding = gxFromG1 / EXCHANGE_RATE_GX_USD;
+  const usd_from_mvu = (gxAfterMVU - gxBeforeMVU) / EXCHANGE_RATE_GX_USD;
+  const usd_from_time =
     (gxAfterMVUWithTimeEffect - gxAfterMVU) / EXCHANGE_RATE_GX_USD;
   const equivalent_usd_invested =
-    from_usd_investment + from_g1_holding + from_mvu + from_time;
+    usd_from_usd_investment +
+    usd_from_g1_holding +
+    usd_from_mvu +
+    usd_from_time;
 
   // Calculate different effects
-  const before_mvu =
-    (from_g1_holding + from_usd_investment) * EXCHANGE_RATE_GX_USD;
-  const mvu_effect = from_mvu * EXCHANGE_RATE_GX_USD;
-  const time_effect = gxAfterMVUWithTimeEffect - (before_mvu + mvu_effect);
+  const gx_before_mvu =
+    (usd_from_g1_holding + usd_from_usd_investment) * EXCHANGE_RATE_GX_USD;
+  const gx_mvu_effect = usd_from_mvu * EXCHANGE_RATE_GX_USD;
+  const gx_time_effect =
+    gxAfterMVUWithTimeEffect - (gx_before_mvu + gx_mvu_effect);
   const equivalent_gx_usd_exchange_rate =
-    (before_mvu + mvu_effect + time_effect) /
-    (from_usd_investment + from_g1_holding);
+    (gx_before_mvu + gx_mvu_effect + gx_time_effect) /
+    (usd_from_usd_investment + usd_from_g1_holding);
 
   // Return an object with conversion details and equivalencies
   return {
-    from_usd_investment,
-    from_g1_holding,
-    from_mvu,
-    from_time,
+    usd_from_usd_investment,
+    usd_from_g1_holding,
+    usd_from_mvu,
+    usd_from_time,
     equivalent_usd_invested,
-    before_mvu,
-    mvu_effect,
-    time_effect,
+    gx_before_mvu,
+    gx_mvu_effect,
+    gx_time_effect,
     equivalent_gx_usd_exchange_rate,
     standard_gx_usd_exchange_rate: EXCHANGE_RATE_GX_USD,
     discount_received:

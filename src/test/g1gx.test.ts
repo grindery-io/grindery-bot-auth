@@ -299,27 +299,29 @@ describe('G1 to GX util functions', async function () {
       const result = computeG1ToGxConversion(usdQuantity, g1Quantity, mvu);
 
       chai
-        .expect(result.from_usd_investment.toFixed(2))
+        .expect(result.usd_from_usd_investment.toFixed(2))
         .to.equal(Number(100).toFixed(2));
       chai
-        .expect(result.from_g1_holding.toFixed(2))
+        .expect(result.usd_from_g1_holding.toFixed(2))
         .to.equal(Number(0.25).toFixed(2));
-      chai.expect(result.from_mvu.toFixed(2)).to.equal(Number(8.02).toFixed(2));
       chai
-        .expect(result.from_time.toFixed(2))
+        .expect(result.usd_from_mvu.toFixed(2))
+        .to.equal(Number(8.02).toFixed(2));
+      chai
+        .expect(result.usd_from_time.toFixed(2))
         .to.equal(Number(13.7).toFixed(2));
       chai
         .expect(result.equivalent_usd_invested.toFixed(2))
         .to.equal(Number(121.97).toFixed(2));
 
       chai
-        .expect(result.before_mvu.toFixed(2))
+        .expect(result.gx_before_mvu.toFixed(2))
         .to.equal(Number(2784.72).toFixed(2));
       chai
-        .expect(result.mvu_effect.toFixed(2))
+        .expect(result.gx_mvu_effect.toFixed(2))
         .to.equal(Number(222.78).toFixed(2));
       chai
-        .expect(result.time_effect.toFixed(2))
+        .expect(result.gx_time_effect.toFixed(2))
         .to.equal(Number(380.5).toFixed(2));
       chai
         .expect(result.equivalent_gx_usd_exchange_rate.toFixed(2))
@@ -342,29 +344,29 @@ describe('G1 to GX util functions', async function () {
       const result = computeG1ToGxConversion(usdQuantity, g1Quantity, mvu);
 
       chai
-        .expect(result.from_usd_investment.toFixed(2))
+        .expect(result.usd_from_usd_investment.toFixed(2))
         .to.equal(Number(100).toFixed(2));
       chai
-        .expect(result.from_g1_holding.toFixed(2))
+        .expect(result.usd_from_g1_holding.toFixed(2))
         .to.equal(Number(111.59).toFixed(2));
       chai
-        .expect(result.from_mvu.toFixed(2))
+        .expect(result.usd_from_mvu.toFixed(2))
         .to.equal(Number(16.93).toFixed(2));
       chai
-        .expect(result.from_time.toFixed(2))
+        .expect(result.usd_from_time.toFixed(2))
         .to.equal(Number(28.91).toFixed(2));
       chai
         .expect(result.equivalent_usd_invested.toFixed(2))
         .to.equal(Number(257.43).toFixed(2));
 
       chai
-        .expect(result.before_mvu.toFixed(2))
+        .expect(result.gx_before_mvu.toFixed(2))
         .to.equal(Number(5877.44).toFixed(2));
       chai
-        .expect(result.mvu_effect.toFixed(2))
+        .expect(result.gx_mvu_effect.toFixed(2))
         .to.equal(Number(470.19).toFixed(2));
       chai
-        .expect(result.time_effect.toFixed(2))
+        .expect(result.gx_time_effect.toFixed(2))
         .to.equal(Number(803.09).toFixed(2));
       chai
         .expect(result.equivalent_gx_usd_exchange_rate.toFixed(2))
