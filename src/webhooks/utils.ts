@@ -6,7 +6,10 @@ import {
 } from '../types/webhook.types';
 import { TRANSACTION_STATUS } from '../utils/constants';
 import { getTxStatus } from '../utils/patchwallet';
+import { SwapTelegram } from '../utils/swap';
 import { getXMinBeforeDate } from '../utils/time';
+import { TransferTelegram } from '../utils/transfers';
+import { VestingTelegram } from '../utils/vesting';
 
 /**
  * Checks if the provided status indicates a successful transaction.
@@ -122,4 +125,54 @@ export function updateUserOpHash(
  */
 export function updateTxHash(inst: TelegramOperations, txHash: string): string {
   return (inst.txHash = txHash);
+}
+
+/**
+ * Sends a transaction based on the TelegramOperations instance provided.
+ * @param inst - Instance of TelegramOperations representing the transaction to be sent.
+ * @returns Promise<PatchResult> - Promise resolving to a PatchResult object indicating transaction status.
+ */
+export async function sendTx(inst: TelegramOperations): Promise<PatchResult> {
+  try {
+    // Attempt to perform the transaction using the provided TelegramOperations instance.
+    const { data } = await inst.sendTransactionAction();
+
+    // If successful, return the transaction result with userOpHash and txHash.
+    return { isError: false, userOpHash: data.userOpHash, txHash: data.txHash };
+  } catch (error) {
+    // Log error if transaction fails.
+    console.error(
+      `[${inst.params.eventId}] Error processing PatchWallet token sending: ${error}`,
+    );
+
+    // Check if the instance belongs to specific types (SwapTelegram, TransferTelegram, or VestingTelegram).
+    if (
+      inst instanceof SwapTelegram ||
+      inst instanceof TransferTelegram ||
+      inst instanceof VestingTelegram
+    ) {
+      // Retrieve the response status from the error object, if available.
+      const status = error?.response?.status;
+
+      // Check if the status falls within handled error codes.
+      if ([470, 400, 503].includes(status)) {
+        // If the status is a handled error code, update the database accordingly.
+        await inst.updateInDatabase(
+          status === 503
+            ? TRANSACTION_STATUS.FAILURE_503
+            : TRANSACTION_STATUS.FAILURE,
+          new Date(),
+        );
+
+        // Return indicating an error occurred during the transaction.
+        return { isError: true };
+      }
+
+      // Return indicating no error for the specified transaction types.
+      return { isError: false };
+    }
+
+    // Return indicating an error for other transaction types.
+    return { isError: true };
+  }
 }

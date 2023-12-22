@@ -10,7 +10,7 @@ import {
   getPatchWalletAddressFromTgId,
   sendTokens,
 } from './patchwallet';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import {
   FLOWXO_NEW_ISOLATED_REWARD_WEBHOOK,
   FLOWXO_NEW_LINK_REWARD_WEBHOOK,
@@ -22,7 +22,7 @@ import {
 import { isSuccessfulTransaction } from '../webhooks/utils';
 import { Db, Document, FindCursor, WithId } from 'mongodb';
 import {
-  PatchResult,
+  PatchRawResult,
   RewardParams,
   TransactionStatus,
 } from '../types/webhook.types';
@@ -199,35 +199,21 @@ export class SignUpRewardTelegram {
   }
 
   /**
-   * Sends tokens using PatchWallet.
-   * @returns {Promise<PatchResult>} - True if the tokens are sent successfully, false otherwise.
+   * Sends a transaction action, triggering PatchWallet.
+   * @returns Promise<axios.AxiosResponse<PatchRawResult, AxiosError>> - Promise resolving to an AxiosResponse object with PatchRawResult data or AxiosError on failure.
    */
-  async sendTx(): Promise<PatchResult> {
-    try {
-      // Send tokens using PatchWallet
-      const res = await sendTokens(
-        SOURCE_TG_ID,
-        this.params.patchwallet,
-        this.params.amount,
-        await getPatchWalletAccessToken(),
-        this.params.delegatecall,
-        this.params.tokenAddress,
-        this.params.chainId,
-      );
-
-      return {
-        isError: false,
-        userOpHash: res.data.userOpHash,
-        txHash: res.data.txHash,
-      };
-    } catch (error) {
-      // Log error if sending tokens fails
-      console.error(
-        `[${this.eventId}] sign up reward for ${this.params.userTelegramID} - Error processing PatchWallet token sending: ${error}`,
-      );
-
-      return { isError: true };
-    }
+  async sendTransactionAction(): Promise<
+    axios.AxiosResponse<PatchRawResult, AxiosError>
+  > {
+    return await sendTokens(
+      SOURCE_TG_ID,
+      this.params.patchwallet,
+      this.params.amount,
+      await getPatchWalletAccessToken(),
+      this.params.delegatecall,
+      this.params.tokenAddress,
+      this.params.chainId,
+    );
   }
 }
 
@@ -473,33 +459,21 @@ export class ReferralRewardTelegram {
   }
 
   /**
-   * Sends tokens for the referral reward using PatchWallet.
-   * @returns {Promise<PatchResult>} - True if the tokens are sent successfully, false otherwise.
+   * Sends a transaction action, triggering PatchWallet.
+   * @returns Promise<axios.AxiosResponse<PatchRawResult, AxiosError>> - Promise resolving to an AxiosResponse object with PatchRawResult data or AxiosError on failure.
    */
-  async sendTx(): Promise<PatchResult> {
-    try {
-      const res = await sendTokens(
-        SOURCE_TG_ID,
-        this.referent.patchwallet,
-        this.params.amount,
-        await getPatchWalletAccessToken(),
-        this.params.delegatecall,
-        this.params.tokenAddress,
-        this.params.chainId,
-      );
-
-      return {
-        isError: false,
-        userOpHash: res.data.userOpHash,
-        txHash: res.data.txHash,
-      };
-    } catch (error) {
-      console.error(
-        `[${this.eventId}] Error processing PatchWallet referral reward for ${this.referent.patchwallet}: ${error}`,
-      );
-
-      return { isError: true };
-    }
+  async sendTransactionAction(): Promise<
+    axios.AxiosResponse<PatchRawResult, AxiosError>
+  > {
+    return await sendTokens(
+      SOURCE_TG_ID,
+      this.referent.patchwallet,
+      this.params.amount,
+      await getPatchWalletAccessToken(),
+      this.params.delegatecall,
+      this.params.tokenAddress,
+      this.params.chainId,
+    );
   }
 }
 
@@ -703,35 +677,21 @@ export class LinkRewardTelegram {
   }
 
   /**
-   * Sends tokens using PatchWallet.
-   * @returns {Promise<PatchResult>} - True if sending tokens is successful, false otherwise.
+   * Sends a transaction action, triggering PatchWallet.
+   * @returns Promise<axios.AxiosResponse<PatchRawResult, AxiosError>> - Promise resolving to an AxiosResponse object with PatchRawResult data or AxiosError on failure.
    */
-  async sendTx(): Promise<PatchResult> {
-    try {
-      // Send tokens using PatchWallet
-      const res = await sendTokens(
-        SOURCE_TG_ID,
-        this.referent.patchwallet,
-        this.params.amount,
-        await getPatchWalletAccessToken(),
-        this.params.delegatecall,
-        this.params.tokenAddress,
-        this.params.chainId,
-      );
-
-      return {
-        isError: false,
-        userOpHash: res.data.userOpHash,
-        txHash: res.data.txHash,
-      };
-    } catch (error) {
-      // Log error if sending tokens fails
-      console.error(
-        `[${this.eventId}] link reward for ${this.params.referentUserTelegramID} - Error processing PatchWallet token sending: ${error}`,
-      );
-
-      return { isError: true };
-    }
+  async sendTransactionAction(): Promise<
+    axios.AxiosResponse<PatchRawResult, AxiosError>
+  > {
+    return await sendTokens(
+      SOURCE_TG_ID,
+      this.referent.patchwallet,
+      this.params.amount,
+      await getPatchWalletAccessToken(),
+      this.params.delegatecall,
+      this.params.tokenAddress,
+      this.params.chainId,
+    );
   }
 }
 
@@ -909,34 +869,20 @@ export class IsolatedRewardTelegram {
   }
 
   /**
-   * Sends tokens using PatchWallet.
-   * @returns {Promise<boolean>} - True if the tokens are sent successfully, false otherwise.
+   * Sends a transaction action, triggering PatchWallet.
+   * @returns Promise<axios.AxiosResponse<PatchRawResult, AxiosError>> - Promise resolving to an AxiosResponse object with PatchRawResult data or AxiosError on failure.
    */
-  async sendTx(): Promise<PatchResult> {
-    try {
-      // Send tokens using PatchWallet
-      const res = await sendTokens(
-        SOURCE_TG_ID,
-        this.params.patchwallet,
-        this.params.amount,
-        await getPatchWalletAccessToken(),
-        this.params.delegatecall,
-        this.tokenAddress,
-        this.chainId,
-      );
-
-      return {
-        isError: false,
-        userOpHash: res.data.userOpHash,
-        txHash: res.data.txHash,
-      };
-    } catch (error) {
-      // Log error if sending tokens fails
-      console.error(
-        `[${this.params.eventId}] sign up reward for ${this.params.userTelegramID} - Error processing PatchWallet token sending: ${error}`,
-      );
-
-      return { isError: true };
-    }
+  async sendTransactionAction(): Promise<
+    axios.AxiosResponse<PatchRawResult, AxiosError>
+  > {
+    return await sendTokens(
+      SOURCE_TG_ID,
+      this.params.patchwallet,
+      this.params.amount,
+      await getPatchWalletAccessToken(),
+      this.params.delegatecall,
+      this.tokenAddress,
+      this.chainId,
+    );
   }
 }

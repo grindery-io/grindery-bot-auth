@@ -15,7 +15,7 @@ import {
   hedgeyLockTokens,
 } from './patchwallet';
 import { addVestingSegment } from './segment';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import {
   FLOWXO_NEW_VESTING_WEBHOOK,
   FLOWXO_WEBHOOK_API_KEY,
@@ -33,7 +33,11 @@ import {
   scaleDecimals,
 } from './web3';
 import BigNumber from 'bignumber.js';
-import { PatchResult, TransactionStatus } from '../types/webhook.types';
+import {
+  PatchRawResult,
+  PatchResult,
+  TransactionStatus,
+} from '../types/webhook.types';
 
 /**
  * Calculates and generates plans for distributing tokens to recipients over time.
@@ -314,34 +318,16 @@ export class VestingTelegram {
   }
 
   /**
-   * Sends tokens using PatchWallet.
-   * @returns {Promise<PatchResult>} - True if the tokens are sent successfully, false otherwise.
+   * Sends a transaction action, triggering PatchWallet.
+   * @returns Promise<axios.AxiosResponse<PatchRawResult, AxiosError>> - Promise resolving to an AxiosResponse object with PatchRawResult data or AxiosError on failure.
    */
-  async sendTx(): Promise<PatchResult> {
-    try {
-      // Send tokens using PatchWallet
-      const res = await hedgeyLockTokens(
-        this.params.senderInformation.userTelegramID,
-        this.params.recipients,
-        await getPatchWalletAccessToken(),
-      );
-
-      return {
-        isError: false,
-        userOpHash: res.data.userOpHash,
-        txHash: res.data.txHash,
-      };
-    } catch (error) {
-      console.error(error);
-      // Log error if sending tokens fails
-      console.error(
-        `[${this.eventId}] vesting from ${this.params.senderInformation.userTelegramID} - Error processing PatchWallet token sending: ${error}`,
-      );
-      // Return true if the amount is not a valid number or the error status is 470, marking the transaction as failed
-      return error?.response?.status === 470
-        ? (await this.updateInDatabase(TRANSACTION_STATUS.FAILURE, new Date()),
-          { isError: true })
-        : { isError: false };
-    }
+  async sendTransactionAction(): Promise<
+    axios.AxiosResponse<PatchRawResult, AxiosError>
+  > {
+    return await hedgeyLockTokens(
+      this.params.senderInformation.userTelegramID,
+      this.params.recipients,
+      await getPatchWalletAccessToken(),
+    );
   }
 }

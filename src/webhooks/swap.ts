@@ -6,6 +6,7 @@ import {
   isPendingTransactionHash,
   isSuccessfulTransaction,
   isTreatmentDurationExceeded,
+  sendTx,
   updateTxHash,
   updateUserOpHash,
 } from './utils';
@@ -70,7 +71,7 @@ export async function handleSwap(params: SwapParams): Promise<boolean> {
 
   // Handle sending transaction if not already handled
   if (!tx) {
-    tx = await swap.swapTokens();
+    tx = await sendTx(swap);
     if (tx.isError) return true;
     if (!tx.txHash && !tx.userOpHash) return false;
   }

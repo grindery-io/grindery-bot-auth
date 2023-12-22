@@ -9,6 +9,7 @@ import {
   getStatusRewards,
   isPendingTransactionHash,
   isTreatmentDurationExceeded,
+  sendTx,
   updateTxHash,
   updateUserOpHash,
 } from './utils';
@@ -48,7 +49,7 @@ export async function handleLinkReward(params: RewardParams): Promise<boolean> {
     }
 
     // Check for txReward and send transaction if not present
-    if (!txReward && (txReward = await reward.sendTx()).isError) return false;
+    if (!txReward && (txReward = await sendTx(reward)).isError) return false;
 
     if (txReward && txReward.txHash) {
       updateTxHash(reward, txReward.txHash);

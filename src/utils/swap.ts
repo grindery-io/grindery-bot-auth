@@ -11,9 +11,10 @@ import {
   swapTokens,
 } from './patchwallet';
 import { FLOWXO_NEW_SWAP_WEBHOOK, FLOWXO_WEBHOOK_API_KEY } from '../../secrets';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { addTrackSwapSegment } from './segment';
 import {
+  PatchRawResult,
   PatchResult,
   SwapParams,
   TransactionStatus,
@@ -261,51 +262,20 @@ export class SwapTelegram {
   }
 
   /**
-   * Sends tokens using PatchWallet.
-   * @returns {Promise<PatchResult>} - True if the tokens are sent successfully, false otherwise.
+   * Sends a transaction action, triggering PatchWallet.
+   * @returns Promise<axios.AxiosResponse<PatchRawResult, AxiosError>> - Promise resolving to an AxiosResponse object with PatchRawResult data or AxiosError on failure.
    */
-  async swapTokens(): Promise<PatchResult> {
-    try {
-      // Send tokens using PatchWallet
-      const res = await swapTokens(
-        this.params.userInformation.userTelegramID,
-        this.params.to,
-        this.params.value,
-        this.params.data,
-        this.params.chainIn,
-        await getPatchWalletAccessToken(),
-        this.params.delegatecall,
-      );
-
-      return {
-        isError: false,
-        userOpHash: res.data.userOpHash,
-        txHash: res.data.txHash,
-      };
-    } catch (error) {
-      // Log error if sending tokens fails
-      console.error(
-        `[${this.params.eventId}] Error processing PatchWallet swap for user telegram id [${this.params.userTelegramID}]: ${error.message}`,
-      );
-      // Check for potential invalid amount or specific error responses
-      if (
-        !/^\d+$/.test(this.params.value) ||
-        error?.response?.status === 470 ||
-        error?.response?.status === 400
-      ) {
-        console.warn(
-          `Potentially invalid amount: ${this.params.amount}, dropping`,
-        );
-        await this.updateInDatabase(TRANSACTION_STATUS.FAILURE, new Date());
-        return { isError: true };
-      }
-      // Handling specific error response status 503
-      if (error?.response?.status === 503) {
-        await this.updateInDatabase(TRANSACTION_STATUS.FAILURE_503, new Date());
-        return { isError: true };
-      }
-      // Return PatchResult indicating no error if not handled specifically
-      return { isError: false };
-    }
+  async sendTransactionAction(): Promise<
+    axios.AxiosResponse<PatchRawResult, AxiosError>
+  > {
+    return await swapTokens(
+      this.params.userInformation.userTelegramID,
+      this.params.to,
+      this.params.value,
+      this.params.data,
+      this.params.chainIn,
+      await getPatchWalletAccessToken(),
+      this.params.delegatecall,
+    );
   }
 }

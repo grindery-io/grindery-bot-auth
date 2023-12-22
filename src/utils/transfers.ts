@@ -12,7 +12,7 @@ import {
   sendTokens,
 } from './patchwallet';
 import { addTrackSegment } from './segment';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import {
   FLOWXO_NEW_TRANSACTION_WEBHOOK,
   FLOWXO_WEBHOOK_API_KEY,
@@ -20,11 +20,11 @@ import {
 import { Db, Document, ObjectId, WithId } from 'mongodb';
 import { formatDate } from './time';
 import {
+  PatchRawResult,
   PatchResult,
   TransactionParams,
   TransactionStatus,
 } from '../types/webhook.types';
-import { isPositiveFloat } from '../webhooks/utils';
 import {
   IncomingTransaction,
   OutgoingTransaction,
@@ -474,50 +474,20 @@ export class TransferTelegram {
   }
 
   /**
-   * Sends tokens using PatchWallet.
-   * @returns {Promise<PatchResult>} - True if the tokens are sent successfully, false otherwise.
+   * Sends a transaction action, triggering PatchWallet.
+   * @returns Promise<axios.AxiosResponse<PatchRawResult, AxiosError>> - Promise resolving to an AxiosResponse object with PatchRawResult data or AxiosError on failure.
    */
-  async sendTx(): Promise<PatchResult> {
-    try {
-      // Send tokens using PatchWallet
-      const res = await sendTokens(
-        this.params.senderInformation.userTelegramID,
-        this.recipientWallet,
-        this.params.amount,
-        await getPatchWalletAccessToken(),
-        this.params.delegatecall,
-        this.params.tokenAddress,
-        this.params.chainId,
-      );
-
-      return {
-        isError: false,
-        userOpHash: res.data.userOpHash,
-        txHash: res.data.txHash,
-      };
-    } catch (error) {
-      // Log error if sending tokens fails
-      console.error(
-        `[${this.eventId}] transaction from ${this.params.senderInformation.userTelegramID} to ${this.params.recipientTgId} for ${this.params.amount} - Error processing PatchWallet token sending: ${error}`,
-      );
-      // Check for potential invalid amount or specific error responses
-      if (
-        !isPositiveFloat(this.params.amount) ||
-        error?.response?.status === 470
-      ) {
-        console.warn(
-          `Potentially invalid amount: ${this.params.amount}, dropping`,
-        );
-        await this.updateInDatabase(TRANSACTION_STATUS.FAILURE, new Date());
-        return { isError: true };
-      }
-      // Handling specific error response status 503
-      if (error?.response?.status === 503) {
-        await this.updateInDatabase(TRANSACTION_STATUS.FAILURE_503, new Date());
-        return { isError: true };
-      }
-      // Return PatchResult indicating no error if not handled specifically
-      return { isError: false };
-    }
+  async sendTransactionAction(): Promise<
+    axios.AxiosResponse<PatchRawResult, AxiosError>
+  > {
+    return await sendTokens(
+      this.params.senderInformation.userTelegramID,
+      this.recipientWallet,
+      this.params.amount,
+      await getPatchWalletAccessToken(),
+      this.params.delegatecall,
+      this.params.tokenAddress,
+      this.params.chainId,
+    );
   }
 }
