@@ -13,7 +13,10 @@ import {
 } from './patchwallet';
 import { addTrackSegment } from './segment';
 import axios from 'axios';
-import { FLOWXO_NEW_TRANSACTION_WEBHOOK } from '../../secrets';
+import {
+  FLOWXO_NEW_TRANSACTION_WEBHOOK,
+  FLOWXO_WEBHOOK_API_KEY,
+} from '../../secrets';
 import { Db, Document, ObjectId, WithId } from 'mongodb';
 import { formatDate } from './time';
 import {
@@ -499,6 +502,7 @@ export class TransferTelegram {
       tokenAmount: this.params.amount,
       transactionHash: this.txHash,
       dateAdded: new Date(),
+      apiKey: FLOWXO_WEBHOOK_API_KEY,
     });
   }
 

@@ -16,7 +16,11 @@ import {
 } from './patchwallet';
 import { addVestingSegment } from './segment';
 import axios from 'axios';
-import { FLOWXO_NEW_VESTING_WEBHOOK, G1_POLYGON_ADDRESS } from '../../secrets';
+import {
+  FLOWXO_NEW_VESTING_WEBHOOK,
+  FLOWXO_WEBHOOK_API_KEY,
+  G1_POLYGON_ADDRESS,
+} from '../../secrets';
 import { Db, Document, WithId } from 'mongodb';
 import {
   HedgeyPlanParams,
@@ -277,6 +281,7 @@ export class VestingTelegram {
       recipients: this.params.recipients,
       transactionHash: this.txHash,
       dateAdded: new Date(),
+      apiKey: FLOWXO_WEBHOOK_API_KEY,
     });
   }
 

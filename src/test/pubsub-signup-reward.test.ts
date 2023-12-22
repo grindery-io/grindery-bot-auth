@@ -29,6 +29,7 @@ import {
 } from '../utils/constants';
 import {
   FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK,
+  FLOWXO_WEBHOOK_API_KEY,
   G1_POLYGON_ADDRESS,
   SOURCE_TG_ID,
 } from '../../secrets';
@@ -471,6 +472,7 @@ describe('handleSignUpReward function', async function () {
         amount: '100',
         message: 'Sign up reward',
         transactionHash: mockTransactionHash,
+        apiKey: FLOWXO_WEBHOOK_API_KEY,
       });
 
       chai
@@ -593,6 +595,7 @@ describe('handleSignUpReward function', async function () {
         amount: '100',
         message: 'Sign up reward',
         transactionHash: mockTransactionHash,
+        apiKey: FLOWXO_WEBHOOK_API_KEY,
       });
 
       chai
@@ -721,6 +724,7 @@ describe('handleSignUpReward function', async function () {
         amount: '100',
         message: 'Sign up reward',
         transactionHash: mockTransactionHash,
+        apiKey: FLOWXO_WEBHOOK_API_KEY,
       });
 
       chai
@@ -1090,6 +1094,7 @@ describe('handleSignUpReward function', async function () {
           amount: '100',
           message: 'Sign up reward',
           transactionHash: mockTransactionHash,
+          apiKey: FLOWXO_WEBHOOK_API_KEY,
         });
 
         chai

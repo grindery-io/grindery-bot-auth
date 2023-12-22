@@ -28,7 +28,11 @@ import {
   PATCHWALLET_TX_URL,
   TRANSACTION_STATUS,
 } from '../utils/constants';
-import { FLOWXO_NEW_LINK_REWARD_WEBHOOK, SOURCE_TG_ID } from '../../secrets';
+import {
+  FLOWXO_NEW_LINK_REWARD_WEBHOOK,
+  FLOWXO_WEBHOOK_API_KEY,
+  SOURCE_TG_ID,
+} from '../../secrets';
 import { handleLinkReward } from '../webhooks/link-reward';
 import { Collection, Document } from 'mongodb';
 import { ContractStub } from '../types/tests.types';
@@ -551,6 +555,7 @@ describe('handleLinkReward function', async function () {
         amount: '10',
         message: 'Referral link',
         transactionHash: mockTransactionHash,
+        apiKey: FLOWXO_WEBHOOK_API_KEY,
       });
 
       chai
@@ -921,6 +926,7 @@ describe('handleLinkReward function', async function () {
           amount: '10',
           message: 'Referral link',
           transactionHash: mockTransactionHash,
+          apiKey: FLOWXO_WEBHOOK_API_KEY,
         });
 
         chai

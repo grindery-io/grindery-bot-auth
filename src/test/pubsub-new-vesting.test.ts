@@ -28,7 +28,11 @@ import {
   TRANSACTION_STATUS,
 } from '../utils/constants';
 import { v4 as uuidv4 } from 'uuid';
-import { FLOWXO_NEW_VESTING_WEBHOOK, G1_POLYGON_ADDRESS } from '../../secrets';
+import {
+  FLOWXO_NEW_VESTING_WEBHOOK,
+  FLOWXO_WEBHOOK_API_KEY,
+  G1_POLYGON_ADDRESS,
+} from '../../secrets';
 import * as web3 from '../utils/web3';
 import { Collection, Document } from 'mongodb';
 import { handleNewVesting } from '../webhooks/vesting';
@@ -281,6 +285,7 @@ describe('handleNewVesting function', async function () {
             { recipientAddress: mockWallet1, amount: '15' },
           ],
           transactionHash: mockTransactionHash,
+          apiKey: FLOWXO_WEBHOOK_API_KEY,
         });
     });
   });
@@ -1257,6 +1262,7 @@ describe('handleNewVesting function', async function () {
               { recipientAddress: mockWallet1, amount: '15' },
             ],
             transactionHash: mockTransactionHash,
+            apiKey: FLOWXO_WEBHOOK_API_KEY,
           });
 
         chai

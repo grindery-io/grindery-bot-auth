@@ -48,6 +48,7 @@ import {
 } from '../utils/constants';
 import {
   FLOWXO_NEW_REFERRAL_REWARD_WEBHOOK,
+  FLOWXO_WEBHOOK_API_KEY,
   G1_POLYGON_ADDRESS,
   SOURCE_TG_ID,
 } from '../../secrets';
@@ -818,6 +819,7 @@ describe('handleReferralReward function', function () {
           message: 'Referral reward',
           transactionHash: mockTransactionHash,
           parentTransactionHash: mockTransactionHash,
+          apiKey: FLOWXO_WEBHOOK_API_KEY,
         });
       chai
         .expect(flowXOCalls[0].args[1].dateAdded)
@@ -1023,6 +1025,7 @@ describe('handleReferralReward function', function () {
           message: 'Referral reward',
           transactionHash: mockTransactionHash,
           parentTransactionHash: mockTransactionHash,
+          apiKey: FLOWXO_WEBHOOK_API_KEY,
         });
       chai
         .expect(flowXOCalls[0].args[1].dateAdded)
@@ -1223,6 +1226,7 @@ describe('handleReferralReward function', function () {
           message: 'Referral reward',
           transactionHash: mockTransactionHash,
           parentTransactionHash: mockTransactionHash,
+          apiKey: FLOWXO_WEBHOOK_API_KEY,
         });
       chai
         .expect(flowXOCalls[0].args[1].dateAdded)
@@ -1474,6 +1478,7 @@ describe('handleReferralReward function', function () {
           message: 'Referral reward',
           transactionHash: mockTransactionHash,
           parentTransactionHash: mockTransactionHash,
+          apiKey: FLOWXO_WEBHOOK_API_KEY,
         });
       chai
         .expect(flowXOCalls[0].args[1].dateAdded)
@@ -1639,6 +1644,7 @@ describe('handleReferralReward function', function () {
           message: 'Referral reward',
           transactionHash: mockTransactionHash,
           parentTransactionHash: mockTransactionHash,
+          apiKey: FLOWXO_WEBHOOK_API_KEY,
         });
       chai
         .expect(flowXOCalls[0].args[1].dateAdded)
@@ -2212,6 +2218,7 @@ describe('handleReferralReward function', function () {
             message: 'Referral reward',
             transactionHash: mockTransactionHash,
             parentTransactionHash: mockTransactionHash,
+            apiKey: FLOWXO_WEBHOOK_API_KEY,
           });
         chai
           .expect(flowXOCalls[0].args[1].dateAdded)

@@ -31,6 +31,7 @@ import {
 import { handleIsolatedReward } from '../webhooks/isolated-reward';
 import {
   FLOWXO_NEW_ISOLATED_REWARD_WEBHOOK,
+  FLOWXO_WEBHOOK_API_KEY,
   G1_POLYGON_ADDRESS,
   SOURCE_TG_ID,
 } from '../../secrets';
@@ -685,6 +686,7 @@ describe('handleIsolatedReward function', async function () {
         amount: '100',
         message: 'isolated message 1',
         transactionHash: mockTransactionHash,
+        apiKey: FLOWXO_WEBHOOK_API_KEY,
       });
 
       chai
@@ -819,6 +821,7 @@ describe('handleIsolatedReward function', async function () {
         amount: '100',
         message: 'isolated message 1',
         transactionHash: mockTransactionHash,
+        apiKey: FLOWXO_WEBHOOK_API_KEY,
       });
 
       chai
@@ -982,6 +985,7 @@ describe('handleIsolatedReward function', async function () {
         amount: '100',
         message: 'isolated message 1',
         transactionHash: mockTransactionHash,
+        apiKey: FLOWXO_WEBHOOK_API_KEY,
       });
       chai
         .expect(FlowXOCallArgs.dateAdded)
@@ -1371,6 +1375,7 @@ describe('handleIsolatedReward function', async function () {
           amount: '34',
           message: 'isolated message 1',
           transactionHash: mockTransactionHash,
+          apiKey: FLOWXO_WEBHOOK_API_KEY,
         });
         chai
           .expect(FlowXOCallArgs.dateAdded)

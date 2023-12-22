@@ -32,6 +32,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { handleNewTransaction } from '../webhooks/transaction';
 import {
   FLOWXO_NEW_TRANSACTION_WEBHOOK,
+  FLOWXO_WEBHOOK_API_KEY,
   G1_POLYGON_ADDRESS,
 } from '../../secrets';
 import * as web3 from '../utils/web3';
@@ -355,6 +356,7 @@ describe('handleNewTransaction function', async function () {
         recipientWallet: mockWallet,
         tokenAmount: '100',
         transactionHash: mockTransactionHash,
+        apiKey: FLOWXO_WEBHOOK_API_KEY,
       });
     });
   });
@@ -1387,6 +1389,7 @@ describe('handleNewTransaction function', async function () {
           recipientWallet: mockWallet,
           tokenAmount: '100',
           transactionHash: mockTransactionHash,
+          apiKey: FLOWXO_WEBHOOK_API_KEY,
         });
 
         chai

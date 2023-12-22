@@ -16,6 +16,7 @@ import {
   FLOWXO_NEW_LINK_REWARD_WEBHOOK,
   FLOWXO_NEW_REFERRAL_REWARD_WEBHOOK,
   FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK,
+  FLOWXO_WEBHOOK_API_KEY,
   SOURCE_TG_ID,
 } from '../../secrets';
 import { isSuccessfulTransaction } from '../webhooks/utils';
@@ -193,6 +194,7 @@ export class SignUpRewardTelegram {
       message: this.params.message,
       transactionHash: this.txHash,
       dateAdded: new Date(),
+      apiKey: FLOWXO_WEBHOOK_API_KEY,
     });
   }
 
@@ -466,6 +468,7 @@ export class ReferralRewardTelegram {
       transactionHash: this.txHash,
       dateAdded: new Date(),
       parentTransactionHash: this.parentTx.transactionHash,
+      apiKey: FLOWXO_WEBHOOK_API_KEY,
     });
   }
 
@@ -695,6 +698,7 @@ export class LinkRewardTelegram {
       transactionHash: this.txHash,
       dateAdded: new Date(),
       sponsoredUserTelegramID: this.params.userTelegramID,
+      apiKey: FLOWXO_WEBHOOK_API_KEY,
     });
   }
 
@@ -900,6 +904,7 @@ export class IsolatedRewardTelegram {
       message: this.params.message,
       transactionHash: this.txHash,
       dateAdded: new Date(),
+      apiKey: FLOWXO_WEBHOOK_API_KEY,
     });
   }
 
