@@ -21,18 +21,18 @@ const router = express.Router();
  *
  * @example response - 200 - Success response example
  * {
- *   "usd_from_usd_investment": 10,
- *   "usd_from_g1_holding": 0.049999999999999996,
- *   "usd_from_mvu": 0.8040000000000014,
- *   "usd_from_time": 1.0442717990890689,
- *   "equivalent_usd_invested": 11.898271799089072,
- *   "gx_before_mvu": 279.1666666666667,
- *   "gx_mvu_effect": 22.33333333333337,
- *   "gx_time_effect": 29.00754997469636,
+ *   "usd_from_usd_investment": "10",
+ *   "usd_from_g1_holding": "0.049",
+ *   "usd_from_mvu": "0.80",
+ *   "usd_from_time": "1.04",
+ *   "equivalent_usd_invested": "11.89",
+ *   "gx_before_mvu": "279.16",
+ *   "gx_mvu_effect": "22.33",
+ *   "gx_time_effect": "29.00",
  *   "gx_received": "1200",
- *   "equivalent_gx_usd_exchange_rate": 32.88632338056681,
- *   "standard_gx_usd_exchange_rate": 27.77777777777778,
- *   "discount_received": 15.533951739365826
+ *   "equivalent_gx_usd_exchange_rate": "32.88",
+ *   "standard_gx_usd_exchange_rate": "27.77",
+ *   "discount_received": "15.53"
  * }
  *
  * @example response - 500 - Error response example

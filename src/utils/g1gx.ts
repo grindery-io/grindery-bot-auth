@@ -267,18 +267,22 @@ export function computeG1ToGxConversion(
 
   // Return an object with conversion details and equivalencies
   return {
-    usd_from_usd_investment,
-    usd_from_g1_holding,
-    usd_from_mvu,
-    usd_from_time,
-    equivalent_usd_invested,
-    gx_before_mvu,
-    gx_mvu_effect,
-    gx_time_effect,
-    equivalent_gx_usd_exchange_rate,
-    standard_gx_usd_exchange_rate: EXCHANGE_RATE_GX_USD,
-    discount_received:
-      (1 - EXCHANGE_RATE_GX_USD / equivalent_gx_usd_exchange_rate) * 100,
-    gx_received: equivalent_usd_invested * equivalent_gx_usd_exchange_rate,
+    usd_from_usd_investment: usd_from_usd_investment.toFixed(2),
+    usd_from_g1_holding: usd_from_g1_holding.toFixed(2),
+    usd_from_mvu: usd_from_mvu.toFixed(2),
+    usd_from_time: usd_from_time.toFixed(2),
+    equivalent_usd_invested: equivalent_usd_invested.toFixed(2),
+    gx_before_mvu: gx_before_mvu.toFixed(2),
+    gx_mvu_effect: gx_mvu_effect.toFixed(2),
+    gx_time_effect: gx_time_effect.toFixed(2),
+    equivalent_gx_usd_exchange_rate: equivalent_gx_usd_exchange_rate.toFixed(2),
+    standard_gx_usd_exchange_rate: EXCHANGE_RATE_GX_USD.toFixed(2),
+    discount_received: (
+      (1 - EXCHANGE_RATE_GX_USD / equivalent_gx_usd_exchange_rate) *
+      100
+    ).toFixed(2),
+    gx_received: (
+      equivalent_usd_invested * equivalent_gx_usd_exchange_rate
+    ).toFixed(2),
   };
 }
