@@ -19,6 +19,7 @@ import Sinon from 'sinon';
 import axios from 'axios';
 import chaiExclude from 'chai-exclude';
 import {
+  FLOWXO_NEW_VESTING_WEBHOOK,
   G1_TOKEN_SYMBOL,
   HEDGEY_BATCHPLANNER_ADDRESS,
   PATCHWALLET_AUTH_URL,
@@ -28,11 +29,7 @@ import {
   TRANSACTION_STATUS,
 } from '../utils/constants';
 import { v4 as uuidv4 } from 'uuid';
-import {
-  FLOWXO_NEW_VESTING_WEBHOOK,
-  FLOWXO_WEBHOOK_API_KEY,
-  G1_POLYGON_ADDRESS,
-} from '../../secrets';
+import { FLOWXO_WEBHOOK_API_KEY, G1_POLYGON_ADDRESS } from '../../secrets';
 import * as web3 from '../utils/web3';
 import { Collection, Document } from 'mongodb';
 import { handleNewVesting } from '../webhooks/vesting';
@@ -286,6 +283,7 @@ describe('handleNewVesting function', async function () {
           ],
           transactionHash: mockTransactionHash,
           apiKey: FLOWXO_WEBHOOK_API_KEY,
+          status: TRANSACTION_STATUS.SUCCESS,
         });
     });
   });
@@ -1263,6 +1261,7 @@ describe('handleNewVesting function', async function () {
             ],
             transactionHash: mockTransactionHash,
             apiKey: FLOWXO_WEBHOOK_API_KEY,
+            status: TRANSACTION_STATUS.SUCCESS,
           });
 
         chai

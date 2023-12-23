@@ -9,6 +9,7 @@ import {
   isSuccessfulTransaction,
   isTreatmentDurationExceeded,
   sendTransaction,
+  updateStatus,
   updateTxHash,
   updateUserOpHash,
 } from './utils';
@@ -86,6 +87,7 @@ export async function handleNewVesting(
   // Finalize transaction handling
   if (tx && tx.txHash) {
     updateTxHash(vesting, tx.txHash);
+    updateStatus(vesting, TRANSACTION_STATUS.SUCCESS);
     await Promise.all([
       vesting.updateInDatabase(TRANSACTION_STATUS.SUCCESS, new Date()),
       vesting.saveToSegment(),

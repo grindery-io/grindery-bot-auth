@@ -1,5 +1,6 @@
 import { Database } from '../db/conn';
 import {
+  FLOWXO_NEW_SWAP_WEBHOOK,
   SWAPS_COLLECTION,
   TRANSACTION_STATUS,
   nativeTokenAddresses,
@@ -10,7 +11,7 @@ import {
   getTxStatus,
   swapTokens,
 } from './patchwallet';
-import { FLOWXO_NEW_SWAP_WEBHOOK, FLOWXO_WEBHOOK_API_KEY } from '../../secrets';
+import { FLOWXO_WEBHOOK_API_KEY } from '../../secrets';
 import axios, { AxiosError } from 'axios';
 import { addTrackSwapSegment } from './segment';
 import {
@@ -160,6 +161,7 @@ export class SwapTelegram {
       },
       { upsert: true },
     );
+    this.status = status;
     console.log(
       `[${this.params.eventId}] swap event in MongoDB as ${status} with transaction hash : ${this.txHash}.`,
     );
@@ -216,7 +218,7 @@ export class SwapTelegram {
         .toString(),
       priceImpact: this.params.priceImpact,
       gas: this.params.gas,
-      status: TRANSACTION_STATUS.SUCCESS,
+      status: this.status,
       transactionHash: this.txHash,
       dateAdded: new Date(),
       to: this.params.to,

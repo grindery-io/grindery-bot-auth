@@ -13,6 +13,7 @@ import {
   isSuccessfulTransaction,
   isTreatmentDurationExceeded,
   sendTransaction,
+  updateStatus,
   updateTxHash,
   updateUserOpHash,
 } from './utils';
@@ -90,6 +91,7 @@ export async function handleNewTransaction(
   // Finalize transaction handling
   if (tx && tx.txHash) {
     updateTxHash(transfer, tx.txHash);
+    updateStatus(transfer, TRANSACTION_STATUS.SUCCESS);
     await Promise.all([
       transfer.updateInDatabase(TRANSACTION_STATUS.SUCCESS, new Date()),
       transfer.saveToSegment(),

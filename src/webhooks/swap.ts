@@ -7,6 +7,7 @@ import {
   isSuccessfulTransaction,
   isTreatmentDurationExceeded,
   sendTransaction,
+  updateStatus,
   updateTxHash,
   updateUserOpHash,
 } from './utils';
@@ -80,6 +81,7 @@ export async function handleSwap(params: SwapParams): Promise<boolean> {
   if (tx && tx.txHash) {
     // Update transaction hash, update database, save to Segment and FlowXO
     updateTxHash(swap, tx.txHash);
+    updateStatus(swap, TRANSACTION_STATUS.SUCCESS);
     await Promise.all([
       swap.updateInDatabase(TRANSACTION_STATUS.SUCCESS, new Date()),
       swap.saveToSegment(),

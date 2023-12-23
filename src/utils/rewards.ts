@@ -1,5 +1,9 @@
 import { Database } from '../db/conn';
 import {
+  FLOWXO_NEW_ISOLATED_REWARD_WEBHOOK,
+  FLOWXO_NEW_LINK_REWARD_WEBHOOK,
+  FLOWXO_NEW_REFERRAL_REWARD_WEBHOOK,
+  FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK,
   REWARDS_COLLECTION,
   TRANSACTION_STATUS,
   TRANSFERS_COLLECTION,
@@ -11,14 +15,7 @@ import {
   sendTokens,
 } from './patchwallet';
 import axios, { AxiosError } from 'axios';
-import {
-  FLOWXO_NEW_ISOLATED_REWARD_WEBHOOK,
-  FLOWXO_NEW_LINK_REWARD_WEBHOOK,
-  FLOWXO_NEW_REFERRAL_REWARD_WEBHOOK,
-  FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK,
-  FLOWXO_WEBHOOK_API_KEY,
-  SOURCE_TG_ID,
-} from '../../secrets';
+import { FLOWXO_WEBHOOK_API_KEY, SOURCE_TG_ID } from '../../secrets';
 import { isSuccessfulTransaction } from '../webhooks/utils';
 import { Db, Document, FindCursor, WithId } from 'mongodb';
 import {
@@ -172,6 +169,7 @@ export class SignUpRewardTelegram {
       },
       { upsert: true },
     );
+    this.status = status;
     console.log(
       `[${this.eventId}] sign up reward for ${this.params.userTelegramID} in MongoDB as ${status} with transaction hash : ${this.txHash}.`,
     );
@@ -195,6 +193,7 @@ export class SignUpRewardTelegram {
       transactionHash: this.txHash,
       dateAdded: new Date(),
       apiKey: FLOWXO_WEBHOOK_API_KEY,
+      status: this.status,
     });
   }
 
@@ -428,6 +427,7 @@ export class ReferralRewardTelegram {
       },
       { upsert: true },
     );
+    this.status = status;
     console.log(
       `[${this.eventId}] referral reward for ${this.referent.patchwallet} sending tokens to ${this.params.patchwallet} in ${this.parentTx.transactionHash} in MongoDB as ${status} with transaction hash : ${this.txHash}.`,
     );
@@ -455,6 +455,7 @@ export class ReferralRewardTelegram {
       dateAdded: new Date(),
       parentTransactionHash: this.parentTx.transactionHash,
       apiKey: FLOWXO_WEBHOOK_API_KEY,
+      status: this.status,
     });
   }
 
@@ -650,6 +651,7 @@ export class LinkRewardTelegram {
       },
       { upsert: true },
     );
+    this.status = status;
     console.log(
       `[${this.eventId}] link for ${this.params.referentUserTelegramID} sponsoring ${this.params.userTelegramID} in MongoDB as ${status} with transaction hash : ${this.txHash}.`,
     );
@@ -673,6 +675,7 @@ export class LinkRewardTelegram {
       dateAdded: new Date(),
       sponsoredUserTelegramID: this.params.userTelegramID,
       apiKey: FLOWXO_WEBHOOK_API_KEY,
+      status: this.status,
     });
   }
 
@@ -842,6 +845,7 @@ export class IsolatedRewardTelegram {
       },
       { upsert: true },
     );
+    this.status = status;
     console.log(
       `[${this.params.eventId}] sign up reward for ${this.params.userTelegramID} in MongoDB as ${status} with transaction hash : ${this.txHash}.`,
     );
@@ -865,6 +869,7 @@ export class IsolatedRewardTelegram {
       transactionHash: this.txHash,
       dateAdded: new Date(),
       apiKey: FLOWXO_WEBHOOK_API_KEY,
+      status: this.status,
     });
   }
 

@@ -1,5 +1,6 @@
 import { Database } from '../db/conn';
 import {
+  FLOWXO_NEW_TRANSACTION_WEBHOOK,
   REWARDS_COLLECTION,
   TRANSACTION_STATUS,
   TRANSFERS_COLLECTION,
@@ -13,10 +14,7 @@ import {
 } from './patchwallet';
 import { addTrackSegment } from './segment';
 import axios, { AxiosError } from 'axios';
-import {
-  FLOWXO_NEW_TRANSACTION_WEBHOOK,
-  FLOWXO_WEBHOOK_API_KEY,
-} from '../../secrets';
+import { FLOWXO_WEBHOOK_API_KEY } from '../../secrets';
 import { Db, Document, ObjectId, WithId } from 'mongodb';
 import { formatDate } from './time';
 import {
@@ -402,6 +400,7 @@ export class TransferTelegram {
       },
       { upsert: true },
     );
+    this.status = status;
     console.log(
       `[${this.eventId}] transaction from ${this.params.senderInformation.userTelegramID} to ${this.params.recipientTgId} for ${this.params.amount} in MongoDB as ${status} with transaction hash : ${this.txHash}.`,
     );
@@ -442,6 +441,7 @@ export class TransferTelegram {
       transactionHash: this.txHash,
       dateAdded: new Date(),
       apiKey: FLOWXO_WEBHOOK_API_KEY,
+      status: this.status,
     });
   }
 

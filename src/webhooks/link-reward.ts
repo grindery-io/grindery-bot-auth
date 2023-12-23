@@ -10,6 +10,7 @@ import {
   isPendingTransactionHash,
   isTreatmentDurationExceeded,
   sendTransaction,
+  updateStatus,
   updateTxHash,
   updateUserOpHash,
 } from './utils';
@@ -54,6 +55,7 @@ export async function handleLinkReward(params: RewardParams): Promise<boolean> {
 
     if (txReward && txReward.txHash) {
       updateTxHash(reward, txReward.txHash);
+      updateStatus(reward, TRANSACTION_STATUS.SUCCESS);
       await Promise.all([
         reward.updateInDatabase(TRANSACTION_STATUS.SUCCESS, new Date()),
         reward.saveToFlowXO(),

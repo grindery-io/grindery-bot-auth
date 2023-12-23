@@ -175,3 +175,47 @@ export const HEDGEY_VESTING_LOCKER =
  */
 export const HEDGEY_LOCKUP_LOCKER =
   '0x1961A23409CA59EEDCA6a99c97E4087DaD752486';
+
+/**
+ * Webhook for Flow XO: New Vesting.
+ * @type {string}
+ */
+export const FLOWXO_NEW_VESTING_WEBHOOK: string = '';
+
+/**
+ * Webhook for Flow XO: New Transaction.
+ * @type {string}
+ */
+export const FLOWXO_NEW_TRANSACTION_WEBHOOK: string =
+  'https://flowxo.com/hooks/a/x4rmnn6a';
+
+/**
+ * Webhook for Flow XO: New Referral Reward.
+ * @type {string}
+ */
+export const FLOWXO_NEW_REFERRAL_REWARD_WEBHOOK: string = '';
+
+/**
+ * Webhook for Flow XO: New Signup Reward.
+ * @type {string}
+ */
+export const FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK: string = '';
+
+/**
+ * Webhook for Flow XO: New Link Reward.
+ * @type {string}
+ */
+export const FLOWXO_NEW_LINK_REWARD_WEBHOOK: string = '';
+
+/**
+ * Webhook for Flow XO: New Isolated Reward.
+ * @type {string}
+ */
+export const FLOWXO_NEW_ISOLATED_REWARD_WEBHOOK: string = '';
+
+/**
+ * Webhook for Flow XO: New Swap.
+ * @type {string}
+ */
+export const FLOWXO_NEW_SWAP_WEBHOOK: string =
+  'https://flowxo.com/hooks/a/89ekwjdk';
