@@ -1,6 +1,7 @@
 import { Database } from '../db/conn';
 import {
   DEFAULT_CHAIN_ID,
+  FLOWXO_NEW_VESTING_WEBHOOK,
   GRINDERY_VESTING_ADMIN,
   HEDGEY_LOCKUP_LOCKER,
   HEDGEY_VESTING_LOCKER,
@@ -16,11 +17,7 @@ import {
 } from './patchwallet';
 import { addVestingSegment } from './segment';
 import axios, { AxiosError } from 'axios';
-import {
-  FLOWXO_NEW_VESTING_WEBHOOK,
-  FLOWXO_WEBHOOK_API_KEY,
-  G1_POLYGON_ADDRESS,
-} from '../../secrets';
+import { FLOWXO_WEBHOOK_API_KEY, G1_POLYGON_ADDRESS } from '../../secrets';
 import { Db, Document, WithId } from 'mongodb';
 import {
   HedgeyPlanParams,
@@ -249,6 +246,7 @@ export class VestingTelegram {
       },
       { upsert: true },
     );
+    this.status = status;
     console.log(
       `[${this.eventId}] vesting from ${this.params.senderInformation.userTelegramID} in MongoDB as ${status} with transaction hash : ${this.txHash}.`,
     );
@@ -286,6 +284,7 @@ export class VestingTelegram {
       transactionHash: this.txHash,
       dateAdded: new Date(),
       apiKey: FLOWXO_WEBHOOK_API_KEY,
+      status: this.status,
     });
   }
 

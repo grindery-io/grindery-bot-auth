@@ -166,62 +166,6 @@ export const PUBSUB_TOPIC_NAME = process.env.PUBSUB_TOPIC_NAME || '';
 export const PROJECT_ID = process.env.PROJECT_ID || '';
 
 /**
- * The FlowXO new user webhook.
- * Fallback: an empty string if not defined in the environment.
- */
-export const FLOWXO_NEW_USER_WEBHOOK =
-  process.env.FLOWXO_NEW_USER_WEBHOOK || '';
-
-/**
- * The FlowXO new signup reward webhook.
- * Fallback: an empty string if not defined in the environment.
- */
-export const FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK =
-  process.env.FLOWXO_NEW_SIGNUP_REWARD_WEBHOOK || '';
-
-/**
- * The FlowXO new referral reward webhook.
- * Fallback: an empty string if not defined in the environment.
- */
-export const FLOWXO_NEW_REFERRAL_REWARD_WEBHOOK =
-  process.env.FLOWXO_NEW_REFERRAL_REWARD_WEBHOOK || '';
-
-/**
- * The FlowXO new transaction webhook.
- * Fallback: an empty string if not defined in the environment.
- */
-export const FLOWXO_NEW_TRANSACTION_WEBHOOK =
-  process.env.FLOWXO_NEW_TRANSACTION_WEBHOOK || '';
-
-/**
- * The FlowXO new vesting webhook.
- * Fallback: an empty string if not defined in the environment.
- */
-export const FLOWXO_NEW_VESTING_WEBHOOK =
-  process.env.FLOWXO_NEW_VESTING_WEBHOOK || '';
-
-/**
- * The FlowXO new link reward webhook.
- * Fallback: an empty string if not defined in the environment.
- */
-export const FLOWXO_NEW_LINK_REWARD_WEBHOOK =
-  process.env.FLOWXO_NEW_LINK_REWARD_WEBHOOK || '';
-
-/**
- * The FlowXO new isolated reward webhook.
- * Fallback: an empty string if not defined in the environment.
- */
-export const FLOWXO_NEW_ISOLATED_REWARD_WEBHOOK =
-  process.env.FLOWXO_NEW_ISOLATED_REWARD_WEBHOOK || '';
-
-/**
- * The FlowXO new swap webhook.
- * Fallback: an empty string if not defined in the environment.
- */
-export const FLOWXO_NEW_SWAP_WEBHOOK =
-  process.env.FLOWXO_NEW_SWAP_WEBHOOK || '';
-
-/**
  * The Segment write key used for something.
  * Fallback: an empty string if not defined in the environment.
  */

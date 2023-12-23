@@ -13,6 +13,7 @@ import {
   isPendingTransactionHash,
   isTreatmentDurationExceeded,
   sendTransaction,
+  updateStatus,
   updateTxHash,
   updateUserOpHash,
 } from './utils';
@@ -70,6 +71,7 @@ export async function handleIsolatedReward(
     // Update transaction hash and perform additional actions
     if (txReward && txReward.txHash) {
       updateTxHash(reward, txReward.txHash);
+      updateStatus(reward, TRANSACTION_STATUS.SUCCESS);
       await Promise.all([
         reward.updateInDatabase(TRANSACTION_STATUS.SUCCESS, new Date()),
         reward.saveToFlowXO(),

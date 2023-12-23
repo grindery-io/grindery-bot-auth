@@ -19,6 +19,7 @@ import Sinon from 'sinon';
 import axios from 'axios';
 import chaiExclude from 'chai-exclude';
 import {
+  FLOWXO_NEW_TRANSACTION_WEBHOOK,
   G1_TOKEN_SYMBOL,
   PATCHWALLET_AUTH_URL,
   PATCHWALLET_RESOLVER_URL,
@@ -30,11 +31,7 @@ import {
 } from '../utils/constants';
 import { v4 as uuidv4 } from 'uuid';
 import { handleNewTransaction } from '../webhooks/transaction';
-import {
-  FLOWXO_NEW_TRANSACTION_WEBHOOK,
-  FLOWXO_WEBHOOK_API_KEY,
-  G1_POLYGON_ADDRESS,
-} from '../../secrets';
+import { FLOWXO_WEBHOOK_API_KEY, G1_POLYGON_ADDRESS } from '../../secrets';
 import * as web3 from '../utils/web3';
 import { Collection, Document } from 'mongodb';
 import { ContractStub } from '../types/tests.types';
@@ -357,6 +354,7 @@ describe('handleNewTransaction function', async function () {
         tokenAmount: '100',
         transactionHash: mockTransactionHash,
         apiKey: FLOWXO_WEBHOOK_API_KEY,
+        status: TRANSACTION_STATUS.SUCCESS,
       });
     });
   });
@@ -1565,6 +1563,7 @@ describe('handleNewTransaction function', async function () {
           tokenAmount: '100',
           transactionHash: mockTransactionHash,
           apiKey: FLOWXO_WEBHOOK_API_KEY,
+          status: TRANSACTION_STATUS.SUCCESS,
         });
 
         chai

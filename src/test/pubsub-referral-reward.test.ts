@@ -40,6 +40,7 @@ import chaiExclude from 'chai-exclude';
 import { v4 as uuidv4 } from 'uuid';
 import {
   DEFAULT_CHAIN_NAME,
+  FLOWXO_NEW_REFERRAL_REWARD_WEBHOOK,
   PATCHWALLET_AUTH_URL,
   PATCHWALLET_RESOLVER_URL,
   PATCHWALLET_TX_STATUS_URL,
@@ -47,7 +48,6 @@ import {
   TRANSACTION_STATUS,
 } from '../utils/constants';
 import {
-  FLOWXO_NEW_REFERRAL_REWARD_WEBHOOK,
   FLOWXO_WEBHOOK_API_KEY,
   G1_POLYGON_ADDRESS,
   SOURCE_TG_ID,
@@ -820,6 +820,7 @@ describe('handleReferralReward function', function () {
           transactionHash: mockTransactionHash,
           parentTransactionHash: mockTransactionHash,
           apiKey: FLOWXO_WEBHOOK_API_KEY,
+          status: TRANSACTION_STATUS.SUCCESS,
         });
       chai
         .expect(flowXOCalls[0].args[1].dateAdded)
@@ -1026,6 +1027,7 @@ describe('handleReferralReward function', function () {
           transactionHash: mockTransactionHash,
           parentTransactionHash: mockTransactionHash,
           apiKey: FLOWXO_WEBHOOK_API_KEY,
+          status: TRANSACTION_STATUS.SUCCESS,
         });
       chai
         .expect(flowXOCalls[0].args[1].dateAdded)
@@ -1227,6 +1229,7 @@ describe('handleReferralReward function', function () {
           transactionHash: mockTransactionHash,
           parentTransactionHash: mockTransactionHash,
           apiKey: FLOWXO_WEBHOOK_API_KEY,
+          status: TRANSACTION_STATUS.SUCCESS,
         });
       chai
         .expect(flowXOCalls[0].args[1].dateAdded)
@@ -1479,6 +1482,7 @@ describe('handleReferralReward function', function () {
           transactionHash: mockTransactionHash,
           parentTransactionHash: mockTransactionHash,
           apiKey: FLOWXO_WEBHOOK_API_KEY,
+          status: TRANSACTION_STATUS.SUCCESS,
         });
       chai
         .expect(flowXOCalls[0].args[1].dateAdded)
@@ -1645,6 +1649,7 @@ describe('handleReferralReward function', function () {
           transactionHash: mockTransactionHash,
           parentTransactionHash: mockTransactionHash,
           apiKey: FLOWXO_WEBHOOK_API_KEY,
+          status: TRANSACTION_STATUS.SUCCESS,
         });
       chai
         .expect(flowXOCalls[0].args[1].dateAdded)
@@ -2219,6 +2224,7 @@ describe('handleReferralReward function', function () {
             transactionHash: mockTransactionHash,
             parentTransactionHash: mockTransactionHash,
             apiKey: FLOWXO_WEBHOOK_API_KEY,
+            status: TRANSACTION_STATUS.SUCCESS,
           });
         chai
           .expect(flowXOCalls[0].args[1].dateAdded)

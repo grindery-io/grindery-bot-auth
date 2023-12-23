@@ -29,6 +29,7 @@ import axios from 'axios';
 import * as web3 from '../utils/web3';
 import chaiExclude from 'chai-exclude';
 import {
+  FLOWXO_NEW_SWAP_WEBHOOK,
   PATCHWALLET_AUTH_URL,
   PATCHWALLET_RESOLVER_URL,
   PATCHWALLET_TX_STATUS_URL,
@@ -38,7 +39,7 @@ import {
 } from '../utils/constants';
 import { v4 as uuidv4 } from 'uuid';
 import { handleSwap } from '../webhooks/swap';
-import { FLOWXO_NEW_SWAP_WEBHOOK, FLOWXO_WEBHOOK_API_KEY } from '../../secrets';
+import { FLOWXO_WEBHOOK_API_KEY } from '../../secrets';
 import { Collection, Document } from 'mongodb';
 import { CHAIN_MAPPING } from '../utils/chains';
 import { ContractStub } from '../types/tests.types';

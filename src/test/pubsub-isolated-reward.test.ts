@@ -22,6 +22,7 @@ import chaiExclude from 'chai-exclude';
 import { v4 as uuidv4 } from 'uuid';
 import {
   DEFAULT_CHAIN_NAME,
+  FLOWXO_NEW_ISOLATED_REWARD_WEBHOOK,
   PATCHWALLET_AUTH_URL,
   PATCHWALLET_RESOLVER_URL,
   PATCHWALLET_TX_STATUS_URL,
@@ -30,7 +31,6 @@ import {
 } from '../utils/constants';
 import { handleIsolatedReward } from '../webhooks/isolated-reward';
 import {
-  FLOWXO_NEW_ISOLATED_REWARD_WEBHOOK,
   FLOWXO_WEBHOOK_API_KEY,
   G1_POLYGON_ADDRESS,
   SOURCE_TG_ID,
@@ -687,6 +687,7 @@ describe('handleIsolatedReward function', async function () {
         message: 'isolated message 1',
         transactionHash: mockTransactionHash,
         apiKey: FLOWXO_WEBHOOK_API_KEY,
+        status: TRANSACTION_STATUS.SUCCESS,
       });
 
       chai
@@ -822,6 +823,7 @@ describe('handleIsolatedReward function', async function () {
         message: 'isolated message 1',
         transactionHash: mockTransactionHash,
         apiKey: FLOWXO_WEBHOOK_API_KEY,
+        status: TRANSACTION_STATUS.SUCCESS,
       });
 
       chai
@@ -986,6 +988,7 @@ describe('handleIsolatedReward function', async function () {
         message: 'isolated message 1',
         transactionHash: mockTransactionHash,
         apiKey: FLOWXO_WEBHOOK_API_KEY,
+        status: TRANSACTION_STATUS.SUCCESS,
       });
       chai
         .expect(FlowXOCallArgs.dateAdded)
@@ -1376,6 +1379,7 @@ describe('handleIsolatedReward function', async function () {
           message: 'isolated message 1',
           transactionHash: mockTransactionHash,
           apiKey: FLOWXO_WEBHOOK_API_KEY,
+          status: TRANSACTION_STATUS.SUCCESS,
         });
         chai
           .expect(FlowXOCallArgs.dateAdded)
