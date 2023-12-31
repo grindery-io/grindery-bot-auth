@@ -41,10 +41,6 @@ export async function createSwapTelegram(
  */
 export class SwapTelegram {
   /**
-   * The event ID associated with the swap.
-   */
-  eventId: string;
-  /**
    * Parameters for the swap.
    */
   params: SwapParams;
@@ -82,7 +78,6 @@ export class SwapTelegram {
    * @param {SwapParams} params - Parameters for the swap.
    */
   constructor(params: SwapParams) {
-    this.eventId = params.eventId;
     this.params = params;
 
     this.isInDatabase = false;
@@ -252,7 +247,7 @@ export class SwapTelegram {
     } catch (error) {
       // Log error if retrieving transaction status fails
       console.error(
-        `[${this.eventId}] Error processing PatchWallet transaction status: ${error}`,
+        `[${this.params.eventId}] Error processing PatchWallet transaction status: ${error}`,
       );
       // Return true if the error status is 470, marking the transaction as failed
       return (

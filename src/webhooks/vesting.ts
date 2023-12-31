@@ -97,7 +97,7 @@ export async function handleNewVesting(
     );
 
     console.log(
-      `[${vesting.txHash}] vesting from ${vesting.params.senderInformation?.senderTgId} with event ID ${vesting.eventId} finished.`,
+      `[${vesting.txHash}] vesting from ${vesting.params.senderInformation?.senderTgId} with event ID ${vesting.params.eventId} finished.`,
     );
     return true;
   }

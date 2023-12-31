@@ -48,9 +48,6 @@ export async function createSignUpRewardTelegram(
  * Represents a sign-up reward specific to Telegram.
  */
 export class SignUpRewardTelegram {
-  /** Unique identifier for the event. */
-  eventId: string;
-
   /** The parameters required for the reward. */
   params: RewardParams;
 
@@ -78,7 +75,6 @@ export class SignUpRewardTelegram {
    */
   constructor(params: RewardParams) {
     // Properties related to user and reward details
-    this.eventId = params.eventId;
     this.params = params;
 
     // Reward-specific details
@@ -125,7 +121,7 @@ export class SignUpRewardTelegram {
     if (this.db)
       return await this.db.collection(REWARDS_COLLECTION).findOne({
         userTelegramID: this.params.userTelegramID,
-        eventId: this.eventId,
+        eventId: this.params.eventId,
         reason: this.params.reason,
       });
     return null;
@@ -139,7 +135,7 @@ export class SignUpRewardTelegram {
     if (this.db)
       return await this.db.collection(REWARDS_COLLECTION).findOne({
         userTelegramID: this.params.userTelegramID,
-        eventId: { $ne: this.eventId },
+        eventId: { $ne: this.params.eventId },
         reason: this.params.reason,
       });
     return null;
@@ -153,13 +149,13 @@ export class SignUpRewardTelegram {
   async updateInDatabase(status: TransactionStatus, date: Date | null) {
     await this.db?.collection(REWARDS_COLLECTION).updateOne(
       {
-        eventId: this.eventId,
+        eventId: this.params.eventId,
         reason: this.params.reason,
         userTelegramID: this.params.userTelegramID,
       },
       {
         $set: {
-          eventId: this.eventId,
+          eventId: this.params.eventId,
           userTelegramID: this.params.userTelegramID,
           responsePath: this.params.responsePath,
           userHandle: this.params.userHandle,
@@ -177,7 +173,7 @@ export class SignUpRewardTelegram {
       { upsert: true },
     );
     console.log(
-      `[${this.eventId}] sign up reward for ${this.params.userTelegramID} in MongoDB as ${status} with transaction hash : ${this.txHash}.`,
+      `[${this.params.eventId}] sign up reward for ${this.params.userTelegramID} in MongoDB as ${status} with transaction hash : ${this.txHash}.`,
     );
   }
 
@@ -242,9 +238,6 @@ export async function createReferralRewardTelegram(
  * Represents a referral reward specific to Telegram.
  */
 export class ReferralRewardTelegram {
-  /** Unique identifier for the event. */
-  eventId: string;
-
   /** The parameters required for the reward. */
   params: RewardParams;
 
@@ -278,7 +271,6 @@ export class ReferralRewardTelegram {
    */
   constructor(params: RewardParams) {
     // Properties related to user and reward details
-    this.eventId = params.eventId;
     this.params = params;
 
     // Reward-specific details
@@ -333,7 +325,7 @@ export class ReferralRewardTelegram {
 
     if (!this.parentTx) {
       console.log(
-        `[${this.eventId}] no referral reward to distribute with ${this.params.userTelegramID} as a new user.`,
+        `[${this.params.eventId}] no referral reward to distribute with ${this.params.userTelegramID} as a new user.`,
       );
       return false;
     }
@@ -353,13 +345,13 @@ export class ReferralRewardTelegram {
         });
       if (!this.referent) {
         console.log(
-          `[${this.eventId}] sender ${this.parentTx?.senderTgId} who is supposed to receive a referral reward is not a user.`,
+          `[${this.params.eventId}] sender ${this.parentTx?.senderTgId} who is supposed to receive a referral reward is not a user.`,
         );
       }
       return Boolean(this.referent);
     } catch (error) {
       console.error(
-        `[${this.eventId}] Error trying to get referent information: ${error}`,
+        `[${this.params.eventId}] Error trying to get referent information: ${error}`,
       );
       return false;
     }
@@ -372,7 +364,7 @@ export class ReferralRewardTelegram {
   async getRewardSameFromDatabase(): Promise<boolean> {
     if (this.db)
       this.tx = await this.db.collection(REWARDS_COLLECTION).findOne({
-        eventId: this.eventId,
+        eventId: this.params.eventId,
         reason: this.params.reason,
       });
 
@@ -391,7 +383,7 @@ export class ReferralRewardTelegram {
   async getRewardFromDatabaseWithOtherEventId(): Promise<boolean> {
     return Boolean(
       await this.db?.collection(REWARDS_COLLECTION).findOne({
-        eventId: { $ne: this.eventId },
+        eventId: { $ne: this.params.eventId },
         reason: this.params.reason,
         userTelegramID: this.referent?.userTelegramID,
         newUserAddress: this.params.patchwallet,
@@ -417,12 +409,12 @@ export class ReferralRewardTelegram {
   async updateInDatabase(status: TransactionStatus, date: Date | null) {
     await this.db?.collection(REWARDS_COLLECTION).updateOne(
       {
-        eventId: this.eventId,
+        eventId: this.params.eventId,
         reason: this.params.reason,
       },
       {
         $set: {
-          eventId: this.eventId,
+          eventId: this.params.eventId,
           userTelegramID: this.referent?.userTelegramID,
           responsePath: this.referent?.responsePath,
           userHandle: this.referent?.userHandle,
@@ -442,7 +434,7 @@ export class ReferralRewardTelegram {
       { upsert: true },
     );
     console.log(
-      `[${this.eventId}] referral reward for ${this.referent?.patchwallet} sending tokens to ${this.params.patchwallet} in ${this.parentTx?.transactionHash} in MongoDB as ${status} with transaction hash : ${this.txHash}.`,
+      `[${this.params.eventId}] referral reward for ${this.referent?.patchwallet} sending tokens to ${this.params.patchwallet} in ${this.parentTx?.transactionHash} in MongoDB as ${status} with transaction hash : ${this.txHash}.`,
     );
   }
 
@@ -511,9 +503,6 @@ export async function createLinkRewardTelegram(
  * Represents a link reward for Telegram users.
  */
 export class LinkRewardTelegram {
-  /** Unique identifier for the event. */
-  eventId: string;
-
   /** The parameters required for the reward. */
   params: RewardParams;
 
@@ -544,7 +533,6 @@ export class LinkRewardTelegram {
    */
   constructor(params: RewardParams) {
     // Properties related to user and reward details
-    this.eventId = params.eventId;
     this.params = params;
 
     // Reward-specific details
@@ -569,7 +557,7 @@ export class LinkRewardTelegram {
 
     if (!(await this.getReferent())) {
       console.log(
-        `[${this.eventId}] ${this.params.referentUserTelegramID} referent user is not a user to process the link reward.`,
+        `[${this.params.eventId}] ${this.params.referentUserTelegramID} referent user is not a user to process the link reward.`,
       );
       return false;
     }
@@ -618,7 +606,7 @@ export class LinkRewardTelegram {
   async getRewardFromDatabase(): Promise<WithId<Document> | null> {
     if (this.db)
       return await this.db.collection(REWARDS_COLLECTION).findOne({
-        eventId: this.eventId,
+        eventId: this.params.eventId,
         userTelegramID: this.params.referentUserTelegramID,
         sponsoredUserTelegramID: this.params.userTelegramID,
         reason: this.params.reason,
@@ -635,7 +623,7 @@ export class LinkRewardTelegram {
       return await this.db.collection(REWARDS_COLLECTION).findOne({
         sponsoredUserTelegramID: this.params.userTelegramID,
         reason: this.params.reason,
-        eventId: { $ne: this.eventId },
+        eventId: { $ne: this.params.eventId },
       });
     return null;
   }
@@ -648,13 +636,13 @@ export class LinkRewardTelegram {
   async updateInDatabase(status: TransactionStatus, date: Date | null) {
     await this.db?.collection(REWARDS_COLLECTION).updateOne(
       {
-        eventId: this.eventId,
+        eventId: this.params.eventId,
         reason: this.params.reason,
         userTelegramID: this.params.referentUserTelegramID,
       },
       {
         $set: {
-          eventId: this.eventId,
+          eventId: this.params.eventId,
           userTelegramID: this.params.referentUserTelegramID,
           responsePath: this.referent?.responsePath,
           userHandle: this.referent?.userHandle,
@@ -673,7 +661,7 @@ export class LinkRewardTelegram {
       { upsert: true },
     );
     console.log(
-      `[${this.eventId}] link for ${this.params.referentUserTelegramID} sponsoring ${this.params.userTelegramID} in MongoDB as ${status} with transaction hash : ${this.txHash}.`,
+      `[${this.params.eventId}] link for ${this.params.referentUserTelegramID} sponsoring ${this.params.userTelegramID} in MongoDB as ${status} with transaction hash : ${this.txHash}.`,
     );
   }
 
@@ -741,9 +729,6 @@ export class IsolatedRewardTelegram {
   /** The parameters required for the reward. */
   params: RewardParams;
 
-  /** Unique identifier for the event. */
-  eventId: string;
-
   /** Indicates if the reward is present in the database. */
   isInDatabase: boolean = false;
 
@@ -774,7 +759,6 @@ export class IsolatedRewardTelegram {
    */
   constructor(params: RewardParams) {
     this.params = params;
-    this.eventId = params.eventId;
 
     this.isInDatabase = false;
     this.tx = null;

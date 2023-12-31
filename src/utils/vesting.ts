@@ -149,9 +149,6 @@ export async function createVestingTelegram(
  * Represents a Telegram vesting.
  */
 export class VestingTelegram {
-  /** Unique identifier for the event. */
-  eventId: string;
-
   /** The parameters required for the transaction. */
   params: VestingParams;
 
@@ -179,7 +176,6 @@ export class VestingTelegram {
    */
   constructor(params: VestingParams) {
     // Properties related to user and transaction details
-    this.eventId = params.eventId;
     this.params = params;
 
     // Default values if not provided
@@ -217,7 +213,7 @@ export class VestingTelegram {
     if (this.db)
       return await this.db
         .collection(VESTING_COLLECTION)
-        .findOne({ eventId: this.eventId });
+        .findOne({ eventId: this.params.eventId });
     return null;
   }
 
@@ -231,10 +227,10 @@ export class VestingTelegram {
     date: Date | null,
   ): Promise<void> {
     await this.db?.collection(VESTING_COLLECTION).updateOne(
-      { eventId: this.eventId },
+      { eventId: this.params.eventId },
       {
         $set: {
-          eventId: this.eventId,
+          eventId: this.params.eventId,
           chainId: this.params.chainId,
           tokenSymbol: this.params.tokenSymbol,
           tokenAddress: this.params.tokenAddress,
@@ -252,7 +248,7 @@ export class VestingTelegram {
       { upsert: true },
     );
     console.log(
-      `[${this.eventId}] vesting from ${this.params.senderInformation?.userTelegramID} in MongoDB as ${status} with transaction hash : ${this.txHash}.`,
+      `[${this.params.eventId}] vesting from ${this.params.senderInformation?.userTelegramID} in MongoDB as ${status} with transaction hash : ${this.txHash}.`,
     );
   }
 
@@ -308,7 +304,7 @@ export class VestingTelegram {
     } catch (error) {
       // Log error if retrieving transaction status fails
       console.error(
-        `[${this.eventId}] Error processing PatchWallet transaction status: ${error}`,
+        `[${this.params.eventId}] Error processing PatchWallet transaction status: ${error}`,
       );
       // Return true if the error status is 470, marking the transaction as failed
       return (
