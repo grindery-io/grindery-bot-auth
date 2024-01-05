@@ -26,7 +26,7 @@ import { addTrackSwapSegment } from '../utils/segment';
 import { FLOWXO_NEW_SWAP_WEBHOOK, FLOWXO_WEBHOOK_API_KEY } from '../../secrets';
 import axios, { AxiosError } from 'axios';
 import BigNumber from 'bignumber.js';
-import { getContract } from '../utils/web3';
+import { getContract, weiToEther } from '../utils/web3';
 import { CHAIN_MAPPING } from '../utils/chains';
 import { getPatchWalletAccessToken, swapTokens } from '../utils/patchwallet';
 import { Db, WithId } from 'mongodb';
@@ -283,16 +283,14 @@ export class SwapTelegram {
       userName: this.params.userInformation?.userName,
       userHandle: this.params.userInformation?.userHandle,
       tokenIn: this.params.tokenIn,
-      amountIn: new BigNumber(parseInt(this.params.amountIn))
-        .div(
-          10 **
-            (nativeTokenAddresses.includes(this.params.tokenIn)
-              ? 18
-              : await getContract(this.params.chainIn, this.params.tokenIn)
-                  .methods.decimals()
-                  .call()),
-        )
-        .toString(),
+      amountIn: weiToEther(
+        this.params.amountIn,
+        nativeTokenAddresses.includes(this.params.tokenIn)
+          ? 18
+          : await getContract(this.params.chainIn, this.params.tokenIn)
+              .methods.decimals()
+              .call(),
+      ),
       tokenOut: this.params.tokenOut,
       amountOut: new BigNumber(parseInt(this.params.amountOut))
         .div(
