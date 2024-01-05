@@ -1,5 +1,6 @@
 import chai from 'chai';
-import { numberToString, scaleDecimals } from '../utils/web3';
+import { numberToString, scaleDecimals, weiToEther } from '../utils/web3';
+import BN from 'bn.js';
 
 describe('Web3 utils ', async function () {
   describe('numberToString', async function () {
@@ -155,6 +156,42 @@ describe('Web3 utils ', async function () {
           Error,
           "while converting number to string, invalid number value '1a2b3c4d', should be a number matching (^-?[0-9.]+)",
         );
+    });
+  });
+
+  describe('weiToEther', async function () {
+    it('should correctly convert Wei to Ether with full decimals', async function () {
+      const result = weiToEther(new BN('1000000000000000000'));
+      chai.expect(result).to.equal('1');
+    });
+
+    it('should handle specified decimal precision', async function () {
+      const result = weiToEther('1234567890000000000', 5);
+      chai.expect(result).to.equal('12345678900000');
+    });
+
+    it('should handle zero Wei value', async function () {
+      const result = weiToEther(0, 10);
+      chai.expect(result).to.equal('0');
+    });
+
+    it('should handle small Wei values', async function () {
+      const result = weiToEther('123', 5);
+      chai.expect(result).to.equal('0.00123');
+    });
+
+    it('should handle very large Wei values', async function () {
+      const result = weiToEther(new BN('123456789012345678901234567890'), 2);
+      chai.expect(result).to.equal('1.2345678901234568e+27');
+    });
+
+    it('should return whole number if decimals is zero', async function () {
+      const result = weiToEther('5500000000000000000', 0);
+      chai.expect(result).to.equal('5500000000000000000');
+    });
+
+    it('should throw an error for non-numeric Wei values', async function () {
+      chai.expect(() => weiToEther('invalidWeiValue', 10)).to.throw();
     });
   });
 });

@@ -7,6 +7,7 @@ import { Contract } from 'web3-eth-contract';
 import { AbiItem } from 'web3-utils';
 import { DEFAULT_CHAIN_ID } from './constants';
 import HedgeyBatchPlanner from '../abi/HedgeyBatchPlanner.json';
+import BigNumber from 'bignumber.js';
 
 /**
  * Creates and returns a contract instance using Web3 with the specified chainId and tokenAddress.
@@ -129,4 +130,32 @@ export function getHedgeyBatchPlannerContract(
     throw new Error('Invalid chain: ' + chainId);
   }
   return new new Web3().eth.Contract(HedgeyBatchPlanner as AbiItem[]);
+}
+
+/**
+ * Converts an amount in Wei to Ether with specified decimal precision.
+ * @param {string | BN | number} weiAmount - The amount in Wei to be converted.
+ * @param {number} [decimals=18] - The number of decimals to include in the Ether result.
+ * @returns {string} - The Ether amount as a string with the specified decimal precision.
+ * @throws {Error} - Throws an error if the input Wei amount is not a valid number.
+ */
+export function weiToEther(
+  weiAmount: string | BN | number,
+  decimals: number = 18,
+): string {
+  // Ensure the input is a string for Web3 processing
+  const weiString = weiAmount.toString();
+
+  // Parse the Wei amount to an integer
+  const weiInteger = parseInt(weiString);
+
+  // Check if the parsed integer is a valid number
+  if (isNaN(weiInteger)) {
+    throw new Error('Invalid input: the Wei amount is not a valid number.');
+  }
+
+  // Convert Wei to Ether using BigNumber and return the result
+  return new BigNumber(weiInteger)
+    .div(new BigNumber(10).pow(decimals))
+    .toString();
 }
