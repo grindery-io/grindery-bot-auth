@@ -1,6 +1,7 @@
 import { ValidationChain, validationResult } from 'express-validator';
 import { Request } from 'express-validator/src/base';
 import { body } from 'express-validator';
+import { CHAIN_MAPPING } from '../utils/chains';
 
 /**
  * This function validates the result of a request and returns an array of errors if any are found.
@@ -48,5 +49,31 @@ export const validateUserTelegramID = (
   });
 
   // Returns a validation chain that is optional or regular based on the `isOptional` flag
+  return isOptional ? validationChain.optional() : validationChain;
+};
+
+/**
+ * Validates whether the provided chain ID adheres to the EIP155 standard and is listed in our chain mapping.
+ *
+ * @param {string} fieldName - The name of the field to be validated.
+ * @param {boolean} isOptional - Indicates whether the field is optional for validation.
+ * @returns {ValidationChain} - A validation chain object to validate the `fieldName`.
+ *
+ * @example
+ * validateChainID('params.chainId', false);
+ */
+export const validateChainID = (
+  fieldName: string,
+  isOptional: boolean,
+): ValidationChain => {
+  const validationChain = body(fieldName).custom((value) => {
+    if (typeof value !== 'string' || !CHAIN_MAPPING[value]) {
+      throw new Error(
+        `${fieldName} must be a valid and supported EIP155 chain ID`,
+      );
+    }
+    return true;
+  });
+
   return isOptional ? validationChain.optional() : validationChain;
 };

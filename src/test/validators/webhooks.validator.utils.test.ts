@@ -1,5 +1,10 @@
 import { expect } from 'chai';
-import { validateResult, validateUserTelegramID } from '../../validators/utils';
+import {
+  validateChainID,
+  validateResult,
+  validateUserTelegramID,
+} from '../../validators/utils';
+import { CHAIN_MAPPING } from '../../utils/chains';
 
 describe('Webhook validator utils', async function () {
   describe('validateUserTelegramID function', async function () {
@@ -212,6 +217,65 @@ describe('Webhook validator utils', async function () {
           value: 'notahexadecimalstring',
           msg: 'params.userTelegramID must be a string representing a 64-bit little-endian number',
           path: 'params.userTelegramID',
+          location: 'body',
+        },
+      ]);
+    });
+  });
+
+  describe('validateChainID function', async function () {
+    let validChainIds: any, mockRequest: any;
+
+    beforeEach(async function () {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      mockRequest = (value: any) => ({
+        body: {
+          params: {
+            chainId: value,
+          },
+        },
+      });
+
+      validChainIds = Object.keys(CHAIN_MAPPING);
+    });
+
+    it('should validate chainId correctly when it is a valid chain ID', async function () {
+      const validateFunction = validateChainID('params.chainId', false);
+
+      for (const chainId of validChainIds) {
+        const req = mockRequest(chainId);
+        await validateFunction(req, {}, () => {});
+        expect(validateResult(req)).to.be.empty;
+      }
+    });
+
+    it('should throw an error when chainId is an invalid string', async function () {
+      const invalidChainId = 'eip155:99999'; // Example of an invalid chain ID
+      const validateFunction = validateChainID('params.chainId', false);
+      const req = mockRequest(invalidChainId);
+      await validateFunction(req, {}, () => {});
+      expect(validateResult(req)).to.deep.equal([
+        {
+          type: 'field',
+          value: invalidChainId,
+          msg: 'params.chainId must be a valid and supported EIP155 chain ID',
+          path: 'params.chainId',
+          location: 'body',
+        },
+      ]);
+    });
+
+    it('should throw an error when chainId is not a string', async function () {
+      const nonStringChainId = 12345; // Example of a non-string value
+      const validateFunction = validateChainID('params.chainId', false);
+      const req = mockRequest(nonStringChainId);
+      await validateFunction(req, {}, () => {});
+      expect(validateResult(req)).to.deep.equal([
+        {
+          type: 'field',
+          value: nonStringChainId,
+          msg: 'params.chainId must be a valid and supported EIP155 chain ID',
+          path: 'params.chainId',
           location: 'body',
         },
       ]);

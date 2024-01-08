@@ -32,6 +32,7 @@ describe('Webhook validators', function () {
         tokenAddress: mockTokenAddress,
         chainName: 'ETH',
         referentUserTelegramID: '67890',
+        chainId: 'eip155:59144',
       },
     };
 
@@ -49,6 +50,7 @@ describe('Webhook validators', function () {
         delegatecall: 2,
         tokenAddress: 'invalid_address',
         chainName: 123,
+        chainId: 'eip155:9999',
       },
     };
 
@@ -127,6 +129,13 @@ describe('Webhook validators', function () {
         },
         {
           type: 'field',
+          value: 'eip155:9999',
+          msg: 'params.chainId must be a valid and supported EIP155 chain ID',
+          path: 'params.chainId',
+          location: 'body',
+        },
+        {
+          type: 'field',
           value: 123,
           msg: 'responsePath must be a string',
           path: 'params.responsePath',
@@ -184,7 +193,7 @@ describe('Webhook validators', function () {
         chainName: 123,
         message: 123,
         tokenSymbol: true,
-        chainId: 'eip155:59143',
+        chainId: 'eip155:9999',
       },
     };
 
@@ -253,8 +262,8 @@ describe('Webhook validators', function () {
         },
         {
           type: 'field',
-          value: 'eip155:59143',
-          msg: 'chainId must be a valid and supported chain ID',
+          value: 'eip155:9999',
+          msg: 'params.chainId must be a valid and supported EIP155 chain ID',
           path: 'params.chainId',
           location: 'body',
         },
@@ -313,7 +322,7 @@ describe('Webhook validators', function () {
           chainName: 123,
           message: 123,
           tokenSymbol: true,
-          chainId: 'eip155:59143',
+          chainId: 'eip155:9999',
         },
       ],
     };
@@ -385,7 +394,7 @@ describe('Webhook validators', function () {
         },
         {
           type: 'field',
-          value: 'eip155:59143',
+          value: 'eip155:9999',
           msg: 'chainId must be a valid and supported chain ID',
           path: 'params[0].chainId',
           location: 'body',
@@ -458,9 +467,9 @@ describe('Webhook validators', function () {
         from: '0x105E9152e3d4F5486f2953eF6578f7e25c27C3501',
         tokenInSymbol: true,
         tokenOutSymbol: 123,
-        chainId: 12345,
-        chainIn: 12345,
-        chainOut: 12345,
+        chainId: 'eip155:9999',
+        chainIn: 'eip155:9999',
+        chainOut: 'eip155:9999',
         chainName: 123,
         amount: '-50',
         senderTgId: true,
@@ -573,6 +582,27 @@ describe('Webhook validators', function () {
         },
         {
           type: 'field',
+          value: 'eip155:9999',
+          msg: 'params.chainId must be a valid and supported EIP155 chain ID',
+          path: 'params.chainId',
+          location: 'body',
+        },
+        {
+          type: 'field',
+          value: 'eip155:9999',
+          msg: 'params.chainIn must be a valid and supported EIP155 chain ID',
+          path: 'params.chainIn',
+          location: 'body',
+        },
+        {
+          type: 'field',
+          value: 'eip155:9999',
+          msg: 'params.chainOut must be a valid and supported EIP155 chain ID',
+          path: 'params.chainOut',
+          location: 'body',
+        },
+        {
+          type: 'field',
           value: '-50',
           msg: 'Invalid amount',
           path: 'params.amount',
@@ -636,27 +666,6 @@ describe('Webhook validators', function () {
         },
         {
           type: 'field',
-          value: 12345,
-          msg: 'chainId must be a string',
-          path: 'params.chainId',
-          location: 'body',
-        },
-        {
-          type: 'field',
-          value: 12345,
-          msg: 'chainIn must be a string',
-          path: 'params.chainIn',
-          location: 'body',
-        },
-        {
-          type: 'field',
-          value: 12345,
-          msg: 'chainOut must be a string',
-          path: 'params.chainOut',
-          location: 'body',
-        },
-        {
-          type: 'field',
           value: 123,
           msg: 'chainName must be a string',
           path: 'params.chainName',
@@ -685,6 +694,7 @@ describe('Webhook validators', function () {
         isReferralReward: false,
         isLinkReward: true,
         delegatecall: 1,
+        chainId: 'eip155:59144',
       },
     };
 
@@ -706,6 +716,7 @@ describe('Webhook validators', function () {
         isReferralReward: 'alse',
         isLinkReward: 'rue',
         delegatecall: 2,
+        chainId: 'eip155:9999',
       },
     };
 
@@ -800,6 +811,13 @@ describe('Webhook validators', function () {
           value: 2,
           msg: 'delegatecall must be either 0 or 1',
           path: 'params.delegatecall',
+          location: 'body',
+        },
+        {
+          type: 'field',
+          value: 'eip155:9999',
+          msg: 'params.chainId must be a valid and supported EIP155 chain ID',
+          path: 'params.chainId',
           location: 'body',
         },
         {

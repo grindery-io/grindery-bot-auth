@@ -1,7 +1,7 @@
 import { body } from 'express-validator';
 import Web3 from 'web3';
 import { CHAIN_MAPPING } from '../utils/chains';
-import { validateUserTelegramID } from './utils';
+import { validateChainID, validateUserTelegramID } from './utils';
 
 /**
  * Validates parameters for a new reward event.
@@ -71,6 +71,9 @@ export const newRewardValidator = [
     .optional()
     .isString()
     .withMessage('chainName must be a string'),
+
+  // Validates chainId as an optional string against a predefined mapping
+  validateChainID('params.chainId', true),
 ];
 
 /**
@@ -133,14 +136,7 @@ export const newTransactionValidator = [
     .withMessage('tokenSymbol must be a string'),
 
   // Validates chainId as an optional string against a predefined mapping
-  body('params.chainId')
-    .optional()
-    .custom((value) => {
-      if (!CHAIN_MAPPING[value]) {
-        throw new Error('chainId must be a valid and supported chain ID');
-      }
-      return true;
-    }),
+  validateChainID('params.chainId', true),
 ];
 
 /**
@@ -322,17 +318,14 @@ export const swapValidator = [
     .isString()
     .withMessage('tokenOutSymbol must be a string'),
 
-  // Validates chainId within params as an optional string
-  body('params.chainId')
-    .optional()
-    .isString()
-    .withMessage('chainId must be a string'),
+  // Validates chainId as an optional string against a predefined mapping
+  validateChainID('params.chainId', true),
 
-  // Validates chainIn within params as a string
-  body('params.chainIn').isString().withMessage('chainIn must be a string'),
+  // Validates chainIn  as an optional string against a predefined mapping
+  validateChainID('params.chainIn', true),
 
-  // Validates chainOut within params as a string
-  body('params.chainOut').isString().withMessage('chainOut must be a string'),
+  // Validates chainOut  as an optional string against a predefined mapping
+  validateChainID('params.chainOut', true),
 
   // Validates chainName within params as an optional string
   body('params.chainName')
@@ -459,6 +452,9 @@ export const isolatedRewardValidator = [
     .optional()
     .isIn([0, 1])
     .withMessage('delegatecall must be either 0 or 1'),
+
+  // Validates chainId as an optional string against a predefined mapping
+  validateChainID('params.chainId', true),
 ];
 
 /**
